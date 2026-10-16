@@ -1,0 +1,11 @@
+[
+  {"id":"error.invalid_request","translation":"Dữ liệu yêu cầu không hợp lệ."},
+  {"id":"error.unauthorized","translation":"Bạn cần đăng nhập để thực hiện thao tác này."},
+  {"id":"error.internal","translation":"Đã xảy ra lỗi không mong muốn."},
+  {"id":"auth.invalid_registration","translation":"Thông tin đăng ký không hợp lệ."},
+  {"id":"auth.email_already_registered","translation":"Email này đã được đăng ký."},
+  {"id":"auth.invalid_credentials","translation":"Email hoặc mật khẩu không đúng."},
+  {"id":"auth.invalid_token","translation":"Token không hợp lệ hoặc đã hết hạn."},
+  {"id":"auth.user_inactive","translation":"Tài khoản này hiện không hoạt động."},
+  {"id":"auth.user_not_found","translation":"Không tìm thấy người dùng."}
+]

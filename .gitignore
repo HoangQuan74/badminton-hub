@@ -1,0 +1,34 @@
+# Local environment files and secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Node.js dependencies and build output
+node_modules/
+dist/
+coverage/
+
+# Go build and test artifacts
+bin/
+tmp/
+*.test
+*.out
+
+# Runtime logs and local state
+*.log
+*.pid
+
+# Terraform local state
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Editor and operating system files
+.DS_Store
+.idea/
+.vscode/
+
+# Local tooling metadata
+.codex/

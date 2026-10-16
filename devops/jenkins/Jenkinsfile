@@ -1,0 +1,136 @@
+pipeline {
+  agent any
+
+  options {
+    disableConcurrentBuilds()
+    timestamps()
+    timeout(time: 30, unit: 'MINUTES')
+  }
+
+  parameters {
+    string(name: 'REGISTRY_NAMESPACE', defaultValue: 'your-github-user', description: 'Lowercase GHCR owner or organization')
+  }
+
+  environment {
+    REGISTRY = 'ghcr.io'
+    API_IMAGE_NAME = 'badminton-hub-api'
+    IDENTITY_IMAGE_NAME = 'badminton-hub-identity'
+    WEB_IMAGE_NAME = 'badminton-hub-web'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+        script {
+          env.IMAGE_TAG = sh(script: 'git rev-parse --short=12 HEAD', returnStdout: true).trim()
+          env.API_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.API_IMAGE_NAME}"
+          env.IDENTITY_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.IDENTITY_IMAGE_NAME}"
+          env.WEB_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.WEB_IMAGE_NAME}"
+        }
+      }
+    }
+
+    stage('Validate') {
+      parallel {
+        stage('Backend') {
+          agent { docker { image 'golang:1.24-alpine'; args '-v $HOME/.cache/go-build:/root/.cache/go-build' } }
+          steps {
+            dir('be') {
+              sh 'test -z "$(gofmt -l platform services)"'
+              sh 'for module in platform services/*; do if [ -f "$module/go.mod" ]; then (cd "$module" && go vet ./...); fi; done'
+              sh 'for module in platform services/*; do if [ -f "$module/go.mod" ]; then (cd "$module" && go test ./...); fi; done'
+            }
+          }
+        }
+        stage('Frontend') {
+          agent { docker { image 'node:22-alpine'; reuseNode true } }
+          steps {
+            dir('fe') {
+              sh 'npm ci'
+              sh 'npm run lint'
+              sh 'npm run typecheck'
+              sh 'npm run build'
+            }
+          }
+        }
+        stage('Deployment Config') {
+          steps {
+            sh 'devops/scripts/validate.sh'
+          }
+        }
+      }
+    }
+
+    stage('Build Images') {
+      when { anyOf { branch 'develop'; branch 'main'; buildingTag() } }
+      steps {
+        sh '''
+          docker build -f devops/docker/api.Dockerfile -t "$API_IMAGE:$IMAGE_TAG" .
+          docker build -f devops/docker/identity.Dockerfile -t "$IDENTITY_IMAGE:$IMAGE_TAG" .
+          docker build -f devops/docker/web.Dockerfile -t "$WEB_IMAGE:$IMAGE_TAG" .
+        '''
+      }
+    }
+
+    stage('Push Images') {
+      when { anyOf { branch 'develop'; branch 'main'; buildingTag() } }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'ghcr-credentials', usernameVariable: 'REGISTRY_USER', passwordVariable: 'REGISTRY_PASSWORD')]) {
+          sh '''
+            printf '%s' "$REGISTRY_PASSWORD" | docker login "$REGISTRY" --username "$REGISTRY_USER" --password-stdin
+            docker push "$API_IMAGE:$IMAGE_TAG"
+            docker push "$IDENTITY_IMAGE:$IMAGE_TAG"
+            docker push "$WEB_IMAGE:$IMAGE_TAG"
+          '''
+        }
+      }
+    }
+
+    stage('Deploy Dev') {
+      when { branch 'develop' }
+      steps {
+        script { deployEnvironment('dev') }
+      }
+    }
+
+    stage('Approve Production') {
+      when { tag pattern: 'v*', comparator: 'GLOB' }
+      input { message 'Deploy this immutable release to production?'; ok 'Deploy production' }
+      steps { echo "Approved production release ${env.TAG_NAME ?: env.IMAGE_TAG}" }
+    }
+
+    stage('Deploy Production') {
+      when { tag pattern: 'v*', comparator: 'GLOB' }
+      steps {
+        script { deployEnvironment('prod') }
+      }
+    }
+  }
+
+  post {
+    always { sh 'docker logout "$REGISTRY" >/dev/null 2>&1 || true' }
+    cleanup { cleanWs(deleteDirs: true, notFailBuild: true) }
+  }
+}
+
+void deployEnvironment(String target) {
+  String hostVariable = target == 'prod' ? 'PROD_DEPLOY_HOST' : 'DEV_DEPLOY_HOST'
+  String credentialId = target == 'prod' ? 'badminton-hub-prod-ssh' : 'badminton-hub-dev-ssh'
+  String remoteDir = "/opt/badminton-hub/${target}"
+  String deployHost = env[hostVariable]
+
+  if (!deployHost) {
+    error("Jenkins environment variable ${hostVariable} is required")
+  }
+
+  sshagent(credentials: [credentialId]) {
+    sh """
+      ssh -o StrictHostKeyChecking=yes '${deployHost}' 'mkdir -p ${remoteDir}/devops/scripts ${remoteDir}/devops/environments/app ${remoteDir}/be/services/identity/migrations'
+      scp -o StrictHostKeyChecking=yes devops/environments/app/compose.yml '${deployHost}:${remoteDir}/devops/environments/app/compose.yml'
+      scp -o StrictHostKeyChecking=yes devops/scripts/deploy.sh devops/scripts/smoke-test.sh devops/scripts/rollback.sh '${deployHost}:${remoteDir}/devops/scripts/'
+      scp -o StrictHostKeyChecking=yes be/services/identity/migrations/*.sql '${deployHost}:${remoteDir}/be/services/identity/migrations/'
+      ssh -o StrictHostKeyChecking=yes '${deployHost}' 'cd ${remoteDir} && chmod +x devops/scripts/*.sh && API_IMAGE=${env.API_IMAGE} IDENTITY_IMAGE=${env.IDENTITY_IMAGE} WEB_IMAGE=${env.WEB_IMAGE} IMAGE_TAG=${env.IMAGE_TAG} devops/scripts/deploy.sh ${target}'
+    """
+  }
+}

@@ -1,0 +1,11 @@
+[
+  {"id":"error.invalid_request","translation":"Request data is invalid."},
+  {"id":"error.unauthorized","translation":"Authentication is required."},
+  {"id":"error.internal","translation":"An unexpected error occurred."},
+  {"id":"auth.invalid_registration","translation":"Registration data is invalid."},
+  {"id":"auth.email_already_registered","translation":"This email is already registered."},
+  {"id":"auth.invalid_credentials","translation":"Email or password is incorrect."},
+  {"id":"auth.invalid_token","translation":"The token is invalid or expired."},
+  {"id":"auth.user_inactive","translation":"This account is not active."},
+  {"id":"auth.user_not_found","translation":"User was not found."}
+]
