@@ -1,0 +1,6 @@
+interface:
+  display_name: "BadmintonHub Team"
+  short_description: "Five-role project team skill"
+  default_prompt: "Use $badminton-hub-team and choose the role that matches this task."
+policy:
+  allow_implicit_invocation: true

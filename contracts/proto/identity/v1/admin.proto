@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+import "identity/v1/auth.proto";
+import "identity/v1/common.proto";
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+service IdentityAdminService {
+  rpc Login(AdminLoginRequest) returns (AdminAuthResponse);
+  rpc Refresh(AdminRefreshRequest) returns (AdminRefreshResponse);
+  rpc Logout(AdminLogoutRequest) returns (AdminLogoutResponse);
+  rpc GetCurrentStaff(CurrentStaffRequest) returns (StaffResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (Empty);
+  rpc ListStaff(ListStaffRequest) returns (StaffListResponse);
+  rpc CreateStaff(CreateStaffRequest) returns (StaffResponse);
+  rpc GetStaff(GetStaffRequest) returns (StaffResponse);
+  rpc UpdateStaff(UpdateStaffRequest) returns (StaffResponse);
+  rpc DeleteStaff(DeleteStaffRequest) returns (Empty);
+  rpc UpdateStaffAccess(UpdateStaffAccessRequest) returns (StaffResponse);
+  rpc ListRoles(ListRolesRequest) returns (RoleListResponse);
+  rpc CreateRole(CreateRoleRequest) returns (RoleResponse);
+  rpc GetRole(GetRoleRequest) returns (RoleResponse);
+  rpc UpdateRole(UpdateRoleRequest) returns (RoleResponse);
+  rpc DeleteRole(DeleteRoleRequest) returns (Empty);
+  rpc ReplaceRolePermissions(ReplaceRolePermissionsRequest) returns (RoleResponse);
+  rpc ListPermissions(ListPermissionsRequest) returns (PermissionListResponse);
+}
+
+message AdminLoginRequest { string email = 1; string password = 2; }
+message AdminRefreshRequest { string refresh_token = 1; }
+message AdminLogoutRequest { string refresh_token = 1; }
+message CurrentStaffRequest { string access_token = 1; }
+message ChangePasswordRequest { string access_token = 1; string current_password = 2; string new_password = 3; }
+message AdminRefreshResponse { TokenPair tokens = 1; }
+message AdminLogoutResponse {}
+message AdminAuthResponse { StaffResponse staff = 1; TokenPair tokens = 2; }
+
+message StaffResponse {
+  string id = 1;
+  string email = 2;
+  string full_name = 3;
+  bool is_admin = 4;
+  string role_id = 5;
+  string role_name = 6;
+  string status = 7;
+  repeated Permission permissions = 8;
+  string created_at = 9;
+}
+message StaffListResponse { repeated StaffResponse staff = 1; }
+message ListStaffRequest {
+  string access_token = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string search = 4;
+  string created_from = 5;
+  string created_to = 6;
+}
+message CreateStaffRequest { string access_token = 1; string email = 2; string password = 3; string full_name = 4; bool is_admin = 5; string role_id = 6; }
+message GetStaffRequest { string access_token = 1; string staff_id = 2; }
+message UpdateStaffRequest { string access_token = 1; string staff_id = 2; string email = 3; string full_name = 4; string status = 5; }
+message DeleteStaffRequest { string access_token = 1; string staff_id = 2; }
+message UpdateStaffAccessRequest { string access_token = 1; string staff_id = 2; bool is_admin = 3; string role_id = 4; }
+
+message Role { string id = 1; string name = 2; string description = 3; repeated Permission permissions = 4; string created_at = 5; }
+message RoleResponse { Role role = 1; }
+message RoleListResponse { repeated Role roles = 1; }
+message ListRolesRequest { string access_token = 1; }
+message CreateRoleRequest { string access_token = 1; string name = 2; string description = 3; }
+message GetRoleRequest { string access_token = 1; string role_id = 2; }
+message UpdateRoleRequest { string access_token = 1; string role_id = 2; string name = 3; string description = 4; }
+message DeleteRoleRequest { string access_token = 1; string role_id = 2; }
+message ReplaceRolePermissionsRequest { string access_token = 1; string role_id = 2; repeated string permission_ids = 3; }
+
+message Permission { string id = 1; string module = 2; string path = 3; string action = 4; string description = 5; }
+message PermissionListResponse { repeated Permission permissions = 1; }
+message ListPermissionsRequest { string access_token = 1; }

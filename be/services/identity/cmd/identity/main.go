@@ -2,19 +2,25 @@ package main
 
 import (
 	"context"
+	platformService "github.com/kainguyen/badminton-hub/be/platform/service"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/kainguyen/badminton-hub/be/platform/database"
-	"github.com/kainguyen/badminton-hub/be/platform/httpserver"
-	identityconfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
-	identityhttp "github.com/kainguyen/badminton-hub/be/services/identity/transport/http"
+	"github.com/kainguyen/badminton-hub/be/platform/grpc/server"
+	"github.com/kainguyen/badminton-hub/be/platform/logger"
+	identityConfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
+	identityGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/auth"
+	staffGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/staff"
+	userGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/user"
+	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
+	"google.golang.org/grpc"
 )
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With("service", "identity")
+	logger := logger.New(platformService.Identity)
 	if err := run(logger); err != nil {
 		logger.Error("identity stopped", "error", err)
 		os.Exit(1)
@@ -22,7 +28,7 @@ func main() {
 }
 
 func run(logger *slog.Logger) error {
-	cfg, err := identityconfig.Load()
+	cfg, err := identityConfig.Load()
 	if err != nil {
 		return err
 	}
@@ -35,9 +41,18 @@ func run(logger *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	engine, err := identityhttp.New(identityhttp.Dependencies{Config: cfg, Pool: pool, Logger: logger})
-	if err != nil {
-		return err
-	}
-	return httpserver.Run(ctx, cfg.HTTPAddr, engine, cfg.ShutdownTimeout, logger)
+	authServer := identityGRPC.NewAuthServer(cfg, pool)
+	staffServer := staffGRPC.NewStaffServer(cfg, pool)
+	userServer := userGRPC.NewUserServer(cfg, pool)
+	return grpcServer.Run(
+		ctx,
+		cfg.GRPCAddr,
+		func(server *grpc.Server) {
+			identityV1.RegisterIdentityAuthServiceServer(server, authServer)
+			identityV1.RegisterIdentityAdminServiceServer(server, staffServer)
+			identityV1.RegisterIdentityUserServiceServer(server, userServer)
+		},
+		cfg.ShutdownTimeout,
+		logger,
+	)
 }

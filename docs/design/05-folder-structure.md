@@ -3,34 +3,44 @@
 ```text
 + badminton-hub/
   + be/
+    + gateways/
+      + user/
+        + go.mod/go.sum              # User Gateway module boundary
+        + cmd/user-gateway/          # Public user Gateway binary
+      + admin/
+        + go.mod/go.sum              # Admin Gateway module boundary
+        + cmd/admin-gateway/         # Private admin Gateway binary
+      + socket/
+        + go.mod/go.sum              # Socket Gateway module boundary
+        + cmd/socket-gateway/        # WebSocket Gateway binary
     + services/
-      + gateway/
-        + go.mod                    # Gateway module boundary
-        + go.sum
-        + cmd/gateway/              # Public HTTP Gateway/BFF binary
-        + transport/http/          # Public route forwarding and readiness
       + identity/
         + go.mod                    # Identity module boundary
         + go.sum
         + cmd/identity/             # Identity service binary
-        + domain/
-          + auth/                  # Credentials, sessions, tokens
-          + user/                  # Identity user model
-        + transport/http/
-          + apperror/              # Identity domain-to-HTTP mapping
-          + handler/               # Identity HTTP handlers
-          + middleware/            # Auth and endpoint middleware
-          + i18n/                  # Identity-localized messages
-          + models/                # Identity request/response contracts
-        + adapters/postgres/       # Identity persistence adapter
-        + storage/
-          + query/                 # Identity SQL source
-          + sqlc/                  # Identity generated PostgreSQL code
-        + pkg/
-          + helper/                # Identity-only password helper
-          + utils/                 # Identity-only email helper
-        + migrations/              # Identity database migrations only
-        + seed/                    # Identity-only local development seed
+        + internal/
+          + domain/
+            + auth/                # Credentials, sessions, tokens
+            + user/                # User CRUD rules and inputs
+            + staff/               # Staff CRUD and access rules
+          + model/                 # Reusable Identity entities and query models
+          + security/              # Identity-only password helper
+          + validation/            # Identity-only email helper
+          + storage/postgres/
+            + schema/
+              + migrations/        # Identity database migrations only
+              + seed/              # Identity-only local development seed
+            + query/               # Identity SQL source split by module
+            + generated/sqlc/      # Identity generated PostgreSQL code
+            + repository/
+              + auth/              # Auth/session persistence adapter
+              + user/              # User persistence adapter
+              + staff/             # Staff/access persistence adapter
+            + transaction/         # Shared transaction lifecycle
+          + transport/grpc/auth/   # Identity Auth gRPC server
+          + transport/grpc/user/   # Identity User CRUD gRPC server
+          + transport/grpc/staff/  # Identity Staff CRUD gRPC server
+        + test/                    # Identity-owned tests and fixtures
       + catalog/
         + go.mod/go.sum              # Catalog module boundary
         + migrations/              # Catalog database migrations
@@ -68,11 +78,16 @@
       + go.mod                      # Shared infrastructure module only
       + go.sum
       + config/                    # Environment/config loading
-      + database/                  # PostgreSQL connection lifecycle
-      + httpcontext/               # Request/correlation metadata
-      + httpserver/                # HTTP lifecycle and graceful shutdown
-      + redis/                     # Redis client lifecycle
-      + mongodb/                   # MongoDB client lifecycle
+      + database/                  # PostgreSQL, MongoDB, and Redis lifecycle
+      + http/
+        + context/                 # Request/correlation metadata
+        + server/                  # HTTP lifecycle and graceful shutdown
+      + grpc/
+        + client/                  # Shared gRPC dialing and client metadata
+        + endpoint/                # Shared typed endpoint lifecycle
+        + error/                   # Shared gRPC status/error mapping
+        + metadata/                # Request and service metadata propagation
+        + server/                  # gRPC lifecycle and graceful shutdown
       + kafka/                     # Kafka client lifecycle
       + logger/                    # Shared logging primitives
       + metrics/                   # Shared metrics primitives
@@ -88,12 +103,14 @@
 ## Boundary Rules
 
 - `services/<name>` is the ownership boundary for one deployable service. Its
-  transport, domain, adapters, storage queries, service-specific tests, and its
+  internal domain, transport, storage queries, service-specific tests, and its
   `go.mod/go.sum` stay under that service.
-- `services/gateway` owns public HTTP compatibility and forwarding. It does not
-  own business tables or domain state.
+- `gateways/user`, `gateways/admin`, and `gateways/socket` are independent edge
+  processes. They own forwarding, edge readiness, and protocol-specific
+  boundary behavior; they do not own business tables or domain state.
 - `services/identity` owns users, credentials, refresh sessions, token issuance,
-  and `/api/v1/me`. Other services reference identity by contract and user ID.
+  and current-user gRPC methods. Other services reference Identity by its
+  versioned gRPC contract and user ID.
 - `catalog`, `booking`, `payment`, and `notification` are separate future
   boundaries. Empty directories document ownership; they are not deployed until
   their handlers, invariants, storage, and operational checks exist.
@@ -103,10 +120,12 @@
   must not contain organization, booking, payment, or identity business rules.
 - Each service owns a namespaced configuration contract (`IDENTITY_*`,
   `GATEWAY_*`, and later `CATALOG_*`, `BOOKING_*`, `PAYMENT_*`). A service must
-  not read another service's database or Redis configuration.
-- Each service owns a separate database and its migration directory. A shared
-  PostgreSQL server is allowed, but services must use separate database names,
-  credentials, and migration histories; there is no shared business database.
+  not read another service's schema or Redis configuration.
+- Each stateful service owns a logical PostgreSQL boundary, credentials, schema,
+  and migration directory. Initial environments may co-locate service schemas
+  in one PostgreSQL database, but services must not query another service's
+  schema or tables. A service can move to its own database without changing its
+  domain or contract boundary.
 - A service module must never import another service module. `platform` is a
   separate infrastructure-only module; it may be imported by services, but it
   must not contain business rules or service-owned state.
@@ -119,7 +138,9 @@
 ## Dependency Direction
 
 ```text
-services/gateway/cmd/gateway  ------> services/gateway ------> platform + contracts
+gateways/user/cmd/user-gateway -----> gateways/user -----> platform + contracts
+gateways/admin/cmd/admin-gateway ---> gateways/admin ---> platform + contracts
+gateways/socket/cmd/socket-gateway -> gateways/socket -> platform + contracts
 services/identity/cmd/identity ------> services/identity -----> platform + identity-local pkg + contracts
 services/consumer/cmd/consumer ------> services/consumer -----> platform + contracts
 services/cron/cmd/cron -------> services/cron -----------> platform + contracts
@@ -132,5 +153,5 @@ Service ------------> its own storage adapter/schema
 
 Entry points only compose dependencies. Service packages own business rules;
 platform packages own infrastructure setup. The current `api` container/image
-name remains for deployment compatibility, while its source entry point is now
-`services/gateway/cmd/gateway`.
+name remains for deployment compatibility; it now builds
+`gateways/user/cmd/user-gateway`.

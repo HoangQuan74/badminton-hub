@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+service IdentityAuthService {
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (UserResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string full_name = 3;
+  string phone = 4;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RefreshRequest { string refresh_token = 1; }
+message LogoutRequest { string refresh_token = 1; }
+message GetCurrentUserRequest {
+  string access_token = 1;
+}
+
+message AuthResponse {
+  UserResponse user = 1;
+  TokenPair tokens = 2;
+}
+
+message RefreshResponse { TokenPair tokens = 1; }
+message LogoutResponse {}
+
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string full_name = 3;
+  string phone = 4;
+  string status = 5;
+  string created_at = 6;
+}
+
+message TokenPair {
+  string access_token = 1;
+  string refresh_token = 2;
+  string token_type = 3;
+  string access_expires_at = 4;
+  string refresh_expires_at = 5;
+}

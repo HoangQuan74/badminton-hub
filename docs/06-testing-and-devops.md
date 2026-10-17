@@ -42,7 +42,9 @@ Required scenarios:
 Docker Compose services:
 
 - `web`
-- `api` Gateway/BFF
+- `user-gateway`
+- `admin-gateway`
+- `socket-gateway`
 - `identity`
 - `socket`
 - `consumer`
@@ -57,6 +59,16 @@ Docker Compose services:
 The local stack must start with one documented command and include deterministic seed data.
 
 ## Jenkins Pipeline
+
+The shared `be/platform` module has a module-wide coverage gate of 100%. The
+gate instruments all platform packages with `-coverpkg=./...`; tests that only
+cover the `be/platform/test` package do not inflate the result. Run it locally
+with:
+
+```bash
+cd be
+make coverage-platform
+```
 
 ```text
 Checkout
@@ -163,8 +175,8 @@ Do not log passwords, tokens, secrets, or complete payment payloads.
 - Cron starts with one replica; every job also uses a distributed lock and idempotent database transition.
 - Health indicates process liveness only.
 - Database migrations are versioned per service and run explicitly against the
-  owning service database. Identity migrations live under
-  `be/services/identity/migrations`.
+  owning service schema. Identity migrations live under
+  `be/services/identity/internal/storage/postgres/schema/migrations` and target the `identity` schema.
 - Retry uses bounded attempts and exponential backoff.
 - Poison events move to a dead-letter path or visible failed state.
 - Secrets come from environment or deployment secret storage.

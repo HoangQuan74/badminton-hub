@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package badminton.socket.v1;
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/socket/v1;socketv1";
+
+service SocketService {
+  rpc Connect(stream ClientMessage) returns (stream ServerMessage);
+}
+
+message ClientMessage {
+  string access_token = 1;
+  bytes payload = 2;
+  bool binary = 3;
+}
+
+message ServerMessage {
+  bytes payload = 1;
+  bool binary = 2;
+  string error_code = 3;
+}

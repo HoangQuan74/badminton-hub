@@ -51,7 +51,7 @@ sudo mkdir -p /opt/badminton-hub/dev /opt/badminton-hub/prod
 sudo chown -R "$USER":"$USER" /opt/badminton-hub
 ```
 
-Create `/opt/badminton-hub/dev/.env` from `.env.example` and `/opt/badminton-hub/prod/.env` from `.env.prod.example`. The examples isolate each service's PostgreSQL database, Redis namespace, MongoDB databases, JWT secrets, and web ports. Jenkins intentionally does not overwrite these secret files.
+Create `/opt/badminton-hub/dev/.env` from `.env.example` and `/opt/badminton-hub/prod/.env` from `.env.prod.example`. The examples isolate each environment's PostgreSQL database, service-owned schemas, Redis namespace, MongoDB database, JWT secrets, and web ports. Jenkins intentionally does not overwrite these secret files.
 
 Log in to GHCR once on the Web VM if the images are private:
 
@@ -82,7 +82,7 @@ Jenkins uploads only deployment manifests, scripts, and the migrations owned by
 the service being deployed. On the Web VM, `deploy.sh`:
 
 1. Pulls the exact Identity, API, and Web image tags.
-2. Runs forward migrations against the service-scoped database URL as a
+2. Runs forward migrations against the service-scoped database URL and schema as a
    one-shot container.
 3. Starts Identity, API, and Web services in dependency order.
 4. Waits for `/ready` and checks the web root.
@@ -100,18 +100,17 @@ Rollback changes application images only. It never runs migration `down`; schema
 ## Backup
 
 Run on the DB VM before production schema changes and on a schedule. Pass the
-database owned by the service being changed; the DB VM no longer has one shared
-business database:
+environment database containing the service schema being changed:
 
 ```bash
 cd /opt/badminton-hub/db
 devops/scripts/backup-db.sh badminton_identity_prod
 ```
 
-When moving an existing environment from the former shared database, create the
-new service database first, take a verified backup, and perform an explicit
-Identity data copy for `users` and `auth_sessions` before changing
-`IDENTITY_DATABASE_URL`. The deployment does not copy data automatically.
+When moving an existing environment from former shared tables, take a verified
+backup and perform an explicit Identity data migration into the `identity`
+schema before enforcing the new boundary. The deployment does not copy data
+automatically.
 
 Copy backups to storage outside the DB VM and periodically test restoration. A backup that has never been restored is not a verified recovery mechanism.
 

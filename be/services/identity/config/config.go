@@ -1,67 +1,32 @@
-package identityconfig
+package identityConfig
 
 import (
 	"errors"
 	"time"
 
-	platformconfig "github.com/kainguyen/badminton-hub/be/platform/config"
+	"github.com/caarlos0/env/v10"
 )
 
 type Config struct {
-	Environment         string
-	HTTPAddr            string
-	DatabaseURL         string
-	RedisURL            string
-	JWTSecret           string
-	AccessTokenTTL      time.Duration
-	RefreshTokenTTL     time.Duration
-	ShutdownTimeout     time.Duration
-	DatabasePingTimeout time.Duration
-	DependencyTimeout   time.Duration
+	Environment         string        `env:"APP_ENV" envDefault:"local"`
+	GRPCAddr            string        `env:"IDENTITY_GRPC_ADDR" envDefault:":9091"`
+	DatabaseURL         string        `env:"IDENTITY_DATABASE_URL,required"`
+	RedisURL            string        `env:"IDENTITY_REDIS_URL" envDefault:""`
+	JWTSecret           string        `env:"IDENTITY_JWT_SECRET,required"`
+	AccessTokenTTL      time.Duration `env:"IDENTITY_ACCESS_TOKEN_TTL" envDefault:"15m"`
+	RefreshTokenTTL     time.Duration `env:"IDENTITY_REFRESH_TOKEN_TTL" envDefault:"168h"`
+	ShutdownTimeout     time.Duration `env:"IDENTITY_SHUTDOWN_TIMEOUT" envDefault:"10s"`
+	DatabasePingTimeout time.Duration `env:"IDENTITY_DATABASE_PING_TIMEOUT" envDefault:"5s"`
+	DependencyTimeout   time.Duration `env:"IDENTITY_DEPENDENCY_TIMEOUT" envDefault:"5s"`
 }
 
 func Load() (Config, error) {
-	databaseURL, err := platformconfig.Required("IDENTITY_DATABASE_URL")
-	if err != nil {
+	var cfg Config
+	if err := env.Parse(&cfg); err != nil {
 		return Config{}, err
 	}
-	jwtSecret, err := platformconfig.Required("IDENTITY_JWT_SECRET")
-	if err != nil {
-		return Config{}, err
-	}
-	if len(jwtSecret) < 32 {
+	if len(cfg.JWTSecret) < 32 {
 		return Config{}, errors.New("IDENTITY_JWT_SECRET must contain at least 32 characters")
 	}
-	accessTokenTTL, err := platformconfig.Duration("IDENTITY_ACCESS_TOKEN_TTL", 15*time.Minute)
-	if err != nil {
-		return Config{}, err
-	}
-	refreshTokenTTL, err := platformconfig.Duration("IDENTITY_REFRESH_TOKEN_TTL", 7*24*time.Hour)
-	if err != nil {
-		return Config{}, err
-	}
-	shutdownTimeout, err := platformconfig.Duration("IDENTITY_SHUTDOWN_TIMEOUT", 10*time.Second)
-	if err != nil {
-		return Config{}, err
-	}
-	databasePingTimeout, err := platformconfig.Duration("IDENTITY_DATABASE_PING_TIMEOUT", 5*time.Second)
-	if err != nil {
-		return Config{}, err
-	}
-	dependencyTimeout, err := platformconfig.Duration("IDENTITY_DEPENDENCY_TIMEOUT", 5*time.Second)
-	if err != nil {
-		return Config{}, err
-	}
-	return Config{
-		Environment:         platformconfig.Env("APP_ENV", "local"),
-		HTTPAddr:            platformconfig.Env("IDENTITY_HTTP_ADDR", ":8080"),
-		DatabaseURL:         databaseURL,
-		RedisURL:            platformconfig.Env("IDENTITY_REDIS_URL", ""),
-		JWTSecret:           jwtSecret,
-		AccessTokenTTL:      accessTokenTTL,
-		RefreshTokenTTL:     refreshTokenTTL,
-		ShutdownTimeout:     shutdownTimeout,
-		DatabasePingTimeout: databasePingTimeout,
-		DependencyTimeout:   dependencyTimeout,
-	}, nil
+	return cfg, nil
 }

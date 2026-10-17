@@ -7,7 +7,7 @@ env_file="$root_dir/.env"
 database_name=${1:-}
 
 if [ -z "$database_name" ]; then
-  echo "usage: $0 <service-database-name>" >&2
+  echo "usage: $0 <environment-database-name>" >&2
   exit 1
 fi
 

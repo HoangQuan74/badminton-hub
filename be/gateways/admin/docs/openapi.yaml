@@ -1,0 +1,169 @@
+openapi: 3.0.3
+info:
+  title: BadmintonHub Admin Gateway API
+  version: 1.0.0
+  description: Admin routes forwarded by the Admin Gateway to Identity.
+servers:
+  - url: /
+tags:
+  - name: Admin Auth
+    description: Administrator authentication and profile.
+  - name: Staff
+    description: Staff account management.
+  - name: Role
+    description: Role and role permission management.
+  - name: Permission
+    description: Permission catalog.
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/admin/auth/login:
+    post:
+      operationId: adminLogin
+      tags: [Admin Auth]
+      security: []
+      responses:
+        '200': {description: Authenticated staff.}
+        '401': {description: Invalid credentials.}
+  /api/v1/admin/auth/refresh:
+    post:
+      operationId: adminRefresh
+      tags: [Admin Auth]
+      security: []
+      responses:
+        '200': {description: Rotated staff tokens.}
+        '401': {description: Invalid token.}
+  /api/v1/admin/auth/logout:
+    post:
+      operationId: adminLogout
+      tags: [Admin Auth]
+      responses:
+        '204': {description: Session revoked.}
+        '401': {description: Authentication required.}
+  /api/v1/admin/me:
+    get:
+      operationId: adminMe
+      tags: [Admin Auth]
+      responses:
+        '200': {description: Current staff and permissions.}
+        '401': {description: Authentication required.}
+  /api/v1/admin/me/password:
+    put:
+      operationId: changeAdminPassword
+      tags: [Admin Auth]
+      responses:
+        '204': {description: Password changed.}
+        '400': {description: Invalid request.}
+        '401': {description: Authentication required.}
+  /api/v1/admin/staff:
+    get:
+      operationId: listStaff
+      tags: [Staff]
+      responses:
+        '200': {description: Staff list.}
+        '403': {description: Permission denied.}
+    post:
+      operationId: createStaff
+      tags: [Staff]
+      responses:
+        '201': {description: Staff created.}
+        '400': {description: Invalid request.}
+        '403': {description: Permission denied.}
+  /api/v1/admin/staff/{staff_id}:
+    parameters:
+      - name: staff_id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      operationId: getStaff
+      tags: [Staff]
+      responses:
+        '200': {description: Staff detail.}
+        '404': {description: Staff not found.}
+    put:
+      operationId: updateStaff
+      tags: [Staff]
+      responses:
+        '200': {description: Staff updated.}
+        '403': {description: Permission denied.}
+    delete:
+      operationId: deleteStaff
+      tags: [Staff]
+      responses:
+        '204': {description: Staff deleted.}
+        '409': {description: Last admin cannot be deleted.}
+  /api/v1/admin/staff/{staff_id}/access:
+    parameters:
+      - name: staff_id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    put:
+      operationId: updateStaffAccess
+      tags: [Staff]
+      responses:
+        '200': {description: Staff access updated.}
+        '403': {description: Admin permission required.}
+        '409': {description: Last admin cannot be demoted.}
+  /api/v1/admin/roles:
+    get:
+      operationId: listRoles
+      tags: [Role]
+      responses:
+        '200': {description: Role list.}
+    post:
+      operationId: createRole
+      tags: [Role]
+      responses:
+        '201': {description: Role created.}
+        '403': {description: Admin permission required.}
+  /api/v1/admin/roles/{role_id}:
+    parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      operationId: getRole
+      tags: [Role]
+      responses:
+        '200': {description: Role detail.}
+        '404': {description: Role not found.}
+    put:
+      operationId: updateRole
+      tags: [Role]
+      responses:
+        '200': {description: Role updated.}
+        '403': {description: Admin permission required.}
+    delete:
+      operationId: deleteRole
+      tags: [Role]
+      responses:
+        '204': {description: Role deleted.}
+        '409': {description: Role is in use.}
+  /api/v1/admin/roles/{role_id}/permissions:
+    parameters:
+      - name: role_id
+        in: path
+        required: true
+        schema: {type: string, format: uuid}
+    put:
+      operationId: replaceRolePermissions
+      tags: [Role]
+      responses:
+        '200': {description: Role permissions replaced.}
+        '403': {description: Admin permission required.}
+  /api/v1/admin/permissions:
+    get:
+      operationId: listPermissions
+      tags: [Permission]
+      responses:
+        '200': {description: Permission catalog.}
+        '403': {description: Admin permission required.}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

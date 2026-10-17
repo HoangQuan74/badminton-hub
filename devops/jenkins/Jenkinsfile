@@ -40,6 +40,7 @@ pipeline {
               sh 'test -z "$(gofmt -l platform services)"'
               sh 'for module in platform services/*; do if [ -f "$module/go.mod" ]; then (cd "$module" && go vet ./...); fi; done'
               sh 'for module in platform services/*; do if [ -f "$module/go.mod" ]; then (cd "$module" && go test ./...); fi; done'
+              sh 'make coverage-platform'
             }
           }
         }
@@ -126,10 +127,10 @@ void deployEnvironment(String target) {
 
   sshagent(credentials: [credentialId]) {
     sh """
-      ssh -o StrictHostKeyChecking=yes '${deployHost}' 'mkdir -p ${remoteDir}/devops/scripts ${remoteDir}/devops/environments/app ${remoteDir}/be/services/identity/migrations'
+      ssh -o StrictHostKeyChecking=yes '${deployHost}' 'mkdir -p ${remoteDir}/devops/scripts ${remoteDir}/devops/environments/app ${remoteDir}/be/services/identity/internal/storage/postgres/schema/migrations'
       scp -o StrictHostKeyChecking=yes devops/environments/app/compose.yml '${deployHost}:${remoteDir}/devops/environments/app/compose.yml'
       scp -o StrictHostKeyChecking=yes devops/scripts/deploy.sh devops/scripts/smoke-test.sh devops/scripts/rollback.sh '${deployHost}:${remoteDir}/devops/scripts/'
-      scp -o StrictHostKeyChecking=yes be/services/identity/migrations/*.sql '${deployHost}:${remoteDir}/be/services/identity/migrations/'
+      scp -o StrictHostKeyChecking=yes be/services/identity/internal/storage/postgres/schema/migrations/*.sql '${deployHost}:${remoteDir}/be/services/identity/internal/storage/postgres/schema/migrations/'
       ssh -o StrictHostKeyChecking=yes '${deployHost}' 'cd ${remoteDir} && chmod +x devops/scripts/*.sh && API_IMAGE=${env.API_IMAGE} IDENTITY_IMAGE=${env.IDENTITY_IMAGE} WEB_IMAGE=${env.WEB_IMAGE} IMAGE_TAG=${env.IMAGE_TAG} devops/scripts/deploy.sh ${target}'
     """
   }

@@ -1,11 +1,12 @@
 FROM golang:1.24-alpine AS builder
 
-WORKDIR /src/be/services/gateway
+WORKDIR /src/be/gateways/user
 COPY be/platform /src/be/platform
-COPY be/services/gateway/go.mod be/services/gateway/go.sum ./
+COPY contracts /src/contracts
+COPY be/gateways/user/go.mod be/gateways/user/go.sum ./
 RUN go mod download
-COPY be/services/gateway/ ./
-RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/gateway
+COPY be/gateways/user/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/api ./cmd/user-gateway
 
 FROM alpine:3.22
 RUN apk add --no-cache ca-certificates wget && addgroup -S app && adduser -S -G app app

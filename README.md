@@ -12,7 +12,10 @@ This repository contains the product documentation and the first backend and cus
 - Commission on online bookings.
 - Walk-in bookings managed by venue staff.
 - Tenant-specific public pages such as `/venues/smash-center`.
-- One shared application and database with strict organization isolation.
+- One shared PostgreSQL deployment with one owner schema per stateful service
+  (`identity`, `catalog`, `booking`, `payment`). Stateless processes do not own
+  business tables. Organization isolation remains enforced inside the owning
+  service schema.
 
 ## Planned Stack
 

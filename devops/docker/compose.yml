@@ -1,16 +1,16 @@
 name: badminton-hub
 
 services:
-  identity-db:
+  postgres:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: ${IDENTITY_POSTGRES_DB:-badminton_identity}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     ports:
-      - "${IDENTITY_POSTGRES_PORT:-15432}:5432"
+      - "${POSTGRES_PORT:-15432}:5432"
     volumes:
-      - identity_postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -18,27 +18,13 @@ services:
       retries: 15
     restart: unless-stopped
 
-  identity-redis:
+  redis:
     image: redis:8-alpine
     command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "${IDENTITY_REDIS_PORT:-16379}:6379"
+      - "${REDIS_PORT:-16379}:6379"
     volumes:
-      - identity_redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 15
-    restart: unless-stopped
-
-  gateway-redis:
-    image: redis:8-alpine
-    command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "${GATEWAY_REDIS_PORT:-16380}:6379"
-    volumes:
-      - gateway_redis_data:/data
+      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -59,16 +45,60 @@ services:
       retries: 15
     restart: unless-stopped
 
+  kafka:
+    image: redpandadata/redpanda:v24.3.6
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      - --mode=dev-container
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:${KAFKA_PORT:-19093}
+      - --advertise-kafka-addr=internal://kafka:9092,external://localhost:${KAFKA_PORT:-19093}
+      - --rpc-addr=kafka:33145
+      - --advertise-rpc-addr=kafka:33145
+    ports:
+      - "${KAFKA_PORT:-19093}:19092"
+    volumes:
+      - kafka_data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep -q 'Healthy:.*true'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    init: true
+    restart: unless-stopped
+
+  kafka-init:
+    image: redpandadata/redpanda:v24.3.6
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        for topic in booking.events payment.events notification.commands payout.events; do
+          if ! rpk topic describe "$$topic" -X brokers=kafka:9092 >/dev/null 2>&1; then
+            rpk topic create "$$topic" --partitions 3 --replicas 1 -X brokers=kafka:9092
+          fi
+        done
+    restart: "no"
+
   migrate:
     image: migrate/migrate:v4.19.1
     volumes:
-      - ../../be/services/identity/migrations:/migrations:ro
+      - ../../be/services/identity/internal/storage/postgres/schema/migrations:/migrations:ro
     command:
       - -path=/migrations
-      - -database=${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@identity-db:5432/badminton_identity?sslmode=disable}
+      - -database=${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}
       - up
     depends_on:
-      identity-db:
+      postgres:
         condition: service_healthy
     restart: "no"
 
@@ -77,11 +107,11 @@ services:
     environment:
       PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
     volumes:
-      - ../../be/services/identity/seed/dev.sql:/seed.sql:ro
+      - ../../be/services/identity/internal/storage/postgres/schema/seed/dev.sql:/seed.sql:ro
     command:
       - sh
       - -c
-      - psql -h identity-db -U ${POSTGRES_USER:-postgres} -d ${IDENTITY_POSTGRES_DB:-badminton_identity} -v ON_ERROR_STOP=1 -f /seed.sql
+      - psql -h postgres -U ${POSTGRES_USER:-postgres} -d ${IDENTITY_POSTGRES_DB:-badminton_identity} -v ON_ERROR_STOP=1 -f /seed.sql
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -93,9 +123,9 @@ services:
       dockerfile: devops/docker/identity.Dockerfile
     environment:
       APP_ENV: local
-      IDENTITY_HTTP_ADDR: :8080
-      IDENTITY_DATABASE_URL: ${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@identity-db:5432/badminton_identity?sslmode=disable}
-      IDENTITY_REDIS_URL: ${IDENTITY_REDIS_URL:-redis://identity-redis:6379/1}
+      IDENTITY_GRPC_ADDR: :9091
+      IDENTITY_DATABASE_URL: ${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}
+      IDENTITY_REDIS_URL: ${IDENTITY_REDIS_URL:-redis://redis:6379/1}
       IDENTITY_JWT_SECRET: ${IDENTITY_JWT_SECRET:-local-only-secret-change-before-production-123456}
       IDENTITY_ACCESS_TOKEN_TTL: ${IDENTITY_ACCESS_TOKEN_TTL:-15m}
       IDENTITY_REFRESH_TOKEN_TTL: ${IDENTITY_REFRESH_TOKEN_TTL:-168h}
@@ -103,8 +133,8 @@ services:
       IDENTITY_DATABASE_PING_TIMEOUT: 5s
       IDENTITY_DEPENDENCY_TIMEOUT: 5s
       # Legacy names remain for rollback to a pre-extraction API image.
-      DATABASE_URL: ${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@identity-db:5432/badminton_identity?sslmode=disable}
-      REDIS_URL: redis://identity-redis:6379/0
+      DATABASE_URL: ${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}
+      REDIS_URL: redis://redis:6379/0
       MONGODB_URI: mongodb://mongodb:27017
       MONGODB_DATABASE: ${MONGODB_DATABASE:-badminton_hub}
       JWT_SECRET: ${IDENTITY_JWT_SECRET:-local-only-secret-change-before-production-123456}
@@ -113,17 +143,15 @@ services:
       SHUTDOWN_TIMEOUT: 10s
       DATABASE_PING_TIMEOUT: 5s
       DEPENDENCY_TIMEOUT: 5s
-    ports:
-      - "${IDENTITY_PORT:-18081}:8080"
     depends_on:
       seed:
         condition: service_completed_successfully
-      identity-redis:
+      redis:
         condition: service_healthy
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/ready"]
+      test: ["CMD", "nc", "-z", "localhost", "9091"]
       interval: 5s
       timeout: 3s
       retries: 15
@@ -137,38 +165,94 @@ services:
       dockerfile: devops/docker/api.Dockerfile
     environment:
       APP_ENV: local
-      GATEWAY_HTTP_ADDR: :8080
-      GATEWAY_IDENTITY_URL: http://identity:8080
-      GATEWAY_REDIS_URL: ${GATEWAY_REDIS_URL:-redis://gateway-redis:6379/0}
-      GATEWAY_SHUTDOWN_TIMEOUT: 10s
-      GATEWAY_DEPENDENCY_TIMEOUT: 5s
-      # Keep legacy dependencies available so a pre-extraction API image can
-      # be rolled back without changing the Compose contract.
-      HTTP_ADDR: :8080
-      IDENTITY_URL: http://identity:8080
-      DATABASE_URL: ${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@identity-db:5432/badminton_identity?sslmode=disable}
-      REDIS_URL: ${GATEWAY_REDIS_URL:-redis://gateway-redis:6379/0}
-      MONGODB_URI: mongodb://mongodb:27017
-      MONGODB_DATABASE: ${MONGODB_DATABASE:-badminton_hub}
-      JWT_SECRET: ${IDENTITY_JWT_SECRET:-local-only-secret-change-before-production-123456}
-      ACCESS_TOKEN_TTL: ${IDENTITY_ACCESS_TOKEN_TTL:-15m}
-      REFRESH_TOKEN_TTL: ${IDENTITY_REFRESH_TOKEN_TTL:-168h}
-      SHUTDOWN_TIMEOUT: 10s
-      DATABASE_PING_TIMEOUT: 5s
-      DEPENDENCY_TIMEOUT: 5s
+      USER_GATEWAY_HTTP_ADDR: :8080
+      USER_GATEWAY_IDENTITY_GRPC_TARGET: ${USER_GATEWAY_IDENTITY_GRPC_TARGET:-identity:9091}
+      USER_GATEWAY_SHUTDOWN_TIMEOUT: 10s
+      USER_GATEWAY_DEPENDENCY_TIMEOUT: 5s
+      GATEWAY_REDIS_URL: ${GATEWAY_REDIS_URL:-redis://redis:6379/0}
     ports:
       - "${API_PORT:-18080}:8080"
     depends_on:
       identity:
         condition: service_healthy
-      identity-db:
+      postgres:
         condition: service_healthy
-      gateway-redis:
+      redis:
         condition: service_healthy
       mongodb:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 5s
+    init: true
+    restart: unless-stopped
+
+  admin-gateway:
+    build:
+      context: ../..
+      dockerfile: devops/docker/admin-gateway.Dockerfile
+    profiles: ["admin"]
+    environment:
+      ADMIN_GATEWAY_HTTP_ADDR: :8080
+      ADMIN_GATEWAY_IDENTITY_GRPC_TARGET: ${ADMIN_GATEWAY_IDENTITY_GRPC_TARGET:-identity:9091}
+      ADMIN_GATEWAY_SHUTDOWN_TIMEOUT: 10s
+      ADMIN_GATEWAY_DEPENDENCY_TIMEOUT: 5s
+    ports:
+      - "${ADMIN_GATEWAY_PORT:-18082}:8080"
+    depends_on:
+      identity:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    init: true
+    restart: unless-stopped
+
+  socket-gateway:
+    build:
+      context: ../..
+      dockerfile: devops/docker/socket-gateway.Dockerfile
+    profiles: ["socket"]
+    environment:
+      SOCKET_GATEWAY_HTTP_ADDR: :8080
+      SOCKET_GATEWAY_GRPC_TARGET: ${SOCKET_GATEWAY_GRPC_TARGET:-socket:9093}
+      SOCKET_GATEWAY_SHUTDOWN_TIMEOUT: 10s
+      SOCKET_GATEWAY_DEPENDENCY_TIMEOUT: 5s
+    ports:
+      - "${SOCKET_GATEWAY_PORT:-18083}:8080"
+    depends_on:
+      socket:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/ready"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    init: true
+    restart: unless-stopped
+
+  socket:
+    build:
+      context: ../..
+      dockerfile: devops/docker/socket.Dockerfile
+    profiles: ["socket"]
+    environment:
+      SOCKET_GRPC_ADDR: :9093
+      SOCKET_JWT_SECRET: ${IDENTITY_JWT_SECRET:-local-only-secret-change-before-production-123456}
+      SOCKET_REDIS_URL: ${SOCKET_REDIS_URL:-redis://redis:6379/2}
+      SOCKET_REDIS_CHANNEL: ${SOCKET_REDIS_CHANNEL:-badminton:realtime}
+      SOCKET_SHUTDOWN_TIMEOUT: 10s
+      SOCKET_DEPENDENCY_TIMEOUT: 5s
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9093"]
       interval: 5s
       timeout: 3s
       retries: 15
@@ -195,7 +279,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  identity_postgres_data:
-  identity_redis_data:
-  gateway_redis_data:
+  postgres_data:
+  redis_data:
   mongodb_data:
+  kafka_data:

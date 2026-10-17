@@ -12,7 +12,7 @@ another service's module or package.
 Shared infrastructure is isolated in the `be/platform` Go module. Services may
 depend on that module for transport, configuration, and connection lifecycle
 primitives, but `platform` cannot contain business rules or service-owned
-state. Identity-only helpers stay under `services/identity/pkg`.
+state. Identity-only helpers stay under `services/identity/internal`.
 
 The root `be/Makefile` may orchestrate module-local test, vet, build, and
 migration commands, but `be` is not itself a Go module. Each Docker image

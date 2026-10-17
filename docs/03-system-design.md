@@ -11,7 +11,6 @@
 
 ## Non-Goals
 
-- Independent microservice deployment for every module in the first extraction.
 - Multi-region availability.
 - Real financial settlement.
 - Per-tenant infrastructure.
@@ -26,25 +25,25 @@ Next.js Web
   `- Platform admin
           |
           v
-Gateway/BFF (Gin)
-  |- Public `/api/v1` compatibility routes
-  |- Request forwarding and edge readiness
+Three Gateways
+  |- User Gateway: public user HTTPS/JSON routes
+  |- Admin Gateway: private admin HTTPS/JSON routes
+  |- Socket Gateway: public WSS/WebSocket edge
           |
           v
-Identity Service (Gin)
+Identity Service (private gRPC)
   |- Users, credentials, refresh sessions
-  |- JWT issuance and `/api/v1/me`
+  |- JWT issuance and current-user lookup
           |
-          `- PostgreSQL: identity source of truth
+          `- Identity PostgreSQL database: identity source of truth
 
 Future domain services
   |- Catalog: organizations, venues, courts, hours, pricing
   |- Booking: holds, bookings, blocks, overlap rules
   `- Payment: intents, callbacks, refunds, payouts
-          |
-          |- PostgreSQL: one database per service
-          |- Redis: one service-scoped endpoint or logical database
-          `- Outbox table
+          |- Each stateful service owns a logical PostgreSQL boundary
+          |- Each service owns its own Redis endpoint when needed
+          `- Each event-producing service owns its own outbox
                  |
                  v
                Kafka
@@ -67,17 +66,18 @@ Socket Service
   `- WebSocket broadcast
 ```
 
-Phase 1 has independently deployable `api` Gateway and `identity` processes under
-`be`, plus the planned `socket`, `consumer`, and `cron` processes. Catalog,
-Booking, and Payment remain modular code until their data ownership and
-consistency boundaries are implemented.
+Phase 1 has independently deployable User, Admin, and Socket Gateways plus the
+private Identity service under `be`, plus the planned `consumer` and `cron`
+processes. Catalog, Booking, and Payment remain modular code until their data
+ownership and consistency boundaries are implemented.
 
-Every deployable domain service that owns durable state has its own database
-connection, Redis configuration, and migrations. Stateless process boundaries
-such as Socket and Consumer use only their namespaced runtime dependencies. A
-PostgreSQL server may host multiple service databases for operational
-simplicity, but no service shares business tables or runs another service's
-migrations.
+Every deployable domain service that owns durable state has a logical PostgreSQL
+boundary, service-scoped credentials, migration history, and Redis configuration
+when needed. Initial deployments may co-locate service schemas in one
+PostgreSQL database for operational simplicity. A service never reads another
+service's schema or runs another service's migrations. When independent
+scaling is needed, a service can move its schema and migration history to its
+own database without changing its domain contract.
 
 ## Core Modules
 

@@ -31,7 +31,7 @@ booking correctness into a distributed lock.
 
 - A deployable service for every table or CRUD module.
 - Synchronous HTTP calls between every service for one user request.
-- Sharing one business database across service boundaries.
+- Sharing business tables or schemas across service boundaries.
 - Replacing the current booking transaction with Redis or an application-only
   distributed lock.
 - Introducing Kubernetes, service mesh, or multi-region deployment as part of
@@ -39,23 +39,28 @@ booking correctness into a distributed lock.
 
 ## Current Evidence
 
-- `be/services/gateway/cmd/gateway/main.go` initializes the public Gateway and its Identity reverse
-  proxy; it does not open business storage connections.
+- `be/gateways/user/cmd/user-gateway/main.go` initializes the public User
+  Gateway; it does not open business storage or own Identity state
+  connections.
 - `be/services/identity/cmd/identity/main.go` initializes the PostgreSQL pool and Identity router.
-- `be/services/gateway/transport/http/router.go` owns only public forwarding and
-  readiness; `be/services/identity/transport/http/router.go` owns Identity HTTP
-  composition.
+- User and Admin Gateway routes call Identity over gRPC. Socket Gateway now
+  dials a gRPC target and fails closed until the versioned Socket stream
+  contract is registered. Each gateway folder owns only its route set and
+  transport configuration.
+  Identity owns the private gRPC server composition and no longer starts an HTTP
+  compatibility listener.
 - The only implemented business slice is Auth/User. The current endpoints are
   `POST /api/v1/auth/register`, `POST /api/v1/auth/login`,
   `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`, and `GET /api/v1/me`.
-- `be/services/identity/migrations/000001_create_users_and_sessions.up.sql` owns `users` and
+- `be/services/identity/internal/storage/postgres/schema/migrations/000001_create_users_and_sessions.up.sql` owns `users` and
   `auth_sessions`.
-- `contracts/openapi/identity.yaml` now captures the public Identity contract;
+- `contracts/openapi/user-gateway.yaml` captures the public User Gateway
+  contract;
   a runnable Postman collection is still follow-up work.
-- The current local Compose stack has separate `identity` and `api` Gateway
-  containers. Identity runs migrations against the dedicated
-  `identity-db`/`badminton_identity` database, while Gateway remains stateless
-  and has its own Redis endpoint for edge/runtime concerns.
+- The current local Compose stack has separate User/Admin/Socket Gateway and
+  Identity containers. Identity runs migrations against the Identity storage
+  boundary, while gateways remain stateless and use only their edge/runtime
+  dependencies.
 - Gateway and Identity are independent Go modules with service-local
   `go.mod/go.sum`; they share only the infrastructure-only `be/platform`
   module and communicate at runtime through contracts.
@@ -88,15 +93,17 @@ Web / Admin ------> | Gateway / BFF     | :8080
                                 Cron
 ```
 
-The Gateway remains the only public HTTP entry point. It preserves the existing
-URLs and forwards a request to the owning service. Services do not expose their
-internal ports publicly.
+User Gateway and Admin Gateway are the public HTTPS/JSON entry points, and
+Socket Gateway is the public WSS entry point. The frontend never calls a
+service directly. Gateways forward business requests to the owning service over
+versioned gRPC contracts. Services do not expose their internal ports publicly.
 
 ### Service ownership
 
 | Service | Owns | Does not own |
 | --- | --- | --- |
-| Gateway/BFF | Public routing, request IDs, API error envelope, edge auth checks, rate limits | Business tables or business state transitions |
+| User/Admin Gateway | Public HTTPS/JSON routing, request IDs, API error envelope, edge auth checks, rate limits | Business tables or business state transitions |
+| Socket Gateway | WSS protocol, connection lifecycle, request IDs, edge auth | Business tables or durable event state |
 | Identity | `users`, `auth_sessions`, credentials, token issuance, `/me` | Organization membership decisions for a venue operation |
 | Catalog | Organizations, memberships, venues, courts, operating hours, pricing rules | Active court reservations and payment state |
 | Booking | Holds, bookings, booking transitions, court blocks, idempotency for booking commands, overlap constraints | User passwords, provider credentials, payment settlement |
@@ -116,11 +123,11 @@ for every active reservation.
 The Gateway keeps the current `/api/v1` paths. The first extracted routes are:
 
 ```text
-POST /api/v1/auth/register  -> Identity
-POST /api/v1/auth/login     -> Identity
-POST /api/v1/auth/refresh   -> Identity
-POST /api/v1/auth/logout    -> Identity
-GET  /api/v1/me             -> Identity
+POST /api/v1/auth/register  -> Gateway HTTP -> Identity gRPC Register
+POST /api/v1/auth/login     -> Gateway HTTP -> Identity gRPC Login
+POST /api/v1/auth/refresh   -> Gateway HTTP -> Identity gRPC Refresh
+POST /api/v1/auth/logout    -> Gateway HTTP -> Identity gRPC Logout
+GET  /api/v1/me             -> Gateway HTTP -> Identity gRPC GetCurrentUser
 ```
 
 The response envelope, stable error codes, locale behavior, and status codes
@@ -137,10 +144,10 @@ carries deadlines, `X-Request-ID`, `X-Correlation-ID`, and an authenticated
 service identity. Add mTLS or signed service tokens before exposing the network
 outside the private application network.
 
-The current Gateway-to-Identity HTTP/JSON proxy is a temporary migration bridge
-that preserves the public `/api/v1` contract. Replace it with an Identity gRPC
-client/server contract before introducing the next synchronous domain-service
-dependency.
+The current Gateway-to-Identity HTTP/JSON proxy is temporary migration code. It
+must not be treated as an internal service API or extended with new business
+routes. Replace it with the versioned Identity gRPC client/server contract
+before adding the next synchronous domain-service dependency.
 
 Booking may synchronously read Catalog data for operating hours and pricing, but
 the final price and the overlap decision remain owned by Booking. A Catalog
@@ -174,7 +181,7 @@ transition. Payment never updates the Booking database directly.
 1. Add `contracts/openapi/`, `contracts/events/`, and versioned
    `contracts/proto/` artifacts for the public Auth endpoints, event envelope,
    and internal gRPC contracts.
-2. Add request/correlation IDs to the Gateway-to-Identity request. Authenticated
+2. Add request/correlation IDs to the Gateway-to-Identity gRPC metadata. Authenticated
    service identity remains a hardening follow-up before private network trust
    extends beyond the local deployment.
 3. Add service-level health and readiness checks.
@@ -185,11 +192,14 @@ transition. Payment never updates the Booking database directly.
 1. Create `services/identity/cmd/identity` and move Auth composition behind an
    Identity service
    entry point without changing domain behavior.
-2. Give Identity its own database and migration directory. A PostgreSQL server
-   may host that database alongside future service databases, but the service
-   must not share business tables, credentials, or migration history.
-3. Run the Gateway and Identity side by side. Route only Auth paths through
-   the Gateway to Identity; retain the old API route as a rollback target.
+2. Give Identity the logical `identity` storage boundary and its migration
+   directory. The initial deployment may co-locate the Identity schema with
+   future service schemas in one PostgreSQL database, but the service must not
+   share business tables, credentials, or migration history. The connection can
+   move to a dedicated Identity database later without changing the service
+   contract.
+3. Run the Gateway and Identity gRPC server side by side. Route only Auth paths
+   through the new gRPC client; retain the HTTP bridge as a rollback target.
 4. Verify register, login, refresh rotation, logout, `/me`, duplicate email,
    inactive user, and invalid refresh-token behavior through the Gateway.
 5. After an observation window, remove the duplicate Auth composition from the
@@ -221,18 +231,20 @@ with their existing idempotent and lock-protected behavior.
 
 ### Database boundary
 
-Each service owns a separate PostgreSQL database, credentials, and migration
-directory. Identity runs `services/identity/migrations` against
+Each stateful service owns a logical PostgreSQL boundary named after the
+service, credentials/configuration, and migration history. Identity runs
+`services/identity/internal/storage/postgres/schema/migrations` against
 `IDENTITY_DATABASE_URL`; Catalog, Booking, and Payment will add their own
-database URL and `<service>/migrations` directory when extracted. One
-PostgreSQL server may host several service databases for operational
-simplicity, but services must not query another service's tables or run another
-service's migrations. Use an API or event instead.
+storage connection and migration directory when extracted. Initial deployment
+may co-locate those schemas in one PostgreSQL database, but services must not
+query another service's schema or run another service's migrations. Use gRPC or
+events instead. Moving a service to a dedicated database is an operational
+change with no domain contract change.
 
-An existing environment that still uses the former shared database needs an
-explicit, verified data copy into the new service database before its URL is
-switched. The deployment migration job only applies versioned schema files; it
-does not copy or delete business data.
+An existing environment that still uses the former shared tables needs an
+explicit, verified migration into the owning service schema before the schema
+boundary is enforced. The deployment migration job only applies versioned
+schema files; it does not copy or delete business data.
 
 Redis configuration is namespaced in the same way (`IDENTITY_REDIS_URL`,
 `GATEWAY_REDIS_URL`, `CATALOG_REDIS_URL`, `BOOKING_REDIS_URL`,
@@ -296,8 +308,11 @@ Approve this proposal only if the team accepts:
 
 1. Gateway is the public entry point.
 2. Identity is the first extracted service.
-3. Each service has a separate database and migration history. A PostgreSQL
-   server may host those databases, but business tables are not shared.
+3. Each stateful service has a logical storage boundary named after the service
+   and its own migration history. Initial deployment may co-locate schemas in
+   one PostgreSQL database, but business tables and schema access are not
+   shared. Each service can move to a dedicated database when scaling requires
+   it without changing its gRPC or event contracts.
 4. Booking remains one correctness boundary, including walk-ins and court
    blocks.
 5. The public API contract must be captured before route cutover.
@@ -305,3 +320,39 @@ Approve this proposal only if the team accepts:
 Once approved, the first implementation slice is the Identity service and
 Gateway route split. Catalog, Booking, and Payment remain follow-up slices and
 are not created as empty microservices.
+
+
+## Current blockers before deleting the bridge
+
+The migration is not complete because two public gateway surfaces still have
+service implementation gaps:
+
+- Admin publishes Auth, Staff, Role, Permission, and admin password routes.
+  Admin Gateway now calls Identity through gRPC; Identity serves Staff CRUD,
+  while Admin Auth, Role, Permission, and password operations still return
+  `FEATURE_NOT_IMPLEMENTED` until their Identity domain handlers exist.
+- Socket publishes `/ws` and bridges it to the versioned Socket gRPC stream;
+  the service owns JWT handshake validation and Redis fan-out.
+
+Identity HTTP compatibility transport and the shared HTTP gateway proxy have
+been removed. The Socket gRPC stream, Redis fan-out service and WSS bridge are implemented;
+remaining evidence is runtime Compose verification.
+
+## Legacy removal gates
+
+The HTTP migration bridge is removed only after each gate has evidence:
+
+1. `contracts/proto/identity/v1/auth.proto` has generated Go client/server
+   code under `contracts/gen/identity/v1` and generation is reproducible in CI.
+2. Identity serves the Auth gRPC methods with deadlines, authenticated service
+   metadata, stable status mapping, and gRPC health status.
+3. User Gateway translates its public HTTPS/JSON Auth contract to the Identity
+   gRPC client. The source-level route cutover is complete for register, login,
+   refresh, logout, and `/me`; focused endpoint and dependency checks remain
+   required before deleting the compatibility HTTP transport.
+4. Admin Auth/Staff/Role/Permission domain services, gRPC methods, and
+   authorization checks exist before Admin Gateway routes can return business
+   results instead of `FEATURE_NOT_IMPLEMENTED`.
+5. Compose and release manifests use gRPC targets for User, Admin, and Socket
+   Gateways. Socket must register its versioned stream service before `/ws` is
+   enabled.

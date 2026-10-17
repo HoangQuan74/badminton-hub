@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+message Empty {}

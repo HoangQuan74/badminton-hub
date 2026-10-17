@@ -27,6 +27,7 @@
 ## AI Context
 
 - Start with [AI Context Index](ai-context/INDEX.md) before implementing or changing the project.
+- Shared engineering rules are in [Project Conventions](09-project-conventions.md).
 
 ## Detailed References
 

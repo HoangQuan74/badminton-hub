@@ -2,7 +2,7 @@ services:
   migrate:
     image: migrate/migrate:v4.19.1
     volumes:
-      - ../../../be/services/identity/migrations:/migrations:ro
+      - ../../../be/services/identity/internal/storage/postgres/schema/migrations:/migrations:ro
     command: ["-path=/migrations", "-database=${IDENTITY_DATABASE_URL}", "up"]
     restart: "no"
 
@@ -10,7 +10,7 @@ services:
     image: ${IDENTITY_IMAGE:?IDENTITY_IMAGE is required}:${IMAGE_TAG:?IMAGE_TAG is required}
     environment:
       APP_ENV: ${APP_ENV:?APP_ENV is required}
-      IDENTITY_HTTP_ADDR: :8080
+      IDENTITY_GRPC_ADDR: :9091
       IDENTITY_DATABASE_URL: ${IDENTITY_DATABASE_URL:?IDENTITY_DATABASE_URL is required}
       IDENTITY_REDIS_URL: ${IDENTITY_REDIS_URL:?IDENTITY_REDIS_URL is required}
       IDENTITY_JWT_SECRET: ${IDENTITY_JWT_SECRET:?IDENTITY_JWT_SECRET is required}
@@ -34,7 +34,7 @@ services:
       migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/ready"]
+      test: ["CMD", "nc", "-z", "localhost", "9091"]
       interval: 10s
       timeout: 3s
       retries: 12
@@ -46,25 +46,10 @@ services:
     image: ${API_IMAGE:?API_IMAGE is required}:${IMAGE_TAG:?IMAGE_TAG is required}
     environment:
       APP_ENV: ${APP_ENV:?APP_ENV is required}
-      GATEWAY_HTTP_ADDR: :8080
-      GATEWAY_IDENTITY_URL: http://identity:8080
+      USER_GATEWAY_HTTP_ADDR: :8080
+      USER_GATEWAY_IDENTITY_GRPC_TARGET: ${USER_GATEWAY_IDENTITY_GRPC_TARGET:-identity:9091}
+      USER_GATEWAY_SHUTDOWN_TIMEOUT: 15s
       GATEWAY_REDIS_URL: ${GATEWAY_REDIS_URL:?GATEWAY_REDIS_URL is required}
-      GATEWAY_SHUTDOWN_TIMEOUT: 15s
-      GATEWAY_DEPENDENCY_TIMEOUT: 5s
-      # Keep legacy dependencies available so a pre-extraction API image can
-      # be rolled back without changing the Compose contract.
-      HTTP_ADDR: :8080
-      IDENTITY_URL: http://identity:8080
-      DATABASE_URL: ${IDENTITY_DATABASE_URL:?IDENTITY_DATABASE_URL is required}
-      REDIS_URL: ${GATEWAY_REDIS_URL:?GATEWAY_REDIS_URL is required}
-      MONGODB_URI: ${MONGODB_URI:?MONGODB_URI is required}
-      MONGODB_DATABASE: ${MONGODB_DATABASE:-badminton_hub}
-      JWT_SECRET: ${IDENTITY_JWT_SECRET:?IDENTITY_JWT_SECRET is required}
-      ACCESS_TOKEN_TTL: ${IDENTITY_ACCESS_TOKEN_TTL:-15m}
-      REFRESH_TOKEN_TTL: ${IDENTITY_REFRESH_TOKEN_TTL:-168h}
-      SHUTDOWN_TIMEOUT: 15s
-      DATABASE_PING_TIMEOUT: 5s
-      DEPENDENCY_TIMEOUT: 5s
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/ready"]
       interval: 10s

@@ -12,6 +12,18 @@ docker compose -f docker/compose.yml up --build -d
 docker compose -f docker/compose.yml ps
 ```
 
+The local stack includes a single-node Kafka-compatible Redpanda broker. To
+start only Kafka and bootstrap the initial topics:
+
+```bash
+docker compose -f docker/compose.yml up -d kafka kafka-init
+docker compose -f docker/compose.yml exec kafka rpk topic list
+```
+
+Host processes connect through `localhost:19093`; Compose services use
+`kafka:9092`. The four initial topics are `booking.events`, `payment.events`,
+`notification.commands`, and `payout.events`.
+
 The compose file has safe local defaults. Copy `.env.example` to `.env` only when you want to override ports or credentials.
 
 Open `http://localhost:3000`.
@@ -21,10 +33,15 @@ running on your machine: API `18080`, Identity PostgreSQL `15432`, Identity
 Redis `16379`, Gateway Redis `16380`, and MongoDB `27018`.
 
 The startup order is the service-owned PostgreSQL and Redis dependencies,
-MongoDB, Identity migrations, development seed, Identity, Gateway API, and
+MongoDB, Identity migrations, development seed, Identity, User Gateway API, and
 web. Nginx serves the React application and proxies `/api`, `/health`, and
-`/ready` to the Gateway API, so local CORS configuration is not required. The
-Gateway forwards the current Auth routes to the private Identity service.
+`/ready` to the User Gateway API, so local CORS configuration is not required.
+Admin and Socket gateways are separate deployables and are not started by this
+customer-web Compose profile until their upstream services exist.
+
+Business calls target private gRPC service contracts. The current local HTTP
+Identity listener is retained only for health checks and the migration bridge;
+it is not a public service API.
 
 ## Demo account
 
@@ -62,5 +79,5 @@ Do not reuse the local credentials or JWT secret in a deployed environment.
 - `scripts/deploy.sh`: migration, deployment, and smoke-test orchestration.
 - `scripts/rollback.sh`: application image rollback.
 - `scripts/backup-db.sh`: PostgreSQL logical backup on the DB VM.
-- `scripts/ensure-service-databases.sh`: idempotently create service databases
-  on an existing DB VM volume.
+- `scripts/ensure-service-databases.sh`: idempotently prepare the PostgreSQL
+  instance for service-owned schemas on an existing DB VM volume.

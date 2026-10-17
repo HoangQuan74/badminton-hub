@@ -14,7 +14,8 @@ This file is the entry point for AI-assisted development. Read the documents in 
 8. `../05-api-and-events.md` - API and event contracts.
 9. `../06-testing-and-devops.md` - quality and operational requirements.
 10. `../08-backend-engineering-practices.md` - backend implementation and review standards.
-11. `../07-delivery-plan.md` - implementation order.
+11. `../09-project-conventions.md` - shared project conventions.
+12. `../07-delivery-plan.md` - implementation order.
 
 ## Locked Decisions
 
@@ -26,26 +27,47 @@ This file is the entry point for AI-assisted development. Read the documents in 
 - PostgreSQL is the source of truth and prevents overlaps.
 - Redis is an optimization, never the booking correctness boundary.
 - MongoDB is provisioned as an infrastructure client but currently owns no business data. PostgreSQL remains authoritative.
-- Phase 1 uses a public `api` Gateway/BFF and a private `identity` service under `be`; `socket`, `consumer`, and `cron` remain separate process boundaries. Catalog, Booking, and Payment are future service extractions governed by `docs/design/06-microservice-migration.md`.
-- Public Gateway routes use HTTP/JSON. Synchronous business communication between backend services uses versioned gRPC/Protobuf contracts; asynchronous cross-service workflows use Kafka events. The Phase 1 Gateway-to-Identity HTTP proxy is a temporary migration bridge.
+- Phase 1 uses independent User, Admin, and Socket Gateway processes under
+  `be/gateways`, plus the private `identity` service under `be`; `consumer` and
+  `cron` remain separate process boundaries. Catalog, Booking, and Payment are
+  future service extractions governed by `docs/design/06-microservice-migration.md`.
+- User/Admin Gateway routes use HTTPS/JSON and Socket Gateway uses WSS.
+  The frontend never calls a service directly. Gateway-to-service and
+  service-to-service synchronous calls use versioned gRPC/Protobuf contracts;
+  asynchronous cross-service workflows use Kafka events. The existing HTTP
+  reverse proxy is legacy migration code and must not receive new business
+  routes.
 - Service configuration is namespaced by owner: Identity uses `IDENTITY_*`, Gateway uses `GATEWAY_*`, future Catalog/Booking/Payment services use their own prefixes, and process boundaries use prefixes such as `CONSUMER_*`, `CRON_*`, and `SOCKET_*`. Services do not share generic database or Redis configuration variables.
-- Each service owns a separate database and migration history. Identity uses `services/identity/migrations` with `IDENTITY_DATABASE_URL`; future services add their own migration directory and database URL. A PostgreSQL server may host multiple service databases, but business tables are never shared.
+- Each stateful service owns a logical PostgreSQL boundary, credentials, schema,
+  and migration history. Identity uses
+  `services/identity/internal/storage/postgres/schema/migrations` with
+  `IDENTITY_DATABASE_URL`; future services add their own database connection
+  and migration directory. Initial environments may co-locate service schemas,
+  but business tables and schema access are never shared across services.
 - Consumer replicas scale with Kafka partitions. Cron is deployed separately, starts with one replica, and uses distributed locking plus idempotent jobs.
 - Booking and outbox event are committed atomically.
 - Kafka consumers must be idempotent.
 - Consumer republishes selected durable events to Redis Pub/Sub for realtime fan-out.
-- Auth/User is the first implemented vertical slice inside Identity: Gin handlers call the auth domain service, which depends on a repository interface implemented in `services/identity/adapters/postgres`.
-- Gateway wiring follows `services/gateway/cmd/gateway -> Gateway router -> Identity HTTP contract`; Identity wiring follows `services/identity/cmd/identity -> Identity router -> feature handler -> domain service -> repository`.
-- HTTP request and response contracts live in `services/identity/transport/http/models/request` and `services/identity/transport/http/models/response`, not inside handlers.
+- Auth/User is the first implemented vertical slice inside Identity; User and Staff CRUD persistence now live in their own internal modules: gRPC handlers call the `internal/domain/auth` domain service, which depends on repository interfaces implemented under `services/identity/internal/storage/postgres/repository/<module>`.
+- User/Admin Gateway wiring follows `gateway -> gateway-owned HTTP router ->
+  versioned owning-service gRPC client`; Socket owns its WebSocket edge and
+  calls owning services through gRPC when required. Identity wiring follows
+  `services/identity/cmd/identity -> gRPC server -> feature handler -> domain
+  service -> repository`.
+- Identity exposes private versioned gRPC contracts; public HTTP request/response contracts live under each Gateway module and `contracts/openapi`.
 - Error messages support English and Vietnamese through embedded go-i18n catalogs. `?lang` takes precedence over `Accept-Language`; English is the fallback.
 - Domain errors expose stable message IDs. Handlers return errors; the API endpoint wrapper chooses HTTP status/API code, localizes messages, and logs unexpected failures.
 - Use `HandleJSON[T]` for JSON endpoints and `Handle` for endpoints without a JSON body. Do not repeat binding or domain-error switches inside handlers.
-- Shared helpers must remain narrow: password hashing is in `pkg/helper`; email normalization is in `pkg/utils`.
+- Shared helpers must remain narrow: password hashing is in `internal/security`; email normalization is in `internal/validation`.
 - Registration persists the user and refresh session atomically. Passwords use bcrypt; opaque refresh tokens are stored only as SHA-256 hashes and rotate on refresh.
-- PostgreSQL access uses handwritten sqlc queries in `services/identity/storage/query` and generated pgx/v5 code in `services/identity/storage/sqlc`; generated files are never edited manually.
+- PostgreSQL access uses sqlc. Handwritten queries live in each service's `internal/storage/postgres/query`; generated pgx/v5 code lives in `internal/storage/postgres/generated/sqlc` and is never edited manually.
+- Shared backend integration, contract, and end-to-end tests live under `be/tests`; package-local unit tests remain beside source only when they need unexported symbols.
 - Gateway and Identity are independent Go modules with their own `go.mod` and
   `go.sum`. They may import the infrastructure-only `platform` module, but
   never each other's packages or module paths.
+- The target request paths are `FE -- HTTPS/JSON --> User/Admin Gateway --
+  gRPC/Protobuf --> Service` and `FE -- WSS --> Socket Gateway`. HTTP service
+  handlers and reverse proxies are migration compatibility only.
 - The root `be` directory is orchestration/documentation only; it has no Go
   module. Cross-service code reuse happens through gRPC/Protobuf or Kafka
   contracts, not Go imports.
@@ -87,7 +109,6 @@ This file is the entry point for AI-assisted development. Read the documents in 
 ## Open Decisions
 
 - Exact Go module path.
-- SQL access choice: SQLC or pgx repository layer.
 - Authentication library and password-hashing algorithm.
 - Kafka implementation for local development.
 - AWS deployment target: EC2 first, ECS later if needed.

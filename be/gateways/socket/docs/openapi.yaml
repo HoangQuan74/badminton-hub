@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: BadmintonHub Socket Gateway API
+  version: 1.0.0
+  description: WebSocket edge route bridged to the versioned Socket gRPC stream.
+servers:
+  - url: /
+tags:
+  - name: WebSocket
+    description: Realtime WebSocket connection.
+paths:
+  /ws:
+    get:
+      operationId: connectSocket
+      tags: [WebSocket]
+      description: Upgrade the HTTP request to a WebSocket connection.
+      responses:
+        '101': {description: Switching protocols.}
+        '401': {description: Authentication required.}
+        '502': {description: Socket service unavailable.}
