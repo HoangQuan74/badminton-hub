@@ -159,10 +159,10 @@ services:
     init: true
     restart: unless-stopped
 
-  api:
+  user-gateway:
     build:
       context: ../..
-      dockerfile: devops/docker/api.Dockerfile
+      dockerfile: devops/docker/user-gateway.Dockerfile
     environment:
       APP_ENV: local
       USER_GATEWAY_HTTP_ADDR: :8080
@@ -269,7 +269,7 @@ services:
     ports:
       - "${WEB_PORT:-3000}:80"
     depends_on:
-      api:
+      user-gateway:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/"]

@@ -7,7 +7,7 @@ if [ "$environment" != "dev" ] && [ "$environment" != "prod" ]; then
   exit 2
 fi
 
-: "${API_IMAGE:?API_IMAGE is required}"
+: "${USER_GATEWAY_IMAGE:?USER_GATEWAY_IMAGE is required}"
 : "${IDENTITY_IMAGE:?IDENTITY_IMAGE is required}"
 : "${WEB_IMAGE:?WEB_IMAGE is required}"
 : "${IMAGE_TAG:?IMAGE_TAG is required}"
@@ -28,18 +28,18 @@ if [ -f "$release_dir/current.env" ]; then
 fi
 
 cat > "$release_dir/candidate.env" <<EOF
-API_IMAGE=$API_IMAGE
+USER_GATEWAY_IMAGE=$USER_GATEWAY_IMAGE
 IDENTITY_IMAGE=$IDENTITY_IMAGE
 WEB_IMAGE=$WEB_IMAGE
 IMAGE_TAG=$IMAGE_TAG
 EOF
 
 cd "$root_dir"
-export API_IMAGE IDENTITY_IMAGE WEB_IMAGE IMAGE_TAG
+export USER_GATEWAY_IMAGE IDENTITY_IMAGE WEB_IMAGE IMAGE_TAG
 
 docker compose --project-name "badminton-hub-$environment" --env-file "$env_file" -f "$compose_file" pull
 docker compose --project-name "badminton-hub-$environment" --env-file "$env_file" -f "$compose_file" run --rm migrate
-docker compose --project-name "badminton-hub-$environment" --env-file "$env_file" -f "$compose_file" up -d --remove-orphans identity api web
+docker compose --project-name "badminton-hub-$environment" --env-file "$env_file" -f "$compose_file" up -d --remove-orphans identity user-gateway web
 
 "$root_dir/devops/scripts/smoke-test.sh" "$environment"
 mv "$release_dir/candidate.env" "$release_dir/current.env"

@@ -2,6 +2,7 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /src/be/gateways/admin
 COPY be/platform /src/be/platform
+COPY contracts /src/contracts
 COPY be/gateways/admin/go.mod be/gateways/admin/go.sum ./
 RUN go mod download
 COPY be/gateways/admin/ ./

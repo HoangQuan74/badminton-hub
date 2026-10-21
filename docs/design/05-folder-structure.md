@@ -152,6 +152,5 @@ Service ------------> its own storage adapter/schema
 ```
 
 Entry points only compose dependencies. Service packages own business rules;
-platform packages own infrastructure setup. The current `api` container/image
-name remains for deployment compatibility; it now builds
-`gateways/user/cmd/user-gateway`.
+platform packages own infrastructure setup. The User Gateway container/image
+now uses the same `user-gateway` name as its process and source entry point.

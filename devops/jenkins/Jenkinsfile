@@ -13,7 +13,7 @@ pipeline {
 
   environment {
     REGISTRY = 'ghcr.io'
-    API_IMAGE_NAME = 'badminton-hub-api'
+    USER_GATEWAY_IMAGE_NAME = 'badminton-hub-user-gateway'
     IDENTITY_IMAGE_NAME = 'badminton-hub-identity'
     WEB_IMAGE_NAME = 'badminton-hub-web'
   }
@@ -24,7 +24,7 @@ pipeline {
         checkout scm
         script {
           env.IMAGE_TAG = sh(script: 'git rev-parse --short=12 HEAD', returnStdout: true).trim()
-          env.API_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.API_IMAGE_NAME}"
+          env.USER_GATEWAY_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.USER_GATEWAY_IMAGE_NAME}"
           env.IDENTITY_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.IDENTITY_IMAGE_NAME}"
           env.WEB_IMAGE = "${env.REGISTRY}/${params.REGISTRY_NAMESPACE}/${env.WEB_IMAGE_NAME}"
         }
@@ -67,7 +67,7 @@ pipeline {
       when { anyOf { branch 'develop'; branch 'main'; buildingTag() } }
       steps {
         sh '''
-          docker build -f devops/docker/api.Dockerfile -t "$API_IMAGE:$IMAGE_TAG" .
+          docker build -f devops/docker/user-gateway.Dockerfile -t "$USER_GATEWAY_IMAGE:$IMAGE_TAG" .
           docker build -f devops/docker/identity.Dockerfile -t "$IDENTITY_IMAGE:$IMAGE_TAG" .
           docker build -f devops/docker/web.Dockerfile -t "$WEB_IMAGE:$IMAGE_TAG" .
         '''
@@ -80,7 +80,7 @@ pipeline {
         withCredentials([usernamePassword(credentialsId: 'ghcr-credentials', usernameVariable: 'REGISTRY_USER', passwordVariable: 'REGISTRY_PASSWORD')]) {
           sh '''
             printf '%s' "$REGISTRY_PASSWORD" | docker login "$REGISTRY" --username "$REGISTRY_USER" --password-stdin
-            docker push "$API_IMAGE:$IMAGE_TAG"
+            docker push "$USER_GATEWAY_IMAGE:$IMAGE_TAG"
             docker push "$IDENTITY_IMAGE:$IMAGE_TAG"
             docker push "$WEB_IMAGE:$IMAGE_TAG"
           '''
@@ -131,7 +131,7 @@ void deployEnvironment(String target) {
       scp -o StrictHostKeyChecking=yes devops/environments/app/compose.yml '${deployHost}:${remoteDir}/devops/environments/app/compose.yml'
       scp -o StrictHostKeyChecking=yes devops/scripts/deploy.sh devops/scripts/smoke-test.sh devops/scripts/rollback.sh '${deployHost}:${remoteDir}/devops/scripts/'
       scp -o StrictHostKeyChecking=yes be/services/identity/internal/storage/postgres/schema/migrations/*.sql '${deployHost}:${remoteDir}/be/services/identity/internal/storage/postgres/schema/migrations/'
-      ssh -o StrictHostKeyChecking=yes '${deployHost}' 'cd ${remoteDir} && chmod +x devops/scripts/*.sh && API_IMAGE=${env.API_IMAGE} IDENTITY_IMAGE=${env.IDENTITY_IMAGE} WEB_IMAGE=${env.WEB_IMAGE} IMAGE_TAG=${env.IMAGE_TAG} devops/scripts/deploy.sh ${target}'
+      ssh -o StrictHostKeyChecking=yes '${deployHost}' 'cd ${remoteDir} && chmod +x devops/scripts/*.sh && USER_GATEWAY_IMAGE=${env.USER_GATEWAY_IMAGE} IDENTITY_IMAGE=${env.IDENTITY_IMAGE} WEB_IMAGE=${env.WEB_IMAGE} IMAGE_TAG=${env.IMAGE_TAG} devops/scripts/deploy.sh ${target}'
     """
   }
 }

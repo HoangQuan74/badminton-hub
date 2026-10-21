@@ -31,11 +31,11 @@ set +a
 
 # Releases created before the Identity extraction do not contain an
 # IDENTITY_IMAGE entry. Derive the first compatible image name so rollback can
-# still start the new Compose topology while using the previous API tag.
+# still start the new Compose topology while using the previous gateway tag.
 if [ -z "${IDENTITY_IMAGE:-}" ]; then
-  IDENTITY_IMAGE=${current_identity_image:-${candidate_identity_image:-${API_IMAGE:-}}}
+  IDENTITY_IMAGE=${current_identity_image:-${candidate_identity_image:-${USER_GATEWAY_IMAGE:-${API_IMAGE:-}}}}
   if [ -z "$IDENTITY_IMAGE" ]; then
-    echo "previous release is missing IDENTITY_IMAGE and API_IMAGE" >&2
+    echo "previous release is missing IDENTITY_IMAGE and USER_GATEWAY_IMAGE" >&2
     exit 1
   fi
   export IDENTITY_IMAGE

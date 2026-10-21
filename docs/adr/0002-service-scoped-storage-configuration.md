@@ -11,8 +11,8 @@ Booking, and Payment services will read their own `CATALOG_*`, `BOOKING_*`, and
 `PAYMENT_*` variables. Gateway owns no business database, but its edge/runtime
 dependencies use `GATEWAY_*` configuration. New service code must not read a
 generic `DATABASE_URL` or `REDIS_URL`, and must not query another service's
-database or tables. The current `api`/Identity Compose compatibility variables
-exist only to allow rollback to the pre-extraction image.
+database or tables. Legacy API/Identity Compose compatibility variables exist
+only to allow rollback to the pre-extraction image.
 
 ## Consequences
 
