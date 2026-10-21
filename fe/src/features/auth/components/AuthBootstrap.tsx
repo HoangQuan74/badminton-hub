@@ -2,8 +2,10 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { authApi } from '../auth.api'
 import { tokenStorage } from '../auth.storage'
 import { useAuthStore } from '../auth.store'
+import { useI18n } from '@/lib/use-i18n'
 
 export function AuthBootstrap({ children }: { children: ReactNode }) {
+  const { t } = useI18n()
   const [ready, setReady] = useState(false)
   const setUser = useAuthStore((state) => state.setUser)
   const setInitialized = useAuthStore((state) => state.setInitialized)
@@ -37,7 +39,7 @@ export function AuthBootstrap({ children }: { children: ReactNode }) {
     return (
       <div className="app-loader" role="status" aria-live="polite">
         <span className="brand-mark" aria-hidden="true">B</span>
-        <span>Đang chuẩn bị sân cho bạn…</span>
+        <span>{t('auth.bootstrap')}</span>
       </div>
     )
   }

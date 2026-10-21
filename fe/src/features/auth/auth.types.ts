@@ -1,4 +1,5 @@
-export type UserStatus = 'active' | 'inactive'
+export type UserStatus = 'active' | 'suspended'
+export type UserRole = 'customer' | 'owner' | 'staff' | 'admin'
 
 export interface User {
   id: string
@@ -7,6 +8,8 @@ export interface User {
   phone: string
   status: UserStatus
   created_at: string
+  /** Optional until the User Gateway exposes roles in its public user response. */
+  roles?: UserRole[]
 }
 
 export interface Tokens {

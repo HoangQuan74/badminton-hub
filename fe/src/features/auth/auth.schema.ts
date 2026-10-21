@@ -1,16 +1,23 @@
 import { z } from 'zod'
+import type { TranslationKey } from '@/lib/i18n'
 
-export const loginSchema = z.object({
-  email: z.string().min(1, 'Vui lòng nhập email').email('Email không hợp lệ'),
-  password: z.string().min(1, 'Vui lòng nhập mật khẩu')
-})
+type Translate = (key: TranslationKey) => string
 
-export const registerSchema = z.object({
-  full_name: z.string().trim().min(2, 'Họ tên phải có ít nhất 2 ký tự').max(120),
-  email: z.string().min(1, 'Vui lòng nhập email').email('Email không hợp lệ'),
-  phone: z.string().trim().max(20, 'Số điện thoại quá dài').optional(),
-  password: z.string().min(8, 'Mật khẩu phải có ít nhất 8 ký tự').max(72)
-})
+export function createAuthSchemas(t: Translate) {
+  const loginSchema = z.object({
+    email: z.string().min(1, t('validation.emailRequired')).email(t('validation.emailInvalid')),
+    password: z.string().min(1, t('validation.passwordRequired'))
+  })
 
-export type LoginForm = z.infer<typeof loginSchema>
-export type RegisterForm = z.infer<typeof registerSchema>
+  const registerSchema = z.object({
+    full_name: z.string().trim().min(2, t('validation.nameLength')).max(120),
+    email: z.string().min(1, t('validation.emailRequired')).email(t('validation.emailInvalid')),
+    phone: z.string().trim().max(20, t('validation.phoneLength')).optional(),
+    password: z.string().min(8, t('validation.passwordLength')).max(72)
+  })
+
+  return { loginSchema, registerSchema }
+}
+
+export type LoginForm = z.infer<ReturnType<typeof createAuthSchemas>['loginSchema']>
+export type RegisterForm = z.infer<ReturnType<typeof createAuthSchemas>['registerSchema']>
