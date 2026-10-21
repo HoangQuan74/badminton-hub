@@ -105,9 +105,11 @@ func (q *Queries) FindActiveSessionForUpdate(ctx context.Context, arg FindActive
 }
 
 const findUserByEmail = `-- name: FindUserByEmail :one
-SELECT id, email, password_hash, full_name, COALESCE(phone, '') AS phone, status, created_at, updated_at
-FROM identity.users
-WHERE LOWER(email) = LOWER($1)
+SELECT u.id, u.email, u.password_hash, u.full_name, COALESCE(u.phone, '') AS phone, u.status,
+       COALESCE(r.name, '') AS role_name, u.is_admin, u.created_at, u.updated_at
+FROM identity.users u
+LEFT JOIN identity.roles r ON r.id = u.role_id
+WHERE LOWER(u.email) = LOWER($1)
 `
 
 type FindUserByEmailRow struct {
@@ -117,6 +119,8 @@ type FindUserByEmailRow struct {
 	FullName     string             `json:"full_name"`
 	Phone        string             `json:"phone"`
 	Status       string             `json:"status"`
+	RoleName     string             `json:"role_name"`
+	IsAdmin      bool               `json:"is_admin"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -131,6 +135,8 @@ func (q *Queries) FindUserByEmail(ctx context.Context, lower string) (FindUserBy
 		&i.FullName,
 		&i.Phone,
 		&i.Status,
+		&i.RoleName,
+		&i.IsAdmin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -138,9 +144,11 @@ func (q *Queries) FindUserByEmail(ctx context.Context, lower string) (FindUserBy
 }
 
 const findUserByID = `-- name: FindUserByID :one
-SELECT id, email, password_hash, full_name, COALESCE(phone, '') AS phone, status, created_at, updated_at
-FROM identity.users
-WHERE id = $1
+SELECT u.id, u.email, u.password_hash, u.full_name, COALESCE(u.phone, '') AS phone, u.status,
+       COALESCE(r.name, '') AS role_name, u.is_admin, u.created_at, u.updated_at
+FROM identity.users u
+LEFT JOIN identity.roles r ON r.id = u.role_id
+WHERE u.id = $1
 `
 
 type FindUserByIDRow struct {
@@ -150,6 +158,8 @@ type FindUserByIDRow struct {
 	FullName     string             `json:"full_name"`
 	Phone        string             `json:"phone"`
 	Status       string             `json:"status"`
+	RoleName     string             `json:"role_name"`
+	IsAdmin      bool               `json:"is_admin"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
@@ -164,6 +174,8 @@ func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (FindUserByIDR
 		&i.FullName,
 		&i.Phone,
 		&i.Status,
+		&i.RoleName,
+		&i.IsAdmin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

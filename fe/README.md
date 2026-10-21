@@ -18,21 +18,30 @@ npm install
 npm run dev
 ```
 
-The API defaults to `http://localhost:8080`. Override it with `VITE_API_URL`.
+Run the three frontend portals as independent Vite processes in three
+terminals:
+
+```bash
+npm run dev:user    # http://localhost:5173
+npm run dev:tenant  # http://localhost:5174
+npm run dev:admin   # http://localhost:5175
+npm run dev:all     # start all three processes together
+```
+
+User and Tenant use the User Gateway (`18080`); Admin uses the Admin Gateway
+(`18082`).
 
 ## Current routes
 
-- `/login`: customer login
-- `/register`: customer registration
-- `/` or `/user`: authenticated customer portal
-- `/tenant`: organization/venue operations for `owner` and `staff` roles
-- `/admin`: platform operations for `admin` role
+- User process `/login`: customer login
+- Tenant process `/login`: tenant operator login
+- Admin process `/login`: platform admin login
 
-The frontend has three portal boundaries in the router: User, Tenant, and
-Admin. Tenant and Admin routes fail closed until the User Gateway includes a
-`roles` array in the authenticated user response. The current public contract
-does not expose roles yet, so this split is source-level and route-level; live
-permission acceptance still requires the auth contract and Admin Gateway.
+The three local login links are `http://localhost:5173/login`,
+`http://localhost:5174/login`, and `http://localhost:5175/login`.
+
+The codebase shares components, i18n, and auth utilities, but each process has
+its own root page, token namespace, API base URL, and authentication path.
 
 ## Localization
 

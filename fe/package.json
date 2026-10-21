@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:user": "vite --host 127.0.0.1 --port 5173 --mode user",
+    "dev:tenant": "vite --host 127.0.0.1 --port 5174 --mode tenant",
+    "dev:admin": "vite --host 127.0.0.1 --port 5175 --mode admin",
+    "dev:all": "bash scripts/dev-portals.sh",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc -b --pretty false",

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useI18n } from '@/lib/use-i18n'
+import { portalUrls } from '@/app/portal'
 
 interface PortalNavigationItem {
   label: string
@@ -30,9 +31,9 @@ export function PortalShell({ portal, title, navigation, userName, onLogout, log
         <a className="brand" href="/"><span className="brand-mark">B</span><span>BadmintonHub</span></a>
         <div className="portal-label">{portalLabel}</div>
         <nav className="portal-nav" aria-label={portalLabel}>
-          {navigation.map(({ label, href, icon: Icon }) => <NavLink key={href} to={href} end={href === `/tenant` || href === `/admin`}><Icon size={18} />{label}</NavLink>)}
+          {navigation.map(({ label, href, icon: Icon }) => <NavLink key={href} to={href} end={href === '/'}><Icon size={18} />{label}</NavLink>)}
         </nav>
-        <div className="portal-sidebar-footer"><a href="/">← {t('portal.backToUser')}</a></div>
+        <div className="portal-sidebar-footer"><a href={portalUrls.user}>← {t('portal.backToUser')}</a></div>
       </aside>
       <div className="portal-main">
         <header className="portal-header"><div><p className="eyebrow">{t('portal.workspace', { portal: portalLabel })}</p><h2>{title}</h2></div><div className="portal-user"><LanguageSwitcher /><span>{userName}</span><button className="icon-button bordered" type="button" onClick={onLogout} disabled={logoutPending} aria-label={t('portal.logout')}><LogOut size={18} /></button></div></header>

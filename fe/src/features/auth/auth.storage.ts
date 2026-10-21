@@ -1,7 +1,8 @@
 import type { Tokens } from './auth.types'
+import { portal } from '@/app/portal'
 
-const ACCESS_TOKEN = 'badminton_hub.access_token'
-const REFRESH_TOKEN = 'badminton_hub.refresh_token'
+const ACCESS_TOKEN = `badminton_hub.${portal}.access_token`
+const REFRESH_TOKEN = `badminton_hub.${portal}.refresh_token`
 
 export const tokenStorage = {
   access: () => localStorage.getItem(ACCESS_TOKEN),

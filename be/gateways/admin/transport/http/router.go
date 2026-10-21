@@ -9,6 +9,7 @@ import (
 	handler "github.com/kainguyen/badminton-hub/be/gateways/admin/transport/http/handler"
 	grpcClient "github.com/kainguyen/badminton-hub/be/platform/grpc/client"
 	httpContext "github.com/kainguyen/badminton-hub/be/platform/http/context"
+	httpMiddleware "github.com/kainguyen/badminton-hub/be/platform/http/middleware"
 	"github.com/kainguyen/badminton-hub/be/platform/metrics"
 	platformService "github.com/kainguyen/badminton-hub/be/platform/service"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
@@ -25,7 +26,13 @@ func New(dependencies Dependencies) (*gin.Engine, error) {
 	}
 	engine := gin.New()
 	registry := metrics.New(platformService.AdminGateway)
-	engine.Use(gin.Logger(), gin.Recovery(), httpContext.RequestContextHeaders(), registry.Middleware())
+	engine.Use(
+		gin.Logger(),
+		gin.Recovery(),
+		httpMiddleware.CORS(dependencies.Config.CORSAllowedOrigins),
+		httpContext.RequestContextHeaders(),
+		registry.Middleware(),
+	)
 	client := identityV1.NewIdentityAdminServiceClient(connection)
 
 	handler.RegisterAuth(engine, client)

@@ -10,4 +10,5 @@ type RegisterInput struct {
 type LoginInput struct {
 	Email    string `validate:"required,email"`
 	Password string `validate:"required"`
+	Portal   string
 }

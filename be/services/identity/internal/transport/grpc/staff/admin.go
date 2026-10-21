@@ -18,7 +18,7 @@ func (s *StaffServer) Login(ctx context.Context, request *identityV1.AdminLoginR
 	return grpcEndpoint.Run(ctx, request, errorMapper, nil, func(ctx context.Context, request *identityV1.AdminLoginRequest) (*identityV1.AdminAuthResponse, error) {
 		var id, email, fullName, passwordHash, status, roleID, roleName string
 		var isAdmin bool
-		err := s.authorizerPool().QueryRow(ctx, `SELECT u.id::text,u.email,u.full_name,u.password_hash,u.status,u.is_admin,COALESCE(u.role_id::text,''),COALESCE(r.name,'') FROM identity.users u LEFT JOIN identity.roles r ON r.id=u.role_id WHERE lower(u.email)=lower($1) AND (u.is_admin OR u.role_id IS NOT NULL)`, strings.TrimSpace(request.GetEmail())).Scan(&id, &email, &fullName, &passwordHash, &status, &isAdmin, &roleID, &roleName)
+		err := s.authorizerPool().QueryRow(ctx, `SELECT u.id::text,u.email,u.full_name,u.password_hash,u.status,u.is_admin,COALESCE(u.role_id::text,''),COALESCE(r.name,'') FROM identity.users u LEFT JOIN identity.roles r ON r.id=u.role_id WHERE lower(u.email)=lower($1) AND u.is_admin`, strings.TrimSpace(request.GetEmail())).Scan(&id, &email, &fullName, &passwordHash, &status, &isAdmin, &roleID, &roleName)
 		if err != nil || !security.ComparePassword(passwordHash, request.GetPassword()) {
 			return nil, auth.ErrInvalidCredentials
 		}
@@ -47,7 +47,7 @@ func (s *StaffServer) Refresh(ctx context.Context, request *identityV1.AdminRefr
 			return nil, auth.ErrInvalidToken
 		}
 		var id string
-		err := s.authorizerPool().QueryRow(ctx, `SELECT user_id::text FROM identity.auth_sessions s JOIN identity.users u ON u.id=s.user_id WHERE s.refresh_token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>NOW() AND u.status='active' AND (u.is_admin OR u.role_id IS NOT NULL)`, auth.HashRefreshToken(request.GetRefreshToken())).Scan(&id)
+		err := s.authorizerPool().QueryRow(ctx, `SELECT user_id::text FROM identity.auth_sessions s JOIN identity.users u ON u.id=s.user_id WHERE s.refresh_token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>NOW() AND u.status='active' AND u.is_admin`, auth.HashRefreshToken(request.GetRefreshToken())).Scan(&id)
 		if err != nil {
 			return nil, auth.ErrInvalidToken
 		}

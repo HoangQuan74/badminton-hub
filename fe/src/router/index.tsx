@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router'
-import { RoleRoute, ProtectedRoute } from './guards'
+import { ProtectedRoute } from './guards'
 import { NotFoundPage } from '@/components/NotFoundPage'
+import type { Portal } from '@/app/portal'
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((module) => ({ default: module.LoginPage })))
 const RegisterPage = lazy(() => import('@/features/auth/pages/RegisterPage').then((module) => ({ default: module.RegisterPage })))
@@ -11,23 +12,19 @@ const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashbo
 
 const fallback = <div className="route-loader">Loading…</div>
 
-export const router = createBrowserRouter([
-  { path: '/login', element: <Suspense fallback={fallback}><LoginPage /></Suspense> },
-  { path: '/register', element: <Suspense fallback={fallback}><RegisterPage /></Suspense> },
-  {
-    element: <ProtectedRoute />,
-    children: [
-      { path: '/', element: <Suspense fallback={fallback}><UserHomePage /></Suspense> },
-      { path: '/user', element: <Suspense fallback={fallback}><UserHomePage /></Suspense> }
-    ]
-  },
-  {
-    element: <RoleRoute allowedRoles={['owner', 'staff']} />,
-    children: [{ path: '/tenant', element: <Suspense fallback={fallback}><TenantDashboardPage /></Suspense> }]
-  },
-  {
-    element: <RoleRoute allowedRoles={['admin']} />,
-    children: [{ path: '/admin', element: <Suspense fallback={fallback}><AdminDashboardPage /></Suspense> }]
-  },
-  { path: '*', element: <NotFoundPage /> }
-])
+export function router(portal: Portal) {
+  const protectedPage = portal === 'user'
+    ? <Suspense fallback={fallback}><UserHomePage /></Suspense>
+    : portal === 'tenant'
+      ? <Suspense fallback={fallback}><TenantDashboardPage /></Suspense>
+      : <Suspense fallback={fallback}><AdminDashboardPage /></Suspense>
+
+  const routes = [
+    { path: '/login', element: <Suspense fallback={fallback}><LoginPage /></Suspense> },
+    ...(portal === 'user' ? [{ path: '/register', element: <Suspense fallback={fallback}><RegisterPage /></Suspense> }] : []),
+    { element: <ProtectedRoute />, children: [{ path: '/', element: protectedPage }] },
+    { path: '*', element: <NotFoundPage /> }
+  ]
+
+  return createBrowserRouter(routes)
+}

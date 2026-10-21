@@ -69,6 +69,7 @@ func (s *AuthServer) Login(
 			input := auth.LoginInput{
 				Email:    request.GetEmail(),
 				Password: request.GetPassword(),
+				Portal:   request.GetPortal(),
 			}
 
 			// Execute login in the domain service.
@@ -94,11 +95,10 @@ func (s *AuthServer) Refresh(
 		nil,
 		func(ctx context.Context, request *identityV1.RefreshRequest) (*identityV1.RefreshResponse, error) {
 			// Rotate the refresh session in the domain service.
-			pair, err := s.service.Refresh(ctx, request.GetRefreshToken())
+			pair, err := s.service.Refresh(ctx, request.GetRefreshToken(), request.GetPortal())
 			if err != nil {
 				return nil, err
 			}
-
 			// Map the replacement tokens to the gRPC response.
 			return &identityV1.RefreshResponse{
 				Tokens: tokenPair(pair),
@@ -143,11 +143,13 @@ func (s *AuthServer) GetCurrentUser(
 			if err != nil {
 				return nil, err
 			}
-
 			// Load the authenticated user.
 			found, err := s.service.Me(ctx, userID)
 			if err != nil {
 				return nil, err
+			}
+			if !auth.IsAllowedPortal(found, request.GetPortal()) {
+				return nil, auth.ErrWrongPortal
 			}
 
 			// Map the user to the gRPC response.

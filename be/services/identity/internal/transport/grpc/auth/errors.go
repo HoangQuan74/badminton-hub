@@ -14,5 +14,6 @@ var errorMapper = grpcError.NewErrorMapper(
 	grpcError.MatchError(auth.ErrInvalidCredentials, codes.Unauthenticated, "invalid credentials"),
 	grpcError.MatchError(auth.ErrInvalidToken, codes.Unauthenticated, "invalid credentials"),
 	grpcError.MatchError(auth.ErrUserInactive, codes.PermissionDenied, "user inactive"),
+	grpcError.MatchError(auth.ErrWrongPortal, codes.PermissionDenied, "account cannot sign in to this portal"),
 	grpcError.MatchError(auth.ErrUserNotFound, codes.NotFound, "user not found"),
 )

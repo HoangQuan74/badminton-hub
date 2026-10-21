@@ -123,7 +123,20 @@ it is not a public service API.
 ## Demo account
 
 ```text
+User portal
 Email: user@badmintonhub.local
+Password: Password@123
+
+Tenant portal (owner)
+Email: owner@badmintonhub.local
+Password: Password@123
+
+Tenant portal (staff)
+Email: staff@badmintonhub.local
+Password: Password@123
+
+Admin portal
+Email: admin@badmintonhub.local
 Password: Password@123
 ```
 

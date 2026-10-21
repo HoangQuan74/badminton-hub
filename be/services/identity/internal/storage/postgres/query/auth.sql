@@ -4,14 +4,18 @@ VALUES ($1, $2, $3, $4, NULLIF(sqlc.arg(phone)::text, ''))
 RETURNING id, email, password_hash, full_name, COALESCE(phone, '') AS phone, status, created_at, updated_at;
 
 -- name: FindUserByEmail :one
-SELECT id, email, password_hash, full_name, COALESCE(phone, '') AS phone, status, created_at, updated_at
-FROM identity.users
-WHERE LOWER(email) = LOWER($1);
+SELECT u.id, u.email, u.password_hash, u.full_name, COALESCE(u.phone, '') AS phone, u.status,
+       COALESCE(r.name, '') AS role_name, u.is_admin, u.created_at, u.updated_at
+FROM identity.users u
+LEFT JOIN identity.roles r ON r.id = u.role_id
+WHERE LOWER(u.email) = LOWER($1);
 
 -- name: FindUserByID :one
-SELECT id, email, password_hash, full_name, COALESCE(phone, '') AS phone, status, created_at, updated_at
-FROM identity.users
-WHERE id = $1;
+SELECT u.id, u.email, u.password_hash, u.full_name, COALESCE(u.phone, '') AS phone, u.status,
+       COALESCE(r.name, '') AS role_name, u.is_admin, u.created_at, u.updated_at
+FROM identity.users u
+LEFT JOIN identity.roles r ON r.id = u.role_id
+WHERE u.id = $1;
 
 -- name: CreateAuthSession :exec
 INSERT INTO identity.auth_sessions (id, user_id, refresh_token_hash, expires_at)

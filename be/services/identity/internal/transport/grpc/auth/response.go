@@ -14,8 +14,17 @@ func userResponse(value model.User) *identityV1.UserResponse {
 		FullName:  value.FullName,
 		Phone:     value.Phone,
 		Status:    string(value.Status),
+		Roles:     roles(value),
+		IsAdmin:   value.IsAdmin,
 		CreatedAt: value.CreatedAt.UTC().Format("2006-01-02T15:04:05.999999999Z07:00"),
 	}
+}
+
+func roles(value model.User) []string {
+	if value.RoleName == "" {
+		return []string{"customer"}
+	}
+	return []string{value.RoleName}
 }
 
 func tokenPair(pair auth.TokenPair) *identityV1.TokenPair {

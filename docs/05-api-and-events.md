@@ -38,6 +38,26 @@ POST /api/v1/auth/login
 POST /api/v1/auth/refresh
 POST /api/v1/auth/logout
 GET  /api/v1/me
+
+Tenant operator authentication uses the User Gateway with a separate portal
+path. The Identity service accepts only `tenant_owner` and `tenant_staff`
+accounts for this flow:
+
+```text
+POST /api/v1/tenant/auth/login
+POST /api/v1/tenant/auth/refresh
+POST /api/v1/tenant/auth/logout
+GET  /api/v1/tenant/me
+```
+
+Platform administrators authenticate through the Admin Gateway:
+
+```text
+POST /api/v1/admin/auth/login
+POST /api/v1/admin/auth/refresh
+POST /api/v1/admin/auth/logout
+GET  /api/v1/admin/me
+```
 ```
 
 ## Public Marketplace

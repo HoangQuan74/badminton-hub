@@ -24,10 +24,10 @@ export function TenantDashboardPage() {
     }
   })
   const navigation = [
-    { label: t('portal.overview'), href: '/tenant', icon: LayoutDashboard },
-    { label: t('portal.venuesAndCourts'), href: '/tenant#venues', icon: Building2 },
-    { label: t('portal.schedule'), href: '/tenant#bookings', icon: CalendarDays },
-    { label: t('portal.staff'), href: '/tenant#staff', icon: UsersRound }
+    { label: t('portal.overview'), href: '/', icon: LayoutDashboard },
+    { label: t('portal.venuesAndCourts'), href: '/#venues', icon: Building2 },
+    { label: t('portal.schedule'), href: '/#bookings', icon: CalendarDays },
+    { label: t('portal.staff'), href: '/#staff', icon: UsersRound }
   ]
 
   return (
@@ -64,7 +64,7 @@ export function TenantDashboardPage() {
       </section>
 
       <section className="portal-panel two-column-panels" id="bookings">
-        <div><p className="eyebrow">{t('portal.operations')}</p><h2>{t('portal.schedule')}</h2><p className="panel-muted">{t('portal.scheduleDescription')}</p><Link className="panel-link" to="/tenant#bookings">{t('portal.openSchedule')} <ChevronRight size={16} /></Link></div>
+        <div><p className="eyebrow">{t('portal.operations')}</p><h2>{t('portal.schedule')}</h2><p className="panel-muted">{t('portal.scheduleDescription')}</p><Link className="panel-link" to="/#bookings">{t('portal.openSchedule')} <ChevronRight size={16} /></Link></div>
         <div id="staff"><p className="eyebrow">{t('portal.access')}</p><h2>{t('portal.staff')}</h2><p className="panel-muted">{t('portal.staffDescription')}</p><button className="panel-link" type="button" disabled>{t('portal.inviteStaff')} <ChevronRight size={16} /></button></div>
       </section>
 

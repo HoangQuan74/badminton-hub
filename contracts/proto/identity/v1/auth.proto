@@ -22,12 +22,17 @@ message RegisterRequest {
 message LoginRequest {
   string email = 1;
   string password = 2;
+  string portal = 3;
 }
 
-message RefreshRequest { string refresh_token = 1; }
+message RefreshRequest {
+  string refresh_token = 1;
+  string portal = 2;
+}
 message LogoutRequest { string refresh_token = 1; }
 message GetCurrentUserRequest {
   string access_token = 1;
+  string portal = 2;
 }
 
 message AuthResponse {
@@ -45,6 +50,8 @@ message UserResponse {
   string phone = 4;
   string status = 5;
   string created_at = 6;
+  repeated string roles = 7;
+  bool is_admin = 8;
 }
 
 message TokenPair {

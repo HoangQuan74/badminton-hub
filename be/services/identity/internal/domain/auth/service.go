@@ -112,12 +112,17 @@ func (s *Service) Login(ctx context.Context, input LoginInput) (model.User, Toke
 		return model.User{}, TokenPair{}, ErrUserInactive
 	}
 
+	// Enforce the portal boundary before issuing a session.
+	if !IsAllowedPortal(found, input.Portal) {
+		return model.User{}, TokenPair{}, ErrWrongPortal
+	}
+
 	// Issue a new authenticated session.
 	pair, err := s.issueSession(ctx, found.ID)
 	return found, pair, err
 }
 
-func (s *Service) Refresh(ctx context.Context, oldToken string) (TokenPair, error) {
+func (s *Service) Refresh(ctx context.Context, oldToken string, portal string) (TokenPair, error) {
 	// Validate the refresh token before rotating the session.
 	if oldToken == "" {
 		return TokenPair{}, ErrInvalidToken
@@ -128,7 +133,6 @@ func (s *Service) Refresh(ctx context.Context, oldToken string) (TokenPair, erro
 	if err != nil {
 		return TokenPair{}, err
 	}
-
 	// Rotate the persisted session and resolve its owner.
 	newSession := Session{
 		ID:        uuid.NewString(),
@@ -138,6 +142,10 @@ func (s *Service) Refresh(ctx context.Context, oldToken string) (TokenPair, erro
 	owner, err := s.repo.RotateSession(ctx, HashRefreshToken(oldToken), newSession, s.now().UTC())
 	if err != nil {
 		return TokenPair{}, err
+	}
+	user, err := s.repo.FindUserByID(ctx, owner)
+	if err != nil || !IsAllowedPortal(user, portal) {
+		return TokenPair{}, ErrWrongPortal
 	}
 
 	// Issue a new access token for the session owner.
@@ -168,6 +176,19 @@ func (s *Service) Logout(ctx context.Context, refreshToken string) error {
 
 func (s *Service) Me(ctx context.Context, userID string) (model.User, error) {
 	return s.repo.FindUserByID(ctx, userID)
+}
+
+func IsAllowedPortal(user model.User, portal string) bool {
+	switch portal {
+	case "tenant":
+		return user.RoleName == "tenant_owner" || user.RoleName == "tenant_staff"
+	case "admin":
+		return user.IsAdmin
+	case "user", "":
+		return !user.IsAdmin
+	default:
+		return false
+	}
 }
 
 func (s *Service) ParseAccessToken(raw string) (string, error) {

@@ -231,6 +231,8 @@ func mapUserByEmail(row db.FindUserByEmailRow) model.User {
 		FullName:     row.FullName,
 		Phone:        row.Phone,
 		Status:       model.Status(row.Status),
+		RoleName:     row.RoleName,
+		IsAdmin:      row.IsAdmin,
 		CreatedAt:    row.CreatedAt.Time,
 		UpdatedAt:    row.UpdatedAt.Time,
 	}
@@ -244,6 +246,8 @@ func mapUserByID(row db.FindUserByIDRow) model.User {
 		FullName:     row.FullName,
 		Phone:        row.Phone,
 		Status:       model.Status(row.Status),
+		RoleName:     row.RoleName,
+		IsAdmin:      row.IsAdmin,
 		CreatedAt:    row.CreatedAt.Time,
 		UpdatedAt:    row.UpdatedAt.Time,
 	}

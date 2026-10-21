@@ -16,6 +16,8 @@ type User struct {
 	FullName     string
 	Phone        string
 	Status       Status
+	RoleName     string
+	IsAdmin      bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }

@@ -93,6 +93,7 @@ type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Portal        string                 `protobuf:"bytes,3,opt,name=portal,proto3" json:"portal,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -141,9 +142,17 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
+func (x *LoginRequest) GetPortal() string {
+	if x != nil {
+		return x.Portal
+	}
+	return ""
+}
+
 type RefreshRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RefreshToken  string                 `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty"`
+	Portal        string                 `protobuf:"bytes,2,opt,name=portal,proto3" json:"portal,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -181,6 +190,13 @@ func (*RefreshRequest) Descriptor() ([]byte, []int) {
 func (x *RefreshRequest) GetRefreshToken() string {
 	if x != nil {
 		return x.RefreshToken
+	}
+	return ""
+}
+
+func (x *RefreshRequest) GetPortal() string {
+	if x != nil {
+		return x.Portal
 	}
 	return ""
 }
@@ -232,6 +248,7 @@ func (x *LogoutRequest) GetRefreshToken() string {
 type GetCurrentUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	Portal        string                 `protobuf:"bytes,2,opt,name=portal,proto3" json:"portal,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -269,6 +286,13 @@ func (*GetCurrentUserRequest) Descriptor() ([]byte, []int) {
 func (x *GetCurrentUserRequest) GetAccessToken() string {
 	if x != nil {
 		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *GetCurrentUserRequest) GetPortal() string {
+	if x != nil {
+		return x.Portal
 	}
 	return ""
 }
@@ -413,6 +437,8 @@ type UserResponse struct {
 	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
 	Status        string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
 	CreatedAt     string                 `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Roles         []string               `protobuf:"bytes,7,rep,name=roles,proto3" json:"roles,omitempty"`
+	IsAdmin       bool                   `protobuf:"varint,8,opt,name=is_admin,json=isAdmin,proto3" json:"is_admin,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -487,6 +513,20 @@ func (x *UserResponse) GetCreatedAt() string {
 		return x.CreatedAt
 	}
 	return ""
+}
+
+func (x *UserResponse) GetRoles() []string {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
+func (x *UserResponse) GetIsAdmin() bool {
+	if x != nil {
+		return x.IsAdmin
+	}
+	return false
 }
 
 type TokenPair struct {
@@ -574,22 +614,25 @@ const file_identity_v1_auth_proto_rawDesc = "" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1b\n" +
 	"\tfull_name\x18\x03 \x01(\tR\bfullName\x12\x14\n" +
-	"\x05phone\x18\x04 \x01(\tR\x05phone\"@\n" +
+	"\x05phone\x18\x04 \x01(\tR\x05phone\"X\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"5\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x16\n" +
+	"\x06portal\x18\x03 \x01(\tR\x06portal\"M\n" +
 	"\x0eRefreshRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"4\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\x12\x16\n" +
+	"\x06portal\x18\x02 \x01(\tR\x06portal\"4\n" +
 	"\rLogoutRequest\x12#\n" +
-	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\":\n" +
+	"\rrefresh_token\x18\x01 \x01(\tR\frefreshToken\"R\n" +
 	"\x15GetCurrentUserRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"\x81\x01\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x16\n" +
+	"\x06portal\x18\x02 \x01(\tR\x06portal\"\x81\x01\n" +
 	"\fAuthResponse\x127\n" +
 	"\x04user\x18\x01 \x01(\v2#.badminton.identity.v1.UserResponseR\x04user\x128\n" +
 	"\x06tokens\x18\x02 \x01(\v2 .badminton.identity.v1.TokenPairR\x06tokens\"K\n" +
 	"\x0fRefreshResponse\x128\n" +
 	"\x06tokens\x18\x01 \x01(\v2 .badminton.identity.v1.TokenPairR\x06tokens\"\x10\n" +
-	"\x0eLogoutResponse\"\x9e\x01\n" +
+	"\x0eLogoutResponse\"\xcf\x01\n" +
 	"\fUserResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1b\n" +
@@ -597,7 +640,9 @@ const file_identity_v1_auth_proto_rawDesc = "" +
 	"\x05phone\x18\x04 \x01(\tR\x05phone\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\tR\tcreatedAt\"\xcc\x01\n" +
+	"created_at\x18\x06 \x01(\tR\tcreatedAt\x12\x14\n" +
+	"\x05roles\x18\a \x03(\tR\x05roles\x12\x19\n" +
+	"\bis_admin\x18\b \x01(\bR\aisAdmin\"\xcc\x01\n" +
 	"\tTokenPair\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\x1d\n" +

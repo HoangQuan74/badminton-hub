@@ -49,6 +49,7 @@ This file is the entry point for AI-assisted development. Read the documents in 
 - Kafka consumers must be idempotent.
 - Consumer republishes selected durable events to Redis Pub/Sub for realtime fan-out.
 - Auth/User is the first implemented vertical slice inside Identity; User and Staff CRUD persistence now live in their own internal modules: gRPC handlers call the `internal/domain/auth` domain service, which depends on repository interfaces implemented under `services/identity/internal/storage/postgres/repository/<module>`.
+- Identity uses one `users` table plus the existing `roles` table for the three portal account types: `customer`, `tenant_owner`/`tenant_staff`, and `is_admin` platform administrators. User Gateway exposes User and Tenant auth paths; Admin Gateway exposes Admin auth paths. Portal login checks happen before a session is issued.
 - User/Admin Gateway wiring follows `gateway -> gateway-owned HTTP router ->
   versioned owning-service gRPC client`; Socket owns its WebSocket edge and
   calls owning services through gRPC when required. Identity wiring follows

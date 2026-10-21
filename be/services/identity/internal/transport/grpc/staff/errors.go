@@ -11,6 +11,8 @@ var errorMapper = grpcError.NewErrorMapper(
 	codes.Internal,
 	"identity staff operation failed",
 	grpcError.MatchError(auth.ErrInvalidToken, codes.Unauthenticated, "invalid credentials"),
+	grpcError.MatchError(auth.ErrInvalidCredentials, codes.Unauthenticated, "invalid credentials"),
+	grpcError.MatchError(auth.ErrUserInactive, codes.PermissionDenied, "user inactive"),
 	grpcError.MatchError(staffDomain.ErrForbidden, codes.PermissionDenied, "permission denied"),
 	grpcError.MatchError(staffDomain.ErrInvalidInput, codes.InvalidArgument, "invalid request"),
 	grpcError.MatchError(staffDomain.ErrEmailTaken, codes.AlreadyExists, "email already registered"),

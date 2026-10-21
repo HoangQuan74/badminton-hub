@@ -11,6 +11,7 @@ import { useAuthStore } from '../auth.store'
 import { AuthShell } from '../components/AuthShell'
 import { PasswordField } from '../components/PasswordField'
 import { useI18n } from '@/lib/use-i18n'
+import { portal } from '@/app/portal'
 
 export function LoginPage() {
   const { t } = useI18n()
@@ -36,7 +37,7 @@ export function LoginPage() {
   return (
     <AuthShell>
       <div className="auth-form-wrap">
-        <p className="eyebrow">{t('login.eyebrow')}</p>
+        <p className="eyebrow">{portal === 'admin' ? t('login.adminEyebrow') : portal === 'tenant' ? t('login.tenantEyebrow') : t('login.eyebrow')}</p>
         <h2>{t('login.title')}</h2>
         <p className="form-intro">{t('login.intro')}</p>
 

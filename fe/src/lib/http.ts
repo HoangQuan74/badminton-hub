@@ -2,6 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { tokenStorage } from '@/features/auth/auth.storage'
 import { useAuthStore } from '@/features/auth/auth.store'
 import type { RefreshResponse } from '@/features/auth/auth.types'
+import { portal } from '@/app/portal'
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
@@ -21,7 +22,8 @@ let refreshPromise: Promise<string> | null = null
 async function refreshAccessToken() {
   const refreshToken = tokenStorage.refresh()
   if (!refreshToken) throw new Error('Missing refresh token')
-  const { data } = await publicHttp.post<RefreshResponse>('/api/v1/auth/refresh', { refresh_token: refreshToken })
+  const authPrefix = portal === 'admin' ? '/api/v1/admin/auth' : portal === 'tenant' ? '/api/v1/tenant/auth' : '/api/v1/auth'
+  const { data } = await publicHttp.post<RefreshResponse>(`${authPrefix}/refresh`, { refresh_token: refreshToken })
   tokenStorage.save(data.tokens)
   return data.tokens.access_token
 }

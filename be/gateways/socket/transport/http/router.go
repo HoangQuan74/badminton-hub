@@ -10,6 +10,7 @@ import (
 	handler "github.com/kainguyen/badminton-hub/be/gateways/socket/transport/http/handler"
 	grpcClient "github.com/kainguyen/badminton-hub/be/platform/grpc/client"
 	httpContext "github.com/kainguyen/badminton-hub/be/platform/http/context"
+	httpMiddleware "github.com/kainguyen/badminton-hub/be/platform/http/middleware"
 	"github.com/kainguyen/badminton-hub/be/platform/metrics"
 	socketV1 "github.com/kainguyen/badminton-hub/contracts/gen/socket/v1"
 )
@@ -23,7 +24,13 @@ func New(dependencies Dependencies) (*gin.Engine, error) {
 	}
 	engine := gin.New()
 	registry := metrics.New(platformService.SocketGateway)
-	engine.Use(gin.Logger(), gin.Recovery(), httpContext.RequestContextHeaders(), registry.Middleware())
+	engine.Use(
+		gin.Logger(),
+		gin.Recovery(),
+		httpMiddleware.CORS(dependencies.Config.CORSAllowedOrigins),
+		httpContext.RequestContextHeaders(),
+		registry.Middleware(),
+	)
 	handler.RegisterWebSocket(engine, socketV1.NewSocketServiceClient(connection), registry.Handler())
 	socketDocs.Register(engine)
 	return engine, nil

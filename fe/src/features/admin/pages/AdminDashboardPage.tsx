@@ -23,10 +23,10 @@ export function AdminDashboardPage() {
     }
   })
   const navigation = [
-    { label: t('portal.overview'), href: '/admin', icon: LayoutDashboard },
-    { label: t('portal.reviewQueue'), href: '/admin#organizations', icon: ClipboardCheck },
-    { label: t('portal.venuesAndCourts'), href: '/admin#venues', icon: Building2 },
-    { label: t('portal.accessControl'), href: '/admin#users', icon: UsersRound }
+    { label: t('portal.overview'), href: '/', icon: LayoutDashboard },
+    { label: t('portal.reviewQueue'), href: '/#organizations', icon: ClipboardCheck },
+    { label: t('portal.venuesAndCourts'), href: '/#venues', icon: Building2 },
+    { label: t('portal.accessControl'), href: '/#users', icon: UsersRound }
   ]
 
   return (

@@ -1,5 +1,5 @@
 export type UserStatus = 'active' | 'suspended'
-export type UserRole = 'customer' | 'owner' | 'staff' | 'admin'
+export type UserRole = 'customer' | 'tenant_owner' | 'tenant_staff' | 'admin'
 
 export interface User {
   id: string
@@ -21,8 +21,20 @@ export interface Tokens {
 }
 
 export interface AuthResponse { user: User; tokens: Tokens }
+export interface AdminAuthResponse { staff: Staff; tokens: Tokens }
 export interface RefreshResponse { tokens: Tokens }
 export interface MeResponse { user: User }
+
+export interface Staff {
+  id: string
+  email: string
+  full_name: string
+  is_admin: boolean
+  role_id: string
+  role_name: string
+  status: UserStatus
+  created_at: string
+}
 
 export interface LoginPayload { email: string; password: string }
 export interface RegisterPayload extends LoginPayload {

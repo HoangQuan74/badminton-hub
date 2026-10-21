@@ -13,4 +13,5 @@ var (
 	ErrInvalidToken       = &Error{Code: "auth.invalid_token"}
 	ErrUserInactive       = &Error{Code: "auth.user_inactive"}
 	ErrUserNotFound       = &Error{Code: "auth.user_not_found"}
+	ErrWrongPortal        = &Error{Code: "auth.wrong_portal"}
 )
