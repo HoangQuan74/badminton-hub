@@ -2,9 +2,9 @@
 
 ## Status
 
-Accepted for Phase 1. Identity/Gateway extraction is implemented locally;
-Catalog, Booking, and Payment remain follow-up boundaries and are not deployed
-as empty services.
+Accepted for Phase 1. Identity/Gateway extraction and the first Catalog
+venue/court slice are implemented locally; Booking and Payment remain follow-up
+boundaries.
 
 ## Problem
 
@@ -104,8 +104,8 @@ versioned gRPC contracts. Services do not expose their internal ports publicly.
 | --- | --- | --- |
 | User/Admin Gateway | Public HTTPS/JSON routing, request IDs, API error envelope, edge auth checks, rate limits | Business tables or business state transitions |
 | Socket Gateway | WSS protocol, connection lifecycle, request IDs, edge auth | Business tables or durable event state |
-| Identity | `users`, `auth_sessions`, credentials, token issuance, `/me` | Organization membership decisions for a venue operation |
-| Catalog | Organizations, memberships, venues, courts, operating hours, pricing rules | Active court reservations and payment state |
+| Identity | Users, sessions, credentials, organizations, venues, tenant memberships and venue staff assignments | Court inventory and active reservations |
+| Catalog | Courts, venue images, operating hours and pricing rules | Tenant membership decisions, active reservations and payment state |
 | Booking | Holds, bookings, booking transitions, court blocks, idempotency for booking commands, overlap constraints | User passwords, provider credentials, payment settlement |
 | Payment | Payment intents, provider callbacks, payment events, refunds, payouts | Direct writes to booking state |
 | Consumer | Outbox publishing, Kafka consumers, notification commands, Kafka-to-Redis fan-out | Authoritative business state |
@@ -208,12 +208,13 @@ transition. Payment never updates the Booking database directly.
 The first extraction does not require a data copy. A copy would create two
 authoritative user stores and make refresh-token revocation unsafe.
 
-### Phase 2: extract Catalog
+### Phase 2: complete Catalog extraction
 
-Create Catalog only after the owner and membership queries have concrete
-handlers and tenant authorization tests. Move organizations, memberships,
-venues, courts, operating hours, and pricing together so the service can answer
-one coherent venue configuration request.
+Identity owns organizations, memberships and venues; Catalog owns courts and
+images and checks venue access through Identity. Complete the remaining
+organization/venue approval, operating-hours, and pricing handlers before
+routing those capabilities through the service. See `devops/README.md` for the
+legacy Catalog directory cutover.
 
 ### Phase 3: extract Booking
 
@@ -317,9 +318,9 @@ Approve this proposal only if the team accepts:
    blocks.
 5. The public API contract must be captured before route cutover.
 
-Once approved, the first implementation slice is the Identity service and
-Gateway route split. Catalog, Booking, and Payment remain follow-up slices and
-are not created as empty microservices.
+Once approved, the first implementation slices are the Identity service,
+Catalog court/image service, Identity tenant directory, and Gateway route split. Booking and Payment remain
+follow-up slices and are not created as empty microservices.
 
 
 ## Current blockers before deleting the bridge

@@ -117,6 +117,90 @@ services:
         condition: service_completed_successfully
     restart: "no"
 
+  minio:
+    build:
+      context: ../..
+      dockerfile: devops/docker/minio-local.Dockerfile
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${CATALOG_MINIO_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${CATALOG_MINIO_PASSWORD:-minioadmin}
+    volumes:
+      - catalog_minio_data:/data
+    ports:
+      - "127.0.0.1:${CATALOG_MINIO_PORT:-19000}:9000"
+      - "127.0.0.1:${CATALOG_MINIO_CONSOLE_PORT:-19001}:9001"
+    restart: unless-stopped
+
+  minio-init:
+    build:
+      context: ../..
+      dockerfile: devops/docker/catalog.Dockerfile
+    depends_on:
+      minio:
+        condition: service_started
+    environment:
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_BUCKET: ${CATALOG_S3_BUCKET:-catalog-venue-images}
+      CATALOG_S3_REGION: ${CATALOG_S3_REGION:-us-east-1}
+      CATALOG_S3_ACCESS_KEY: ${CATALOG_MINIO_USER:-minioadmin}
+      CATALOG_S3_SECRET_KEY: ${CATALOG_MINIO_PASSWORD:-minioadmin}
+    entrypoint: ["/usr/local/bin/catalog-bucket-init"]
+    restart: "no"
+
+  catalog-migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ../../be/services/catalog/internal/storage/postgres/schema/migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database=${CATALOG_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}&x-migrations-table=catalog_schema_migrations
+      - up
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  identity-tenant-seed:
+    image: postgres:17-alpine
+    environment:
+      CATALOG_DATABASE_URL: ${CATALOG_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}
+      IDENTITY_DATABASE_URL: ${IDENTITY_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}
+    volumes:
+      - ../../be/services/identity/internal/storage/postgres/schema/seed/tenant-dev.sql:/tenant-seed.sql:ro
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        ready=$$(psql "$$CATALOG_DATABASE_URL" -v ON_ERROR_STOP=1 -Atc "SELECT ready FROM catalog.identity_cutover_state WHERE singleton = TRUE")
+        if [ "$$ready" != "t" ]; then
+          echo "Catalog legacy tenant backfill must be verified before local tenant seed" >&2
+          exit 1
+        fi
+        exec psql "$$IDENTITY_DATABASE_URL" -v ON_ERROR_STOP=1 -f /tenant-seed.sql
+    depends_on:
+      seed:
+        condition: service_completed_successfully
+      catalog-migrate:
+        condition: service_completed_successfully
+    restart: "no"
+
+  catalog-seed:
+    image: postgres:17-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - ../../be/services/catalog/internal/storage/postgres/schema/seed/dev.sql:/seed.sql:ro
+    command:
+      - sh
+      - -c
+      - psql -h postgres -U ${POSTGRES_USER:-postgres} -d ${IDENTITY_POSTGRES_DB:-badminton_identity} -v ON_ERROR_STOP=1 -f /seed.sql
+    depends_on:
+      catalog-migrate:
+        condition: service_completed_successfully
+      identity-tenant-seed:
+        condition: service_completed_successfully
+    restart: "no"
+
   identity:
     build:
       context: ../..
@@ -159,6 +243,36 @@ services:
     init: true
     restart: unless-stopped
 
+  catalog:
+    build:
+      context: ../..
+      dockerfile: devops/docker/catalog.Dockerfile
+    environment:
+      CATALOG_GRPC_ADDR: :9094
+      CATALOG_IDENTITY_GRPC_TARGET: identity:9091
+      CATALOG_S3_ENABLED: "true"
+      CATALOG_S3_ENDPOINT: http://minio:9000
+      CATALOG_S3_BUCKET: ${CATALOG_S3_BUCKET:-catalog-venue-images}
+      CATALOG_S3_REGION: ${CATALOG_S3_REGION:-us-east-1}
+      CATALOG_S3_ACCESS_KEY: ${CATALOG_MINIO_USER:-minioadmin}
+      CATALOG_S3_SECRET_KEY: ${CATALOG_MINIO_PASSWORD:-minioadmin}
+      CATALOG_DATABASE_URL: ${CATALOG_DATABASE_URL:-postgres://postgres:postgres@postgres:5432/badminton_identity?sslmode=disable}
+      CATALOG_SHUTDOWN_TIMEOUT: 10s
+      CATALOG_DATABASE_PING_TIMEOUT: 5s
+    depends_on:
+      catalog-seed:
+        condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9094"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 5s
+    init: true
+    restart: unless-stopped
+
   user-gateway:
     build:
       context: ../..
@@ -167,6 +281,7 @@ services:
       APP_ENV: local
       USER_GATEWAY_HTTP_ADDR: :8080
       USER_GATEWAY_IDENTITY_GRPC_TARGET: ${USER_GATEWAY_IDENTITY_GRPC_TARGET:-identity:9091}
+      USER_GATEWAY_CATALOG_GRPC_TARGET: ${USER_GATEWAY_CATALOG_GRPC_TARGET:-catalog:9094}
       USER_GATEWAY_SHUTDOWN_TIMEOUT: 10s
       USER_GATEWAY_DEPENDENCY_TIMEOUT: 5s
       USER_GATEWAY_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:5174,http://localhost:5175,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175}
@@ -175,6 +290,8 @@ services:
       - "${API_PORT:-18080}:8080"
     depends_on:
       identity:
+        condition: service_healthy
+      catalog:
         condition: service_healthy
       postgres:
         condition: service_healthy
@@ -282,6 +399,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  catalog_minio_data:
   postgres_data:
   redis_data:
   mongodb_data:

@@ -101,6 +101,21 @@ h1, h2, h3, .brand { font-family: 'Manrope', sans-serif; }
 .venue-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px solid #edf0eb; color: var(--muted); font-size: 13px; }
 .venue-footer strong { color: var(--ink); font-size: 16px; }
 .venue-footer button { display: grid; place-items: center; width: 34px; height: 34px; color: var(--green); border: 0; border-radius: 50%; background: #edf3e9; }
+.court-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.court-chip { padding: 6px 9px; border: 1px solid #dce8db; border-radius: 999px; color: var(--green); background: #f3f8f0; font-size: 12px; font-weight: 700; }
+.catalog-manager { display: grid; gap: 12px; }
+.field-label { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.catalog-manager select, .court-form input, .court-form select { min-height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; color: var(--ink); background: #fff; font: inherit; }
+.court-form { display: grid; gap: 8px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: #fafcf9; }
+.court-form-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.court-form-row input { flex: 1 1 180px; }
+.court-form-row select { flex: 0 0 130px; }
+.manager-list { display: grid; gap: 8px; }
+.court-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.court-row span:first-child { display: grid; gap: 4px; }
+.court-row small { color: var(--muted); font-size: 12px; }
+.court-actions { display: flex; gap: 6px; }
+.form-error { color: #a33b32; font-size: 13px; }
 .quick-strip { display: flex; justify-content: space-between; align-items: center; margin: 0 clamp(24px, 7vw, 110px) 84px; padding: 32px 38px; border: 1px solid #cfdacd; border-radius: 16px; background: #eaf0e5; }
 .quick-strip > div { display: flex; align-items: center; gap: 20px; }
 .quick-strip h2 { margin-bottom: 5px; font-size: 21px; }.quick-strip p { margin-bottom: 0; color: var(--muted); }.quick-strip .eyebrow { margin-bottom: 4px; }

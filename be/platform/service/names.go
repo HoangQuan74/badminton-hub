@@ -3,6 +3,7 @@ package service
 
 const (
 	Identity      = "identity"
+	Catalog       = "catalog"
 	UserGateway   = "user-gateway"
 	AdminGateway  = "admin-gateway"
 	SocketGateway = "socket-gateway"

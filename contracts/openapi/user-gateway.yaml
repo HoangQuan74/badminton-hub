@@ -11,11 +11,389 @@ tags:
   - name: Profile
     description: Current user profile.
 paths:
+  /api/v1/venues:
+    get:
+      operationId: listPublicVenues
+      tags: [Catalog]
+      security: []
+      responses:
+        '200':
+          description: Published venues and active courts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueListResponse'
+  /api/v1/venues/{venue_slug}:
+    get:
+      operationId: getPublicVenue
+      tags: [Catalog]
+      security: []
+      parameters:
+        - {name: venue_slug, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Published venue and active courts.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueResponse'}
+        '404': {description: Published venue not found.}
+  /api/v1/tenant/organizations:
+    get:
+      operationId: listTenantOrganizations
+      tags: [Catalog]
+      responses:
+        '200':
+          description: Organizations with active membership for this operator.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationListResponse'}
+    post:
+      operationId: createTenantOrganization
+      tags: [Catalog]
+      description: Tenant owner only; creates a PENDING_VERIFICATION organization and its owner membership atomically. Admin approval is separate.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateOrganizationRequest'}
+      responses:
+        '201':
+          description: Organization created; approval is required before venue creation.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationResponse'}
+        '400': {description: Invalid name or slug.}
+        '403': {description: Tenant owner role required.}
+        '409': {description: Organization slug already exists.}
+  /api/v1/tenant/organizations/{organization_id}:
+    get:
+      operationId: getTenantOrganization
+      tags: [Catalog]
+      parameters:
+        - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: Organization visible to the actor.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationResponse'}
+        '404': {description: Organization not found or not accessible.}
+    patch:
+      operationId: updateTenantOrganization
+      tags: [Catalog]
+      description: Owner only; omitted fields are unchanged. Updates are allowed in pending or active state.
+      parameters:
+        - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UpdateOrganizationRequest'}
+      responses:
+        '200':
+          description: Organization updated.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationResponse'}
+        '400': {description: Invalid input or empty patch.}
+        '403': {description: Owner membership required.}
+        '409': {description: Slug conflict or organization state does not permit updates.}
+    delete:
+      operationId: archiveTenantOrganization
+      tags: [Catalog]
+      description: Owner only; only PENDING_VERIFICATION organizations can be archived. Active organizations require the separate administrative lifecycle.
+      parameters:
+        - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '204': {description: Pending organization archived.}
+        '403': {description: Owner membership required.}
+        '409': {description: Organization is not pending verification.}
+  /api/v1/tenant/organizations/{organization_id}/staff/{user_id}:
+    put:
+      operationId: setTenantOrganizationStaff
+      tags: [Auth]
+      description: Owner only. Set membership for an existing active user with the matching global staff role.
+      security: [{bearerAuth: []}]
+      parameters:
+        - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+        - {name: user_id, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role, status]
+              properties:
+                role: {type: string, enum: [tenant_staff, venue_staff]}
+                status: {type: string, enum: [ACTIVE, INACTIVE]}
+      responses:
+        '200': {description: Membership updated.}
+        '400': {description: 'Invalid role, status or identifier.'}
+        '403': {description: Owner access or eligible tenant/user could not be verified.}
+  /api/v1/tenant/venues/{venue_id}/staff/{user_id}:
+    put:
+      operationId: setTenantVenueStaff
+      tags: [Auth]
+      description: Owner only. Assign an active venue_staff member of the same tenant to a venue, or deactivate the assignment.
+      security: [{bearerAuth: []}]
+      parameters:
+        - {$ref: '#/components/parameters/VenueId'}
+        - {name: user_id, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: {type: string, enum: [ACTIVE, INACTIVE]}
+      responses:
+        '200': {description: Venue assignment updated.}
+        '400': {description: Invalid status or identifier.}
+        '403': {description: Owner access or eligible venue/staff membership could not be verified.}
+  /api/v1/tenant/organizations/{organization_id}/venues:
+    post:
+      operationId: createTenantVenue
+      tags: [Catalog]
+      description: Active organization owner only. Creates a DRAFT venue.
+      parameters:
+        - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateVenueRequest'}
+      responses:
+        '201':
+          description: Venue created in DRAFT state.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueResponse'}
+        '400': {description: Invalid input.}
+        '403': {description: Active organization owner required.}
+        '409': {description: Venue slug already exists.}
+  /api/v1/tenant/venues/{venue_id}:
+    get:
+      operationId: getTenantVenue
+      tags: [Catalog]
+      parameters: [{$ref: '#/components/parameters/VenueId'}]
+      responses:
+        '200':
+          description: Venue in an organization accessible to the actor.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueResponse'}
+        '404': {description: Venue not found or not accessible.}
+    patch:
+      operationId: updateTenantVenue
+      tags: [Catalog]
+      description: Owner only; omitted fields are unchanged. This endpoint cannot change venue approval status.
+      parameters: [{$ref: '#/components/parameters/VenueId'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/UpdateVenueRequest'}
+      responses:
+        '200':
+          description: Venue updated.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueResponse'}
+        '400': {description: Invalid input or empty patch.}
+        '403': {description: Owner membership required.}
+        '409': {description: Venue slug already exists.}
+    delete:
+      operationId: archiveTenantVenue
+      tags: [Catalog]
+      description: Owner only; archives the venue without deleting its courts or image records.
+      parameters: [{$ref: '#/components/parameters/VenueId'}]
+      responses:
+        '204': {description: Venue archived.}
+        '403': {description: Owner membership required.}
+  /api/v1/venues/{venue_id}/images:
+    get:
+      operationId: listPublicVenueImages
+      tags: [Catalog]
+      security: []
+      parameters: [{$ref: '#/components/parameters/VenueId'}]
+      responses:
+        '200':
+          description: Images of a published venue.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueImageListResponse'}
+        '404': {description: Published venue not found.}
+        '502': {description: Image storage is unavailable.}
+  /api/v1/tenant/venues/{venue_id}/images:
+    get:
+      operationId: listTenantVenueImages
+      tags: [Catalog]
+      parameters: [{$ref: '#/components/parameters/VenueId'}]
+      responses:
+        '200':
+          description: Image metadata and authenticated preview URLs.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueImageListResponse'}
+        '403': {description: Active organization membership required.}
+    post:
+      operationId: uploadTenantVenueImage
+      tags: [Catalog]
+      description: Owner only. JPEG or PNG, maximum 2 MiB and 16 million pixels. A retry may create another image.
+      parameters: [{$ref: '#/components/parameters/VenueId'}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: {type: string, format: binary}
+      responses:
+        '201':
+          description: Image stored; URL requires tenant authentication.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/VenueImageResponse'}
+        '400': {description: Invalid or oversized image.}
+        '403': {description: Owner membership required.}
+        '502': {description: Image storage or Identity unavailable.}
+  /api/v1/venue-images/{image_id}:
+    get:
+      operationId: getPublicVenueImage
+      tags: [Catalog]
+      security: []
+      parameters:
+        - {name: image_id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: Image bytes for a published venue.
+          content:
+            image/jpeg: {schema: {type: string, format: binary}}
+            image/png: {schema: {type: string, format: binary}}
+        '404': {description: Image not found or venue not published.}
+  /api/v1/tenant/venue-images/{image_id}:
+    get:
+      operationId: getTenantVenueImage
+      tags: [Catalog]
+      parameters:
+        - {name: image_id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: Authenticated image preview for an active organization member.
+          content:
+            image/jpeg: {schema: {type: string, format: binary}}
+            image/png: {schema: {type: string, format: binary}}
+        '404': {description: Image not found or not accessible.}
+  /api/v1/venues/{venue_id}/courts:
+    get:
+      operationId: listPublicVenueCourts
+      tags: [Catalog]
+      security: []
+      parameters:
+        - {$ref: '#/components/parameters/VenueId'}
+      responses:
+        '200':
+          description: Active courts for a published venue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtListResponse'
+        '404': {$ref: '#/components/responses/UserNotFound'}
+  /api/v1/tenant/venues:
+    get:
+      operationId: listTenantVenues
+      tags: [Catalog]
+      responses:
+        '200':
+          description: Venues accessible to the tenant operator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueListResponse'
+  /api/v1/tenant/venues/{venue_id}/courts:
+    get:
+      operationId: listTenantCourts
+      tags: [Catalog]
+      parameters:
+        - {$ref: '#/components/parameters/VenueId'}
+      responses:
+        '200':
+          description: Courts accessible to the tenant operator.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CourtListResponse'}
+        '403': {description: Active organization membership required.}
+    post:
+      operationId: createTenantCourt
+      tags: [Catalog]
+      parameters:
+        - {$ref: '#/components/parameters/VenueId'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourtRequest'
+      responses:
+        '201':
+          description: Court created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtResponse'
+        '409':
+          description: Court name already exists in this venue.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/v1/tenant/courts/{court_id}:
+    get:
+      operationId: getTenantCourt
+      tags: [Catalog]
+      parameters: [{$ref: '#/components/parameters/CourtId'}]
+      responses:
+        '200':
+          description: Court visible to the organization member.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/CourtResponse'}
+        '404': {description: Court not found or not accessible.}
+    patch:
+      operationId: updateTenantCourt
+      tags: [Catalog]
+      parameters:
+        - {$ref: '#/components/parameters/CourtId'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourtRequest'
+      responses:
+        '200':
+          description: Court updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourtResponse'
+    delete:
+      operationId: archiveTenantCourt
+      tags: [Catalog]
+      parameters:
+        - {$ref: '#/components/parameters/CourtId'}
+      responses:
+        '204': {description: Court archived.}
   /api/v1/tenant/auth/login:
     post:
       operationId: tenantLogin
       tags: [Auth]
-      description: Tenant operator login. Only tenant_owner and tenant_staff accounts are accepted.
+      description: Tenant operator login. Tenant owner, tenant staff and venue staff accounts are accepted.
       requestBody:
         required: true
         content:
@@ -192,12 +570,93 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
 components:
+  parameters:
+    VenueId:
+      name: venue_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    CourtId:
+      name: court_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    Organization:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        name: {type: string}
+        slug: {type: string}
+        status: {type: string, enum: [PENDING_VERIFICATION, ACTIVE, SUSPENDED, REJECTED, ARCHIVED]}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    CreateOrganizationRequest:
+      type: object
+      required: [name, slug]
+      properties:
+        name: {type: string, maxLength: 120}
+        slug: {type: string, maxLength: 100}
+    UpdateOrganizationRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name: {type: string, maxLength: 120}
+        slug: {type: string, maxLength: 100}
+    OrganizationResponse:
+      type: object
+      properties:
+        organization: {$ref: '#/components/schemas/Organization'}
+    OrganizationListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Organization'}
+    CreateVenueRequest:
+      type: object
+      required: [name, slug]
+      properties:
+        name: {type: string, maxLength: 120, example: Smash Center}
+        slug: {type: string, maxLength: 100, example: smash-center}
+        address: {type: string, maxLength: 500}
+        timezone: {type: string, example: Asia/Ho_Chi_Minh}
+    UpdateVenueRequest:
+      type: object
+      minProperties: 1
+      properties:
+        name: {type: string, maxLength: 120}
+        slug: {type: string, maxLength: 100}
+        address: {type: string, maxLength: 500}
+        timezone: {type: string}
+    VenueResponse:
+      type: object
+      properties:
+        venue: {$ref: '#/components/schemas/Venue'}
+    VenueImage:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        venue_id: {type: string, format: uuid}
+        content_type: {type: string, enum: [image/jpeg, image/png]}
+        size_bytes: {type: integer, maximum: 2097152}
+        created_at: {type: string, format: date-time}
+        url: {type: string, description: Relative public or authenticated tenant image URL.}
+    VenueImageResponse:
+      type: object
+      properties:
+        image: {$ref: '#/components/schemas/VenueImage'}
+    VenueImageListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/VenueImage'}
     RegisterRequest:
       type: object
       required: [email, password, full_name]
@@ -229,7 +688,7 @@ components:
         created_at: {type: string, format: date-time}
         roles:
           type: array
-          items: {type: string, enum: [customer, tenant_owner, tenant_staff]}
+          items: {type: string, enum: [customer, tenant_owner, tenant_staff, venue_staff]}
         is_admin: {type: boolean}
     Tokens:
       type: object
@@ -256,6 +715,58 @@ components:
       required: [user]
       properties:
         user: {$ref: '#/components/schemas/User'}
+    CourtRequest:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 80}
+        slot_interval_minutes: {type: integer, minimum: 15, maximum: 180, multipleOf: 15, default: 30}
+        status: {type: string, enum: [ACTIVE, INACTIVE]}
+    Court:
+      type: object
+      required: [id, venue_id, organization_id, name, status, slot_interval_minutes, created_at, updated_at]
+      properties:
+        id: {type: string, format: uuid}
+        venue_id: {type: string, format: uuid}
+        organization_id: {type: string, format: uuid}
+        name: {type: string}
+        status: {type: string, enum: [ACTIVE, INACTIVE]}
+        slot_interval_minutes: {type: integer}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+    Venue:
+      type: object
+      required: [id, organization_id, name, slug, timezone, status]
+      properties:
+        id: {type: string, format: uuid}
+        organization_id: {type: string, format: uuid}
+        name: {type: string}
+        slug: {type: string}
+        address: {type: string}
+        timezone: {type: string}
+        status: {type: string, enum: [DRAFT, PENDING_APPROVAL, PUBLISHED, SUSPENDED, ARCHIVED]}
+        courts:
+          type: array
+          items: {$ref: '#/components/schemas/Court'}
+    VenueListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Venue'}
+    CourtListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Court'}
+    CourtResponse:
+      type: object
+      required: [court]
+      properties:
+        court: {$ref: '#/components/schemas/Court'}
     ErrorEnvelope:
       type: object
       required: [error]

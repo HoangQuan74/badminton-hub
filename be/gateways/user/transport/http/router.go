@@ -13,6 +13,7 @@ import (
 	httpContext "github.com/kainguyen/badminton-hub/be/platform/http/context"
 	httpMiddleware "github.com/kainguyen/badminton-hub/be/platform/http/middleware"
 	"github.com/kainguyen/badminton-hub/be/platform/metrics"
+	catalogV1 "github.com/kainguyen/badminton-hub/contracts/gen/catalog/v1"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
@@ -22,6 +23,10 @@ type Dependencies struct {
 
 func New(dependencies Dependencies) (*gin.Engine, error) {
 	connection, err := grpcClient.Dial(context.Background(), dependencies.Config.IdentityGRPCTarget, grpcClient.Options{DialTimeout: dependencies.Config.DependencyTimeout, ServiceIdentity: platformService.UserGateway, Block: true})
+	if err != nil {
+		return nil, err
+	}
+	catalogConnection, err := grpcClient.Dial(context.Background(), dependencies.Config.CatalogGRPCTarget, grpcClient.Options{DialTimeout: dependencies.Config.DependencyTimeout, ServiceIdentity: platformService.UserGateway, Block: true})
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +40,9 @@ func New(dependencies Dependencies) (*gin.Engine, error) {
 		registry.Middleware(),
 	)
 
-	handler.RegisterAuth(engine, identityV1.NewIdentityAuthServiceClient(connection))
+	identityClient := identityV1.NewIdentityAuthServiceClient(connection)
+	handler.RegisterAuth(engine, identityClient)
+	handler.RegisterCatalog(engine, identityClient, catalogV1.NewCatalogServiceClient(catalogConnection), identityV1.NewIdentityTenantServiceClient(connection))
 
 	engine.GET("/health", health)
 	engine.GET("/ready", ready)

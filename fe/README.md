@@ -31,6 +31,13 @@ npm run dev:all     # start all three processes together
 User and Tenant use the User Gateway (`18080`); Admin uses the Admin Gateway
 (`18082`).
 
+The current Catalog slice is live in the local stack:
+
+- User reads published venues and active courts from `GET /api/v1/venues`.
+- Tenant reads assigned venues from `GET /api/v1/tenant/venues`.
+- Tenant owners can create, update, and archive courts through the tenant court
+  routes; tenant staff can view assigned courts.
+
 ## Current routes
 
 - User process `/login`: customer login

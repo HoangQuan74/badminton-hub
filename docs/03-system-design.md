@@ -34,11 +34,12 @@ Three Gateways
 Identity Service (private gRPC)
   |- Users, credentials, refresh sessions
   |- JWT issuance and current-user lookup
+  |- Organizations, venues, staff memberships and venue assignments
           |
           `- Identity PostgreSQL database: identity source of truth
 
-Future domain services
-  |- Catalog: organizations, venues, courts, hours, pricing
+Domain services
+  |- Catalog: courts, venue images, hours, pricing
   |- Booking: holds, bookings, blocks, overlap rules
   `- Payment: intents, callbacks, refunds, payouts
           |- Each stateful service owns a logical PostgreSQL boundary

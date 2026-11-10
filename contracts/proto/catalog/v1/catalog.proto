@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package badminton.catalog.v1;
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/catalog/v1;catalogv1";
+
+service CatalogService {
+  rpc ListOrganizations(ListOrganizationsRequest) returns (OrganizationListResponse);
+  rpc GetOrganization(GetOrganizationRequest) returns (OrganizationResponse);
+  rpc CreateOrganization(CreateOrganizationRequest) returns (OrganizationResponse);
+  rpc UpdateOrganization(UpdateOrganizationRequest) returns (OrganizationResponse);
+  rpc ArchiveOrganization(ArchiveOrganizationRequest) returns (OrganizationResponse);
+  rpc UploadVenueImage(UploadVenueImageRequest) returns (VenueImageResponse);
+  rpc ListPublicVenueImages(ListPublicVenueImagesRequest) returns (VenueImageListResponse);
+  rpc ListTenantVenueImages(ListTenantVenueImagesRequest) returns (VenueImageListResponse);
+  rpc GetPublicVenueImage(GetVenueImageRequest) returns (VenueImageContentResponse);
+  rpc GetTenantVenueImage(GetVenueImageRequest) returns (VenueImageContentResponse);
+  rpc GetPublicVenue(GetPublicVenueRequest) returns (VenueResponse);
+  rpc GetTenantVenue(GetTenantVenueRequest) returns (VenueResponse);
+  rpc CreateVenue(CreateVenueRequest) returns (VenueResponse);
+  rpc UpdateVenue(UpdateVenueRequest) returns (VenueResponse);
+  rpc ArchiveVenue(ArchiveVenueRequest) returns (VenueResponse);
+  rpc GetTenantCourt(GetTenantCourtRequest) returns (CourtResponse);
+  rpc ListPublicVenues(ListPublicVenuesRequest) returns (ListVenuesResponse);
+  rpc ListPublicVenueCourts(ListPublicVenueCourtsRequest) returns (ListCourtsResponse);
+  rpc ListTenantVenues(ListTenantVenuesRequest) returns (ListVenuesResponse);
+  rpc ListTenantCourts(ListTenantCourtsRequest) returns (ListCourtsResponse);
+  rpc CreateCourt(CreateCourtRequest) returns (CourtResponse);
+  rpc UpdateCourt(UpdateCourtRequest) returns (CourtResponse);
+  rpc ArchiveCourt(ArchiveCourtRequest) returns (ArchiveCourtResponse);
+}
+
+message ListPublicVenuesRequest {}
+
+message ListPublicVenueCourtsRequest {
+  string venue_id = 1;
+}
+
+message ListTenantVenuesRequest {
+  string actor_user_id = 1;
+}
+
+message ListTenantCourtsRequest {
+  string actor_user_id = 1;
+  string venue_id = 2;
+}
+
+message CreateCourtRequest {
+  string actor_user_id = 1;
+  string venue_id = 2;
+  string name = 3;
+  int32 slot_interval_minutes = 4;
+}
+
+message UpdateCourtRequest {
+  string actor_user_id = 1;
+  string court_id = 2;
+  string name = 3;
+  int32 slot_interval_minutes = 4;
+  string status = 5;
+}
+
+message ArchiveCourtRequest {
+  string actor_user_id = 1;
+  string court_id = 2;
+}
+
+message ListVenuesResponse {
+  repeated Venue items = 1;
+}
+
+message ListCourtsResponse {
+  repeated Court items = 1;
+}
+
+message Venue {
+  string id = 1;
+  string organization_id = 2;
+  string name = 3;
+  string slug = 4;
+  string address = 5;
+  string timezone = 6;
+  string status = 7;
+  repeated Court courts = 8;
+}
+
+message Court {
+  string id = 1;
+  string venue_id = 2;
+  string organization_id = 3;
+  string name = 4;
+  string status = 5;
+  int32 slot_interval_minutes = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message CourtResponse { Court court = 1; }
+message ArchiveCourtResponse { Court court = 1; }
+
+// Legacy venue write methods forward the tenant token to the owning Identity service.
+message GetPublicVenueRequest { string slug = 1; }
+message GetTenantVenueRequest { string venue_id = 1; }
+message CreateVenueRequest {
+  string organization_id = 1;
+  string name = 2;
+  string slug = 3;
+  string address = 4;
+  string timezone = 5;
+}
+message UpdateVenueRequest {
+  string venue_id = 1;
+  optional string name = 2;
+  optional string slug = 3;
+  optional string address = 4;
+  optional string timezone = 5;
+}
+message ArchiveVenueRequest { string venue_id = 1; }
+message GetTenantCourtRequest { string court_id = 1; }
+message VenueResponse { Venue venue = 1; }
+
+message UploadVenueImageRequest { string venue_id = 1; bytes content = 2; }
+message ListPublicVenueImagesRequest { string venue_id = 1; }
+message ListTenantVenueImagesRequest { string venue_id = 1; }
+message GetVenueImageRequest { string image_id = 1; }
+message VenueImage {
+  string id = 1;
+  string venue_id = 2;
+  string content_type = 3;
+  int32 size_bytes = 4;
+  string created_at = 5;
+}
+message VenueImageResponse { VenueImage image = 1; }
+message VenueImageListResponse { repeated VenueImage items = 1; }
+message VenueImageContentResponse { bytes content = 1; string content_type = 2; }
+
+message Organization {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  string status = 4;
+  string created_at = 5;
+  string updated_at = 6;
+}
+message ListOrganizationsRequest {}
+message GetOrganizationRequest { string organization_id = 1; }
+message CreateOrganizationRequest { string name = 1; string slug = 2; }
+message UpdateOrganizationRequest { string organization_id = 1; optional string name = 2; optional string slug = 3; }
+message ArchiveOrganizationRequest { string organization_id = 1; }
+message OrganizationResponse { Organization organization = 1; }
+message OrganizationListResponse { repeated Organization items = 1; }

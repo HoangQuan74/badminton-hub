@@ -28,9 +28,9 @@ This file is the entry point for AI-assisted development. Read the documents in 
 - Redis is an optimization, never the booking correctness boundary.
 - MongoDB is provisioned as an infrastructure client but currently owns no business data. PostgreSQL remains authoritative.
 - Phase 1 uses independent User, Admin, and Socket Gateway processes under
-  `be/gateways`, plus the private `identity` service under `be`; `consumer` and
-  `cron` remain separate process boundaries. Catalog, Booking, and Payment are
-  future service extractions governed by `docs/design/06-microservice-migration.md`.
+  `be/gateways`, plus the private `identity` and `catalog` services under `be`;
+  `consumer` and `cron` remain separate process boundaries. Booking and Payment
+  remain future service extractions governed by `docs/design/06-microservice-migration.md`.
 - User/Admin Gateway routes use HTTPS/JSON and Socket Gateway uses WSS.
   The frontend never calls a service directly. Gateway-to-service and
   service-to-service synchronous calls use versioned gRPC/Protobuf contracts;
@@ -49,7 +49,7 @@ This file is the entry point for AI-assisted development. Read the documents in 
 - Kafka consumers must be idempotent.
 - Consumer republishes selected durable events to Redis Pub/Sub for realtime fan-out.
 - Auth/User is the first implemented vertical slice inside Identity; User and Staff CRUD persistence now live in their own internal modules: gRPC handlers call the `internal/domain/auth` domain service, which depends on repository interfaces implemented under `services/identity/internal/storage/postgres/repository/<module>`.
-- Identity uses one `users` table plus the existing `roles` table for the three portal account types: `customer`, `tenant_owner`/`tenant_staff`, and `is_admin` platform administrators. User Gateway exposes User and Tenant auth paths; Admin Gateway exposes Admin auth paths. Portal login checks happen before a session is issued.
+- Identity owns users, tenants, venues, tenant membership and venue staff assignments. Tenant staff can access their tenant's venues; venue staff can access only assigned venues. Catalog owns courts and venue images and checks access with Identity. User Gateway exposes User and Tenant auth paths; Admin Gateway exposes Admin auth paths.
 - User/Admin Gateway wiring follows `gateway -> gateway-owned HTTP router ->
   versioned owning-service gRPC client`; Socket owns its WebSocket edge and
   calls owning services through gRPC when required. Identity wiring follows

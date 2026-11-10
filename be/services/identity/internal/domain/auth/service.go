@@ -181,7 +181,7 @@ func (s *Service) Me(ctx context.Context, userID string) (model.User, error) {
 func IsAllowedPortal(user model.User, portal string) bool {
 	switch portal {
 	case "tenant":
-		return user.RoleName == "tenant_owner" || user.RoleName == "tenant_staff"
+		return user.RoleName == "tenant_owner" || user.RoleName == "tenant_staff" || user.RoleName == "venue_staff"
 	case "admin":
 		return user.IsAdmin
 	case "user", "":

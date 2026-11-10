@@ -1,8 +1,8 @@
 # Identity Service
 
 Identity owns the `identity` PostgreSQL schema, user and staff accounts,
-credentials, refresh sessions, JWT issuance, admin roles/permissions, and
-private gRPC methods. Its PostgreSQL adapters, SQLC output, and service-local
+credentials, refresh sessions, JWT issuance, admin roles/permissions, tenant
+organizations, venues, staff memberships and venue assignments. Its PostgreSQL adapters, SQLC output, and service-local
 helpers stay inside this module boundary.
 
 ## Layout
@@ -50,3 +50,13 @@ completed.
 Identity uses `IDENTITY_DATABASE_URL`, `IDENTITY_REDIS_URL`,
 `IDENTITY_GRPC_ADDR`, and namespaced timeout/token settings. It never reads
 another service's schema or migration directory.
+
+## Tenant and venue access
+
+Active `tenant_staff` members can read venues throughout their tenant. Active
+`venue_staff` members can read only venues with an active assignment. Tenant
+owners manage organizations, venues, staff membership and venue assignments.
+The staff assignment endpoints operate on existing active users with the matching
+global role; they do not create users or send invitations. Identity migration
+`000003` provisions the `venue_staff` role independently of local seeds.
+See `devops/README.md` for migration and rollback requirements.

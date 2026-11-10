@@ -1,21 +1,17 @@
-import { useMutation } from '@tanstack/react-query'
-import { CalendarDays, ChevronRight, Clock3, LogOut, MapPin, Search, Star, UserRound } from 'lucide-react'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { CalendarDays, ChevronRight, Clock3, LogOut, MapPin, Search, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router'
 import { authApi } from '@/features/auth/auth.api'
 import { tokenStorage } from '@/features/auth/auth.storage'
 import { useAuthStore } from '@/features/auth/auth.store'
+import { catalogApi } from '@/features/catalog/catalog.api'
 import { queryClient } from '@/lib/query-client'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import { useI18n } from '@/lib/use-i18n'
 
-const venues = [
-  { name: 'Sân Cầu Lông Thành Công', area: 'Bình Thạnh, TP.HCM', price: '120.000đ', rating: '4.9', tone: 'lime', badgeKey: 'user.venueAvailability' as const },
-  { name: 'Smash Arena', area: 'Phú Nhuận, TP.HCM', price: '150.000đ', rating: '4.8', tone: 'blue', badgeKey: 'user.venueFavorite' as const },
-  { name: 'The Shuttle House', area: 'Quận 3, TP.HCM', price: '135.000đ', rating: '4.7', tone: 'orange', badgeKey: 'user.venueNew' as const }
-]
-
 export function UserHomePage() {
   const { t } = useI18n()
+  const venuesQuery = useQuery({ queryKey: ['public-venues'], queryFn: catalogApi.listPublicVenues })
   const user = useAuthStore((state) => state.user)!
   const reset = useAuthStore((state) => state.reset)
   const navigate = useNavigate()
@@ -59,11 +55,14 @@ export function UserHomePage() {
 
         <section className="content-section">
           <div className="section-heading"><div><p className="eyebrow">{t('user.nearby')}</p><h2>{t('user.popularVenues')}</h2></div><button className="text-button" type="button">{t('user.seeAll')} <ChevronRight size={17} /></button></div>
+          {venuesQuery.isLoading && <div className="portal-empty" role="status"><p>{t('user.venuesLoading')}</p></div>}
+          {venuesQuery.isError && <div className="portal-empty" role="alert"><p>{t('user.venuesError')}</p><button className="secondary-button" type="button" onClick={() => venuesQuery.refetch()}>{t('user.retry')}</button></div>}
+          {!venuesQuery.isLoading && !venuesQuery.isError && venuesQuery.data?.length === 0 && <div className="portal-empty"><p>{t('user.noVenues')}</p></div>}
           <div className="venue-grid">
-            {venues.map((venue, index) => (
+            {venuesQuery.data?.map((venue, index) => (
               <article className="venue-card" key={venue.name}>
-                <div className={`venue-visual ${venue.tone}`}><span className="court-lines" aria-hidden="true" /><span className="venue-badge">{t(venue.badgeKey)}</span><span className="venue-number">0{index + 1}</span></div>
-                <div className="venue-info"><div className="venue-topline"><h3>{venue.name}</h3><span className="rating"><Star size={15} fill="currentColor" /> {venue.rating}</span></div><p><MapPin size={15} /> {venue.area}</p><div className="venue-footer"><span>{t('user.from')} <strong>{venue.price}</strong>{t('user.perHour')}</span><button type="button" aria-label={t('user.viewVenue', { name: venue.name })}><ChevronRight size={18} /></button></div></div>
+                <div className={`venue-visual ${index % 2 === 0 ? 'lime' : 'blue'}`}><span className="court-lines" aria-hidden="true" /><span className="venue-badge">{t('user.courtsCount', { count: venue.courts.length })}</span><span className="venue-number">0{index + 1}</span></div>
+                <div className="venue-info"><div className="venue-topline"><h3>{venue.name}</h3></div><p><MapPin size={15} /> {venue.address}</p><div className="venue-footer"><span>{t('user.activeCourts')} <strong>{venue.courts.length}</strong></span><button type="button" aria-label={t('user.viewVenue', { name: venue.name })}><ChevronRight size={18} /></button></div><div className="court-list">{venue.courts.map((court) => <span className="court-chip" key={court.id}>{court.name}</span>)}</div></div>
               </article>
             ))}
           </div>

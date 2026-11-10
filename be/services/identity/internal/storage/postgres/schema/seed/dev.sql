@@ -1,7 +1,7 @@
 INSERT INTO identity.roles (id, name, description)
 VALUES
     ('00000000-0000-4000-8000-000000000010', 'tenant_owner', 'Tenant organization owner'),
-    ('00000000-0000-4000-8000-000000000011', 'tenant_staff', 'Tenant venue staff')
+    ('00000000-0000-4000-8000-000000000011', 'tenant_staff', 'Tenant-wide staff')
 ON CONFLICT (id) DO UPDATE
 SET name = EXCLUDED.name,
     description = EXCLUDED.description,
@@ -52,4 +52,11 @@ VALUES (
     'active',
     '00000000-0000-4000-8000-000000000011'
 )
+ON CONFLICT DO NOTHING;
+
+-- Local-only venue staff account; the password matches the other demo accounts.
+INSERT INTO identity.users (id, email, password_hash, full_name, phone, status, role_id)
+VALUES ('00000000-0000-4000-8000-000000000005', 'venue-staff@badmintonhub.local',
+    '$2a$10$T5XMBoQfvSxexUaEtPWrjODidrYn1eBues3d.zCzEDbEsvBAKmxHu',
+    'Demo Venue Staff', '0900000005', 'active', (SELECT id FROM identity.roles WHERE LOWER(name) = 'venue_staff'))
 ON CONFLICT DO NOTHING;

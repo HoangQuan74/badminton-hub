@@ -14,6 +14,7 @@ import (
 	identityConfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
 	identityGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/auth"
 	staffGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/staff"
+	tenantGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/tenant"
 	userGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/user"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 	"google.golang.org/grpc"
@@ -44,6 +45,7 @@ func run(logger *slog.Logger) error {
 	authServer := identityGRPC.NewAuthServer(cfg, pool)
 	staffServer := staffGRPC.NewStaffServer(cfg, pool)
 	userServer := userGRPC.NewUserServer(cfg, pool)
+	tenantServer := tenantGRPC.NewServer(cfg, pool)
 	return grpcServer.Run(
 		ctx,
 		cfg.GRPCAddr,
@@ -51,6 +53,7 @@ func run(logger *slog.Logger) error {
 			identityV1.RegisterIdentityAuthServiceServer(server, authServer)
 			identityV1.RegisterIdentityAdminServiceServer(server, staffServer)
 			identityV1.RegisterIdentityUserServiceServer(server, userServer)
+			identityV1.RegisterIdentityTenantServiceServer(server, tenantServer)
 		},
 		cfg.ShutdownTimeout,
 		logger,

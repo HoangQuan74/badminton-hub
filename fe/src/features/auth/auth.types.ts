@@ -1,5 +1,5 @@
 export type UserStatus = 'active' | 'suspended'
-export type UserRole = 'customer' | 'tenant_owner' | 'tenant_staff' | 'admin'
+export type UserRole = 'customer' | 'tenant_owner' | 'tenant_staff' | 'venue_staff' | 'admin'
 
 export interface User {
   id: string

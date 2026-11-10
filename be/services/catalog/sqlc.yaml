@@ -1,0 +1,22 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    schema: "internal/storage/postgres/schema/migrations"
+    queries: "internal/storage/postgres/query"
+    gen:
+      go:
+        package: "db"
+        out: "internal/storage/postgres/generated/sqlc"
+        sql_package: "pgx/v5"
+        emit_interface: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+          - db_type: "pg_catalog.timestamptz"
+            nullable: false
+            go_type:
+              import: "time"
+              type: "Time"

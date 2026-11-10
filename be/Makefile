@@ -1,6 +1,7 @@
 SQLC_VERSION := v1.30.0
 MIGRATE_VERSION := v4.19.1
 IDENTITY_DIR := services/identity
+CATALOG_DIR := services/catalog
 USER_GATEWAY_DIR := gateways/user
 ADMIN_GATEWAY_DIR := gateways/admin
 SOCKET_GATEWAY_DIR := gateways/socket
@@ -12,9 +13,11 @@ PLATFORM_COVERAGE_MIN := 100
 
 generate:
 	cd $(IDENTITY_DIR) && go run github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION) generate
+	cd $(CATALOG_DIR) && go run github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION) generate
 
 sqlc-check:
 	cd $(IDENTITY_DIR) && go run github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION) vet
+	cd $(CATALOG_DIR) && go run github.com/sqlc-dev/sqlc/cmd/sqlc@$(SQLC_VERSION) vet
 
 migrate-create:
 	@test -n "$(name)" || (echo "usage: make migrate-create name=create_example" && exit 1)

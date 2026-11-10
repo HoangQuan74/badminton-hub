@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+// Identity is authoritative for tenant, venue, and staff scope.
+service IdentityTenantService {
+  rpc ListOrganizations(TenantListOrganizationsRequest) returns (TenantOrganizationsResponse);
+  rpc GetOrganization(TenantGetOrganizationRequest) returns (TenantOrganizationResponse);
+  rpc CreateOrganization(TenantCreateOrganizationRequest) returns (TenantOrganizationResponse);
+  rpc UpdateOrganization(TenantUpdateOrganizationRequest) returns (TenantOrganizationResponse);
+  rpc ArchiveOrganization(TenantArchiveOrganizationRequest) returns (TenantOrganizationResponse);
+  rpc ListPublicVenues(TenantListPublicVenuesRequest) returns (TenantVenuesResponse);
+  rpc GetPublicVenue(TenantGetPublicVenueRequest) returns (TenantVenueResponse);
+  rpc GetPublicVenueByID(TenantGetPublicVenueByIDRequest) returns (TenantVenueResponse);
+  rpc ListVenues(TenantListVenuesRequest) returns (TenantVenuesResponse);
+  rpc GetVenue(TenantGetVenueRequest) returns (TenantVenueResponse);
+  rpc CreateVenue(TenantCreateVenueRequest) returns (TenantVenueResponse);
+  rpc UpdateVenue(TenantUpdateVenueRequest) returns (TenantVenueResponse);
+  rpc ArchiveVenue(TenantArchiveVenueRequest) returns (TenantVenueResponse);
+  rpc AuthorizeVenue(TenantAuthorizeVenueRequest) returns (TenantVenueResponse);
+  rpc SetOrganizationStaff(TenantSetOrganizationStaffRequest) returns (TenantStaffResponse);
+  rpc SetVenueStaff(TenantSetVenueStaffRequest) returns (TenantVenueStaffResponse);
+}
+
+message TenantOrganization { string id = 1; string name = 2; string slug = 3; string status = 4; string created_at = 5; string updated_at = 6; }
+message TenantVenue { string id = 1; string organization_id = 2; string name = 3; string slug = 4; string address = 5; string timezone = 6; string status = 7; }
+message TenantOrganizationResponse { TenantOrganization organization = 1; }
+message TenantOrganizationsResponse { repeated TenantOrganization items = 1; }
+message TenantVenueResponse { TenantVenue venue = 1; }
+message TenantVenuesResponse { repeated TenantVenue items = 1; }
+message TenantListOrganizationsRequest { string access_token = 1; }
+message TenantGetOrganizationRequest { string access_token = 1; string organization_id = 2; }
+message TenantCreateOrganizationRequest { string access_token = 1; string name = 2; string slug = 3; }
+message TenantUpdateOrganizationRequest { string access_token = 1; string organization_id = 2; optional string name = 3; optional string slug = 4; }
+message TenantArchiveOrganizationRequest { string access_token = 1; string organization_id = 2; }
+message TenantListPublicVenuesRequest {}
+message TenantGetPublicVenueRequest { string slug = 1; }
+message TenantGetPublicVenueByIDRequest { string venue_id = 1; }
+message TenantListVenuesRequest { string access_token = 1; }
+message TenantGetVenueRequest { string access_token = 1; string venue_id = 2; }
+message TenantCreateVenueRequest { string access_token = 1; string organization_id = 2; string name = 3; string slug = 4; string address = 5; string timezone = 6; }
+message TenantUpdateVenueRequest { string access_token = 1; string venue_id = 2; optional string name = 3; optional string slug = 4; optional string address = 5; optional string timezone = 6; }
+message TenantArchiveVenueRequest { string access_token = 1; string venue_id = 2; }
+message TenantAuthorizeVenueRequest { string access_token = 1; string venue_id = 2; bool require_owner = 3; }
+message TenantSetOrganizationStaffRequest { string access_token = 1; string organization_id = 2; string user_id = 3; string role = 4; string status = 5; }
+message TenantStaffResponse { string organization_id = 1; string user_id = 2; string role = 3; string status = 4; }
+message TenantSetVenueStaffRequest { string access_token = 1; string venue_id = 2; string user_id = 3; string status = 4; }
+message TenantVenueStaffResponse { string organization_id = 1; string venue_id = 2; string user_id = 3; string status = 4; }
