@@ -13,7 +13,7 @@ import (
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
-func RegisterAuth(engine *gin.Engine, client identityV1.IdentityAdminServiceClient) {
+func RegisterAuth(engine *gin.Engine, client identityV1.IdentityAdminAuthServiceClient) {
 	// Build the handler with the owning Identity client.
 	handler := NewHandler(client)
 
@@ -31,10 +31,10 @@ func RegisterAuth(engine *gin.Engine, client identityV1.IdentityAdminServiceClie
 }
 
 type Handler struct {
-	client identityV1.IdentityAdminServiceClient
+	client identityV1.IdentityAdminAuthServiceClient
 }
 
-func NewHandler(client identityV1.IdentityAdminServiceClient) *Handler {
+func NewHandler(client identityV1.IdentityAdminAuthServiceClient) *Handler {
 	return &Handler{client: client}
 }
 

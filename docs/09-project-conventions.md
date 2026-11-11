@@ -228,16 +228,29 @@ Each private gRPC module uses:
 
 ```text
 internal/transport/grpc/<module>/
-  server.go
-  errors.go
-  response.go
+  server.go                       # server type and dependency setup
+  <operation>.go                  # related RPC handlers
+  authorization.go               # shared authorization when needed
+  errors.go                       # error mapping when needed
+  response.go                     # response mapping when needed
 ```
 
-- `server.go` contains generated server methods, constructors, authorization
-  calls, domain calls, and typed response mapping.
+- `server.go` defines the server type and its dependencies. Group RPC handlers
+  by responsibility in files such as `auth.go`, `venue.go`, or `court.go`;
+  keep related authorization and response mapping in their own files when
+  shared. Small streaming services may use files named for the stream flow.
 - `errors.go` maps domain errors through shared `be/platform/grpc/error` rules.
 - `response.go` maps service-local models to generated Protobuf responses,
   including list responses.
+- When one module contains multiple actor flows, prefix each actor-specific
+  filename with the actor, followed by its responsibility:
+  `<actor>_handler.go`, `<actor>_server.go`, `<actor>_response.go`, and
+  `<actor>_errors.go`. For example, Identity auth uses `admin_*`, `tenant_*`,
+  and `user_*` so related files stay adjacent when sorted by name. Put shared
+  behavior in responsibility-named files such as `token_response.go` or
+  `errors.go`; do not duplicate it for each actor. Apply the same actor-first
+  order to domain and storage files, such as `admin_service.go` and
+  `admin_repository.go`.
 - Use `be/platform/grpc/endpoint.Run` for the common authorization, execution,
   error mapping, and typed response flow.
 - Keep authorization before domain execution. Derive actor identity from a

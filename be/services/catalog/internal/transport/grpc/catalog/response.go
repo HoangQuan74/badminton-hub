@@ -1,9 +1,10 @@
 package cataloggrpc
 
 import (
+	"time"
+
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/model"
 	catalogV1 "github.com/kainguyen/badminton-hub/contracts/gen/catalog/v1"
-	"time"
 )
 
 func mapVenues(values []model.Venue) []*catalogV1.Venue {
@@ -45,5 +46,34 @@ func mapVenue(value model.Venue) *catalogV1.Venue {
 		Timezone:       value.Timezone,
 		Status:         value.Status,
 		Courts:         mapCourts(value.Courts),
+	}
+}
+
+func mapOrganization(item model.Organization) *catalogV1.Organization {
+	return &catalogV1.Organization{
+		Id:        item.ID,
+		Name:      item.Name,
+		Slug:      item.Slug,
+		Status:    item.Status,
+		CreatedAt: item.CreatedAt.UTC().Format(time.RFC3339Nano),
+		UpdatedAt: item.UpdatedAt.UTC().Format(time.RFC3339Nano),
+	}
+}
+
+func mapImages(items []model.VenueImage) []*catalogV1.VenueImage {
+	result := make([]*catalogV1.VenueImage, 0, len(items))
+	for _, item := range items {
+		result = append(result, mapImage(item))
+	}
+	return result
+}
+
+func mapImage(item model.VenueImage) *catalogV1.VenueImage {
+	return &catalogV1.VenueImage{
+		Id:          item.ID,
+		VenueId:     item.VenueID,
+		ContentType: item.ContentType,
+		SizeBytes:   item.SizeBytes,
+		CreatedAt:   item.CreatedAt.UTC().Format(time.RFC3339Nano),
 	}
 }

@@ -33,12 +33,14 @@ func New(dependencies Dependencies) (*gin.Engine, error) {
 		httpContext.RequestContextHeaders(),
 		registry.Middleware(),
 	)
-	client := identityV1.NewIdentityAdminServiceClient(connection)
+	adminAuthClient := identityV1.NewIdentityAdminAuthServiceClient(connection)
+	staffClient := identityV1.NewIdentityStaffServiceClient(connection)
+	roleClient := identityV1.NewIdentityRoleServiceClient(connection)
 
-	handler.RegisterAuth(engine, client)
-	handler.RegisterStaff(engine, client)
-	handler.RegisterRole(engine, client)
-	handler.RegisterPermission(engine, client)
+	handler.RegisterAuth(engine, adminAuthClient)
+	handler.RegisterStaff(engine, staffClient)
+	handler.RegisterRole(engine, roleClient)
+	handler.RegisterPermission(engine, roleClient)
 
 	engine.GET("/health", health)
 	engine.GET("/ready", ready)

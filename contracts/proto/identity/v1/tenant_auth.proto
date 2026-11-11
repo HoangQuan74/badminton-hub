@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+import "identity/v1/auth.proto";
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+// Authentication for tenant owners, tenant staff, and venue staff.
+// The service enforces the tenant portal regardless of the request portal field.
+service IdentityTenantAuthService {
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (UserResponse);
+}

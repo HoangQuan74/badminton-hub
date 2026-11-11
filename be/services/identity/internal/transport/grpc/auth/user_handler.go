@@ -3,29 +3,12 @@ package authgrpc
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kainguyen/badminton-hub/be/platform/grpc/endpoint"
-	identityConfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
+	grpcEndpoint "github.com/kainguyen/badminton-hub/be/platform/grpc/endpoint"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/auth"
-	authPostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/storage/postgres/repository/auth"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
-type AuthServer struct {
-	identityV1.UnimplementedIdentityAuthServiceServer
-	service *auth.Service
-}
-
-func NewAuthServer(cfg identityConfig.Config, pool *pgxpool.Pool) *AuthServer {
-	// Build the auth repository and token manager dependencies.
-	repository := authPostgres.NewAuthRepository(pool)
-	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.AccessTokenTTL, cfg.RefreshTokenTTL)
-	return &AuthServer{
-		service: auth.NewService(repository, tokens),
-	}
-}
-
-func (s *AuthServer) Register(
+func (s *UserServer) Register(
 	ctx context.Context,
 	request *identityV1.RegisterRequest,
 ) (*identityV1.AuthResponse, error) {
@@ -34,7 +17,10 @@ func (s *AuthServer) Register(
 		request,
 		errorMapper,
 		nil,
-		func(ctx context.Context, request *identityV1.RegisterRequest) (*identityV1.AuthResponse, error) {
+		func(
+			ctx context.Context,
+			request *identityV1.RegisterRequest,
+		) (*identityV1.AuthResponse, error) {
 			// Map the gRPC request to the domain input.
 			input := auth.RegisterInput{
 				Email:    request.GetEmail(),
@@ -55,7 +41,7 @@ func (s *AuthServer) Register(
 	)
 }
 
-func (s *AuthServer) Login(
+func (s *UserServer) Login(
 	ctx context.Context,
 	request *identityV1.LoginRequest,
 ) (*identityV1.AuthResponse, error) {
@@ -64,7 +50,10 @@ func (s *AuthServer) Login(
 		request,
 		errorMapper,
 		nil,
-		func(ctx context.Context, request *identityV1.LoginRequest) (*identityV1.AuthResponse, error) {
+		func(
+			ctx context.Context,
+			request *identityV1.LoginRequest,
+		) (*identityV1.AuthResponse, error) {
 			// Map the gRPC request to the domain input.
 			input := auth.LoginInput{
 				Email:    request.GetEmail(),
@@ -84,7 +73,7 @@ func (s *AuthServer) Login(
 	)
 }
 
-func (s *AuthServer) Refresh(
+func (s *UserServer) Refresh(
 	ctx context.Context,
 	request *identityV1.RefreshRequest,
 ) (*identityV1.RefreshResponse, error) {
@@ -93,9 +82,16 @@ func (s *AuthServer) Refresh(
 		request,
 		errorMapper,
 		nil,
-		func(ctx context.Context, request *identityV1.RefreshRequest) (*identityV1.RefreshResponse, error) {
+		func(
+			ctx context.Context,
+			request *identityV1.RefreshRequest,
+		) (*identityV1.RefreshResponse, error) {
 			// Rotate the refresh session in the domain service.
-			pair, err := s.service.Refresh(ctx, request.GetRefreshToken(), request.GetPortal())
+			pair, err := s.service.Refresh(
+				ctx,
+				request.GetRefreshToken(),
+				request.GetPortal(),
+			)
 			if err != nil {
 				return nil, err
 			}
@@ -107,7 +103,7 @@ func (s *AuthServer) Refresh(
 	)
 }
 
-func (s *AuthServer) Logout(
+func (s *UserServer) Logout(
 	ctx context.Context,
 	request *identityV1.LogoutRequest,
 ) (*identityV1.LogoutResponse, error) {
@@ -116,7 +112,10 @@ func (s *AuthServer) Logout(
 		request,
 		errorMapper,
 		nil,
-		func(ctx context.Context, request *identityV1.LogoutRequest) (*identityV1.LogoutResponse, error) {
+		func(
+			ctx context.Context,
+			request *identityV1.LogoutRequest,
+		) (*identityV1.LogoutResponse, error) {
 			// Revoke the refresh session in the domain service.
 			if err := s.service.Logout(ctx, request.GetRefreshToken()); err != nil {
 				return nil, err
@@ -128,7 +127,7 @@ func (s *AuthServer) Logout(
 	)
 }
 
-func (s *AuthServer) GetCurrentUser(
+func (s *UserServer) GetCurrentUser(
 	ctx context.Context,
 	request *identityV1.GetCurrentUserRequest,
 ) (*identityV1.UserResponse, error) {
@@ -137,7 +136,10 @@ func (s *AuthServer) GetCurrentUser(
 		request,
 		errorMapper,
 		nil,
-		func(ctx context.Context, request *identityV1.GetCurrentUserRequest) (*identityV1.UserResponse, error) {
+		func(
+			ctx context.Context,
+			request *identityV1.GetCurrentUserRequest,
+		) (*identityV1.UserResponse, error) {
 			// Parse and verify the access token.
 			userID, err := s.service.ParseAccessToken(request.GetAccessToken())
 			if err != nil {

@@ -29,14 +29,6 @@ func RegisterAuth(engine *gin.Engine, client identityV1.IdentityAuthServiceClien
 	protected.Use(httpMiddleware.RequireBearer)
 	protected.GET("/me", handler.CurrentUser)
 
-	// Register tenant operator authentication routes.
-	tenantPublic := engine.Group("/api/v1/tenant/auth")
-	tenantPublic.POST("/login", handler.TenantLogin)
-	tenantPublic.POST("/refresh", handler.TenantRefresh)
-	tenantPublic.POST("/logout", handler.Logout)
-	tenantProtected := engine.Group("/api/v1/tenant")
-	tenantProtected.Use(httpMiddleware.RequireBearer)
-	tenantProtected.GET("/me", handler.TenantCurrentUser)
 }
 
 type Handler struct {
@@ -78,33 +70,14 @@ func (h *Handler) Login(c *gin.Context) {
 	exception.WriteGRPC(c, result, err, http.StatusOK)
 }
 
-func (h *Handler) TenantLogin(c *gin.Context) {
-	var input authRequest.CredentialsRequest
-	if request.BindJSON(c, &input) {
-		return
-	}
-	result, err := h.client.Login(
-		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.LoginRequest{Email: input.Email, Password: input.Password, Portal: "tenant"},
-	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
-}
 func (h *Handler) Refresh(c *gin.Context) {
-	h.refresh(c, "user")
-}
-
-func (h *Handler) TenantRefresh(c *gin.Context) {
-	h.refresh(c, "tenant")
-}
-
-func (h *Handler) refresh(c *gin.Context, portal string) {
 	var input authRequest.RefreshRequest
 	if request.BindJSON(c, &input) {
 		return
 	}
 	result, err := h.client.Refresh(
 		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.RefreshRequest{RefreshToken: input.RefreshToken, Portal: portal},
+		&identityV1.RefreshRequest{RefreshToken: input.RefreshToken, Portal: "user"},
 	)
 	exception.WriteGRPC(c, result, err, http.StatusOK)
 }
@@ -120,18 +93,10 @@ func (h *Handler) Logout(c *gin.Context) {
 	exception.WriteGRPC(c, nil, err, http.StatusNoContent)
 }
 func (h *Handler) CurrentUser(c *gin.Context) {
-	h.currentUser(c, "user")
-}
-
-func (h *Handler) TenantCurrentUser(c *gin.Context) {
-	h.currentUser(c, "tenant")
-}
-
-func (h *Handler) currentUser(c *gin.Context, portal string) {
 	token := strings.TrimSpace(strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer "))
 	result, err := h.client.GetCurrentUser(
 		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.GetCurrentUserRequest{AccessToken: token, Portal: portal},
+		&identityV1.GetCurrentUserRequest{AccessToken: token, Portal: "user"},
 	)
 	exception.WriteGRPC(c, meResponse{User: result}, err, http.StatusOK)
 }

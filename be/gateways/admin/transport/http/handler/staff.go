@@ -12,7 +12,7 @@ import (
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
-func RegisterStaff(engine *gin.Engine, client identityV1.IdentityAdminServiceClient) {
+func RegisterStaff(engine *gin.Engine, client identityV1.IdentityStaffServiceClient) {
 	// Build the handler with the owning Identity client.
 	handler := NewStaffHandler(client)
 
@@ -28,10 +28,10 @@ func RegisterStaff(engine *gin.Engine, client identityV1.IdentityAdminServiceCli
 }
 
 type StaffHandler struct {
-	client identityV1.IdentityAdminServiceClient
+	client identityV1.IdentityStaffServiceClient
 }
 
-func NewStaffHandler(client identityV1.IdentityAdminServiceClient) *StaffHandler {
+func NewStaffHandler(client identityV1.IdentityStaffServiceClient) *StaffHandler {
 	return &StaffHandler{client: client}
 }
 

@@ -12,7 +12,7 @@ import (
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
-func RegisterRole(engine *gin.Engine, client identityV1.IdentityAdminServiceClient) {
+func RegisterRole(engine *gin.Engine, client identityV1.IdentityRoleServiceClient) {
 	// Build the handler with the owning Identity client.
 	handler := NewRoleHandler(client)
 
@@ -28,10 +28,10 @@ func RegisterRole(engine *gin.Engine, client identityV1.IdentityAdminServiceClie
 }
 
 type RoleHandler struct {
-	client identityV1.IdentityAdminServiceClient
+	client identityV1.IdentityRoleServiceClient
 }
 
-func NewRoleHandler(client identityV1.IdentityAdminServiceClient) *RoleHandler {
+func NewRoleHandler(client identityV1.IdentityRoleServiceClient) *RoleHandler {
 	return &RoleHandler{client: client}
 }
 

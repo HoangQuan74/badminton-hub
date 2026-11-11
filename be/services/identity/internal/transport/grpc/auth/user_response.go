@@ -27,17 +27,6 @@ func roles(value model.User) []string {
 	return []string{value.RoleName}
 }
 
-func tokenPair(pair auth.TokenPair) *identityV1.TokenPair {
-	// Map domain tokens to the gRPC token response.
-	return &identityV1.TokenPair{
-		AccessToken:      pair.AccessToken,
-		RefreshToken:     pair.RefreshToken,
-		TokenType:        "Bearer",
-		AccessExpiresAt:  pair.AccessExpiresAt.UTC().Format("2006-01-02T15:04:05.999999999Z07:00"),
-		RefreshExpiresAt: pair.RefreshExpiresAt.UTC().Format("2006-01-02T15:04:05.999999999Z07:00"),
-	}
-}
-
 func authResponse(value model.User, pair auth.TokenPair) *identityV1.AuthResponse {
 	// Compose the authenticated user and token response.
 	return &identityV1.AuthResponse{

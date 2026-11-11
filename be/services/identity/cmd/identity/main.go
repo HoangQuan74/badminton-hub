@@ -12,7 +12,8 @@ import (
 	"github.com/kainguyen/badminton-hub/be/platform/grpc/server"
 	"github.com/kainguyen/badminton-hub/be/platform/logger"
 	identityConfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
-	identityGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/auth"
+	authGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/auth"
+	roleGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/role"
 	staffGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/staff"
 	tenantGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/tenant"
 	userGRPC "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/user"
@@ -42,20 +43,43 @@ func run(logger *slog.Logger) error {
 	}
 	defer pool.Close()
 
-	authServer := identityGRPC.NewAuthServer(cfg, pool)
+	userAuthServer := authGRPC.NewUserServer(cfg, pool)
+	tenantAuthServer := authGRPC.NewTenantServer(cfg, pool)
+	adminAuthServer := authGRPC.NewAdminServer(cfg, pool)
 	staffServer := staffGRPC.NewStaffServer(cfg, pool)
+	roleServer := roleGRPC.NewHandler(cfg, pool)
 	userServer := userGRPC.NewUserServer(cfg, pool)
 	tenantServer := tenantGRPC.NewServer(cfg, pool)
 	return grpcServer.Run(
 		ctx,
 		cfg.GRPCAddr,
 		func(server *grpc.Server) {
-			identityV1.RegisterIdentityAuthServiceServer(server, authServer)
-			identityV1.RegisterIdentityAdminServiceServer(server, staffServer)
+			identityV1.RegisterIdentityAuthServiceServer(server, userAuthServer)
+			identityV1.RegisterIdentityTenantAuthServiceServer(server, tenantAuthServer)
+			identityV1.RegisterIdentityAdminAuthServiceServer(server, adminAuthServer)
+			identityV1.RegisterIdentityStaffServiceServer(server, staffServer)
+			identityV1.RegisterIdentityRoleServiceServer(server, roleServer)
+			identityV1.RegisterIdentityAdminServiceServer(server, &legacyAdminServer{
+				AdminServer: adminAuthServer,
+				StaffServer: staffServer,
+				Handler:     roleServer,
+			})
 			identityV1.RegisterIdentityUserServiceServer(server, userServer)
 			identityV1.RegisterIdentityTenantServiceServer(server, tenantServer)
 		},
 		cfg.ShutdownTimeout,
 		logger,
 	)
+}
+
+// legacyAdminServer preserves the previous gRPC endpoint during the gateway rollout.
+type legacyAdminServer struct {
+	legacyAdminFallback
+	*authGRPC.AdminServer
+	*staffGRPC.StaffServer
+	*roleGRPC.Handler
+}
+
+type legacyAdminFallback struct {
+	identityV1.UnimplementedIdentityAdminServiceServer
 }

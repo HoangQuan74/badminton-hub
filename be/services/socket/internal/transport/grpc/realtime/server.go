@@ -13,5 +13,9 @@ type Server struct {
 }
 
 func NewServer(client *redis.Client, channel, secret string) *Server {
-	return &Server{redis: client, channel: channel, secret: []byte(secret)}
+	return &Server{
+		redis:   client,
+		channel: channel,
+		secret:  []byte(secret),
+	}
 }

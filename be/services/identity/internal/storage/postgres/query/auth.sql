@@ -37,3 +37,22 @@ SET revoked_at = $2
 WHERE refresh_token_hash = $1
   AND revoked_at IS NULL;
 
+
+-- name: FindAdminByEmail :one
+SELECT u.id, u.email, u.full_name, u.password_hash, u.status, u.is_admin,
+       COALESCE(u.role_id::text, '')::text AS role_id, COALESCE(r.name, '')::text AS role_name
+FROM identity.users u LEFT JOIN identity.roles r ON r.id = u.role_id
+WHERE LOWER(u.email) = LOWER($1) AND u.is_admin;
+
+-- name: FindAdminSessionForUpdate :one
+SELECT s.user_id FROM identity.auth_sessions s JOIN identity.users u ON u.id = s.user_id
+WHERE s.refresh_token_hash = $1 AND s.revoked_at IS NULL AND s.expires_at > NOW()
+  AND u.status = 'active' AND u.is_admin
+FOR UPDATE OF s;
+
+-- name: GetAdminPasswordHash :one
+SELECT password_hash FROM identity.users WHERE id = $1;
+
+-- name: UpdateAdminPassword :exec
+UPDATE identity.users SET password_hash = $2, updated_at = NOW() WHERE id = $1;
+

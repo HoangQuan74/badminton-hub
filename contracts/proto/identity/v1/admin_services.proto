@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+import "identity/v1/admin.proto";
+import "identity/v1/common.proto";
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+service IdentityAdminAuthService {
+  rpc Login(AdminLoginRequest) returns (AdminAuthResponse);
+  rpc Refresh(AdminRefreshRequest) returns (AdminRefreshResponse);
+  rpc Logout(AdminLogoutRequest) returns (AdminLogoutResponse);
+  rpc GetCurrentStaff(CurrentStaffRequest) returns (StaffResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (Empty);
+}
+
+service IdentityStaffService {
+  rpc ListStaff(ListStaffRequest) returns (StaffListResponse);
+  rpc CreateStaff(CreateStaffRequest) returns (StaffResponse);
+  rpc GetStaff(GetStaffRequest) returns (StaffResponse);
+  rpc UpdateStaff(UpdateStaffRequest) returns (StaffResponse);
+  rpc DeleteStaff(DeleteStaffRequest) returns (Empty);
+  rpc UpdateStaffAccess(UpdateStaffAccessRequest) returns (StaffResponse);
+}
+
+service IdentityRoleService {
+  rpc ListRoles(ListRolesRequest) returns (RoleListResponse);
+  rpc CreateRole(CreateRoleRequest) returns (RoleResponse);
+  rpc GetRole(GetRoleRequest) returns (RoleResponse);
+  rpc UpdateRole(UpdateRoleRequest) returns (RoleResponse);
+  rpc DeleteRole(DeleteRoleRequest) returns (Empty);
+  rpc ReplaceRolePermissions(ReplaceRolePermissionsRequest) returns (RoleResponse);
+  rpc ListPermissions(ListPermissionsRequest) returns (PermissionListResponse);
+}

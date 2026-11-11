@@ -11,7 +11,7 @@ import (
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
-func RegisterPermission(engine *gin.Engine, client identityV1.IdentityAdminServiceClient) {
+func RegisterPermission(engine *gin.Engine, client identityV1.IdentityRoleServiceClient) {
 	// Build the handler with the owning Identity client.
 	handler := NewPermissionHandler(client)
 
@@ -22,10 +22,10 @@ func RegisterPermission(engine *gin.Engine, client identityV1.IdentityAdminServi
 }
 
 type PermissionHandler struct {
-	client identityV1.IdentityAdminServiceClient
+	client identityV1.IdentityRoleServiceClient
 }
 
-func NewPermissionHandler(client identityV1.IdentityAdminServiceClient) *PermissionHandler {
+func NewPermissionHandler(client identityV1.IdentityRoleServiceClient) *PermissionHandler {
 	return &PermissionHandler{client: client}
 }
 

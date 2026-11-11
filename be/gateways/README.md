@@ -25,9 +25,10 @@ documents its forwarded admin surface, and the Socket Gateway documents the
 WebSocket upgrade endpoint.
 
 User and Admin Gateways translate their public HTTP contracts to Identity gRPC.
-Admin Staff/Auth/Role/Permission routes are wired to the IdentityAdminService
-contract; Identity currently returns `FEATURE_NOT_IMPLEMENTED` for the modules
-whose domain handlers are not implemented yet. Socket bridges WSS frames to the versioned Socket gRPC stream. No HTTP bridge remains.
+Admin Staff/Auth/Role/Permission routes use the Identity staff, admin auth,
+and role gRPC services. Deploy Identity before the Admin Gateway so the new
+services are available. Socket bridges WSS frames to the versioned Socket gRPC
+stream. No HTTP bridge remains.
 
 The local Compose file keeps them opt-in so the customer stack remains small:
 

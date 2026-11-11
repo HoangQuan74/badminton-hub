@@ -7,6 +7,7 @@ import (
 )
 
 func (s *Server) Connect(stream socketV1.SocketService_ConnectServer) error {
+	// Authenticate the first stream message before subscribing.
 	first, err := stream.Recv()
 	if err != nil {
 		return err
@@ -15,6 +16,7 @@ func (s *Server) Connect(stream socketV1.SocketService_ConnectServer) error {
 		return errors.New("invalid access token")
 	}
 
+	// Forward messages between the authenticated stream and Redis.
 	ctx := stream.Context()
 	pubsub, err := s.subscribe(ctx)
 	if err != nil {
