@@ -38,3 +38,8 @@ The numbered documents in the parent `docs` directory remain the detailed source
 ## Operations
 
 - [Release Runbook](../devops/RELEASE.md) - Jenkins, two-VM deployment, backup, rollback, and Kubernetes adoption path.
+
+## Delivery and Tasks
+
+- [Delivery Plan](07-delivery-plan.md) - overall implementation order and exit criteria.
+- [Identity Tasks](tasks/identity.md) - prioritized Identity backlog, dependencies, acceptance checks, and verification requirements.

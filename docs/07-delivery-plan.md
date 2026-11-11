@@ -4,6 +4,10 @@
 
 Complete one correct end-to-end booking flow before expanding features. Each day ends with working, reviewable behavior and tests for the highest-risk rules.
 
+Track remaining Identity work in [Identity Tasks](tasks/identity.md). The task
+register separates existing capabilities from planned completion work and
+records priorities, dependencies, acceptance checks, and verification evidence.
+
 ## Day 1 - Foundation and Identity
 
 - Create monorepo structure for web, API, Socket, Consumer, Cron, contracts, and infrastructure.
