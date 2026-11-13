@@ -1,19 +1,18 @@
 package realtimegrpc
 
 import (
-	"errors"
-
+	socketException "github.com/kainguyen/badminton-hub/be/services/socket/internal/exception"
 	socketV1 "github.com/kainguyen/badminton-hub/contracts/gen/socket/v1"
 )
 
-func (s *Server) Connect(stream socketV1.SocketService_ConnectServer) error {
+func (s *RealtimeServer) Connect(stream socketV1.SocketService_ConnectServer) error {
 	// Authenticate the first stream message before subscribing.
 	first, err := stream.Recv()
 	if err != nil {
 		return err
 	}
 	if !ValidateAccessToken(first.GetAccessToken(), s.secret) {
-		return errors.New("invalid access token")
+		return socketException.ErrInvalidAccessToken
 	}
 
 	// Forward messages between the authenticated stream and Redis.

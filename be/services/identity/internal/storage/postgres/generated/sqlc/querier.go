@@ -8,52 +8,75 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	AddRolePermission(ctx context.Context, arg AddRolePermissionParams) error
+	ApplyTenantRegistrationDecision(ctx context.Context, arg ApplyTenantRegistrationDecisionParams) error
 	ArchiveIdentityVenue(ctx context.Context, arg ArchiveIdentityVenueParams) (ArchiveIdentityVenueRow, error)
 	ArchivePendingOrganization(ctx context.Context, arg ArchivePendingOrganizationParams) (IdentityOrganization, error)
+	AssignStaffRole(ctx context.Context, arg AssignStaffRoleParams) (int64, error)
 	CreateAuthSession(ctx context.Context, arg CreateAuthSessionParams) error
 	CreateIdentityVenue(ctx context.Context, arg CreateIdentityVenueParams) (CreateIdentityVenueRow, error)
 	CreateManagedUser(ctx context.Context, arg CreateManagedUserParams) (CreateManagedUserRow, error)
 	CreateOrganization(ctx context.Context, arg CreateOrganizationParams) (CreateOrganizationRow, error)
+	CreatePermission(ctx context.Context, arg CreatePermissionParams) (CreatePermissionRow, error)
 	CreateRole(ctx context.Context, arg CreateRoleParams) (CreateRoleRow, error)
 	CreateStaff(ctx context.Context, arg CreateStaffParams) (CreateStaffRow, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
+	DeactivateMemberVenues(ctx context.Context, arg DeactivateMemberVenuesParams) error
+	DeactivateOrganizationStaff(ctx context.Context, arg DeactivateOrganizationStaffParams) (DeactivateOrganizationStaffRow, error)
+	DeleteExpiredTenantCreateKey(ctx context.Context, arg DeleteExpiredTenantCreateKeyParams) error
+	DeletePermission(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteRole(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteRolePermissions(ctx context.Context, roleID uuid.UUID) error
 	DeleteStaff(ctx context.Context, id uuid.UUID) (int64, error)
 	DeleteUser(ctx context.Context, id uuid.UUID) (int64, error)
 	FindActiveSessionForUpdate(ctx context.Context, arg FindActiveSessionForUpdateParams) (uuid.UUID, error)
-	FindAdminByEmail(ctx context.Context, lower string) (FindAdminByEmailRow, error)
-	FindAdminSessionForUpdate(ctx context.Context, refreshTokenHash []byte) (uuid.UUID, error)
+	FindManagedOrganization(ctx context.Context, arg FindManagedOrganizationParams) (string, error)
 	FindOrganizationMembership(ctx context.Context, arg FindOrganizationMembershipParams) (string, error)
 	FindStaffByID(ctx context.Context, id uuid.UUID) (FindStaffByIDRow, error)
+	FindStaffCredentialsByEmail(ctx context.Context, lower string) (FindStaffCredentialsByEmailRow, error)
+	FindStaffSessionForUpdate(ctx context.Context, refreshTokenHash []byte) (uuid.UUID, error)
+	FindTenantCreateReplay(ctx context.Context, arg FindTenantCreateReplayParams) (FindTenantCreateReplayRow, error)
 	FindUserByEmail(ctx context.Context, lower string) (FindUserByEmailRow, error)
 	FindUserByID(ctx context.Context, id uuid.UUID) (FindUserByIDRow, error)
-	GetAdminPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
 	GetIdentityAuthorizedVenue(ctx context.Context, arg GetIdentityAuthorizedVenueParams) (GetIdentityAuthorizedVenueRow, error)
 	GetIdentityPublicVenueByID(ctx context.Context, venueID uuid.UUID) (GetIdentityPublicVenueByIDRow, error)
 	GetIdentityPublicVenueBySlug(ctx context.Context, slug string) (GetIdentityPublicVenueBySlugRow, error)
+	GetPermission(ctx context.Context, id uuid.UUID) (GetPermissionRow, error)
 	GetRole(ctx context.Context, id uuid.UUID) (GetRoleRow, error)
+	GetStaffPasswordHash(ctx context.Context, id uuid.UUID) (string, error)
 	GetTenantOrganization(ctx context.Context, arg GetTenantOrganizationParams) (IdentityOrganization, error)
+	GetTenantRegistration(ctx context.Context, id uuid.UUID) (GetTenantRegistrationRow, error)
+	GetVenueOrganizationAccess(ctx context.Context, arg GetVenueOrganizationAccessParams) (GetVenueOrganizationAccessRow, error)
 	ListIdentityPublicVenues(ctx context.Context) ([]ListIdentityPublicVenuesRow, error)
 	ListIdentityTenantVenues(ctx context.Context, actorID uuid.UUID) ([]ListIdentityTenantVenuesRow, error)
+	ListOrganizationStaff(ctx context.Context, organizationID uuid.UUID) ([]ListOrganizationStaffRow, error)
 	ListPermissions(ctx context.Context) ([]ListPermissionsRow, error)
 	ListRoles(ctx context.Context) ([]ListRolesRow, error)
 	ListStaff(ctx context.Context, arg ListStaffParams) ([]ListStaffRow, error)
 	ListTenantOrganizations(ctx context.Context, actorID uuid.UUID) ([]IdentityOrganization, error)
+	ListTenantRegistrations(ctx context.Context, statusFilter string) ([]ListTenantRegistrationsRow, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error)
+	LockStaffCandidate(ctx context.Context, lower string) (LockStaffCandidateRow, error)
+	LockTenantCreator(ctx context.Context, id uuid.UUID) (LockTenantCreatorRow, error)
+	LockTenantRegistration(ctx context.Context, id uuid.UUID) (string, error)
+	RecordTenantRegistrationReview(ctx context.Context, arg RecordTenantRegistrationReviewParams) error
 	RevokeAuthSession(ctx context.Context, arg RevokeAuthSessionParams) (int64, error)
+	SaveTenantCreateReplay(ctx context.Context, arg SaveTenantCreateReplayParams) (pgtype.Timestamptz, error)
+	SaveTenantRegistration(ctx context.Context, arg SaveTenantRegistrationParams) error
 	SetIdentityOrganizationStaff(ctx context.Context, arg SetIdentityOrganizationStaffParams) (SetIdentityOrganizationStaffRow, error)
 	SetIdentityVenueStaff(ctx context.Context, arg SetIdentityVenueStaffParams) (SetIdentityVenueStaffRow, error)
-	UpdateAdminPassword(ctx context.Context, arg UpdateAdminPasswordParams) error
+	SetTenantOwnerRole(ctx context.Context, id uuid.UUID) (int64, error)
 	UpdateIdentityVenue(ctx context.Context, arg UpdateIdentityVenueParams) (UpdateIdentityVenueRow, error)
 	UpdateOrganization(ctx context.Context, arg UpdateOrganizationParams) (IdentityOrganization, error)
+	UpdatePermission(ctx context.Context, arg UpdatePermissionParams) (UpdatePermissionRow, error)
 	UpdateRole(ctx context.Context, arg UpdateRoleParams) (UpdateRoleRow, error)
 	UpdateStaff(ctx context.Context, arg UpdateStaffParams) (UpdateStaffRow, error)
 	UpdateStaffAccess(ctx context.Context, arg UpdateStaffAccessParams) (UpdateStaffAccessRow, error)
+	UpdateStaffPassword(ctx context.Context, arg UpdateStaffPasswordParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }
 

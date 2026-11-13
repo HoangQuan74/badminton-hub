@@ -3,6 +3,7 @@ import { tokenStorage } from '@/features/auth/auth.storage'
 import { useAuthStore } from '@/features/auth/auth.store'
 import type { RefreshResponse } from '@/features/auth/auth.types'
 import { portal } from '@/app/portal'
+import { LANGUAGE_STORAGE_KEY } from '@/lib/i18n'
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
@@ -11,7 +12,7 @@ export const http = axios.create({ baseURL, timeout: 15_000 })
 
 http.interceptors.request.use((config) => {
   const token = tokenStorage.access()
-  config.headers['Accept-Language'] = 'vi'
+  config.headers['Accept-Language'] = window.localStorage.getItem(LANGUAGE_STORAGE_KEY) === 'en' ? 'en' : 'vi'
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })

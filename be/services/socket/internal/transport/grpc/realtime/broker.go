@@ -7,7 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (s *Server) subscribe(ctx context.Context) (*redis.PubSub, error) {
+func (s *RealtimeServer) subscribe(ctx context.Context) (*redis.PubSub, error) {
 	pubsub := s.redis.Subscribe(ctx, s.channel)
 	if _, err := pubsub.Receive(ctx); err != nil {
 		_ = pubsub.Close()
@@ -16,7 +16,7 @@ func (s *Server) subscribe(ctx context.Context) (*redis.PubSub, error) {
 	return pubsub, nil
 }
 
-func (s *Server) receiveMessages(ctx context.Context, stream socketV1.SocketService_ConnectServer) {
+func (s *RealtimeServer) receiveMessages(ctx context.Context, stream socketV1.SocketService_ConnectServer) {
 	for {
 		message, err := stream.Recv()
 		if err != nil {
@@ -29,7 +29,7 @@ func (s *Server) receiveMessages(ctx context.Context, stream socketV1.SocketServ
 	}
 }
 
-func (s *Server) sendMessages(ctx context.Context, stream socketV1.SocketService_ConnectServer, pubsub *redis.PubSub) error {
+func (s *RealtimeServer) sendMessages(ctx context.Context, stream socketV1.SocketService_ConnectServer, pubsub *redis.PubSub) error {
 	for {
 		message, err := pubsub.ReceiveMessage(ctx)
 		if err != nil {

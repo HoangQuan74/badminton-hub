@@ -1,10 +1,10 @@
 package config
 
 import (
-	"errors"
 	"time"
 
 	"github.com/caarlos0/env/v10"
+	catalogException "github.com/kainguyen/badminton-hub/be/services/catalog/internal/exception"
 )
 
 type Config struct {
@@ -27,7 +27,7 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	if cfg.DatabaseURL == "" {
-		return Config{}, errors.New("CATALOG_DATABASE_URL is required")
+		return Config{}, catalogException.ErrDatabaseURLRequired
 	}
 	return cfg, nil
 }

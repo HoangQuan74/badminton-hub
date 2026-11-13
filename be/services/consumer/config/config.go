@@ -1,11 +1,11 @@
 package consumerConfig
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
 	platformConfig "github.com/kainguyen/badminton-hub/be/platform/config"
+	consumerException "github.com/kainguyen/badminton-hub/be/services/consumer/internal/exception"
 )
 
 type Config struct {
@@ -20,12 +20,12 @@ type Config struct {
 func Load() (Config, error) {
 	brokers := splitBrokers(platformConfig.Env("CONSUMER_KAFKA_BROKERS", ""))
 	if len(brokers) == 0 {
-		return Config{}, fmt.Errorf("CONSUMER_KAFKA_BROKERS is required")
+		return Config{}, consumerException.ErrKafkaBrokersRequired
 	}
 
 	groupID := strings.TrimSpace(platformConfig.Env("CONSUMER_KAFKA_GROUP_ID", ""))
 	if groupID == "" {
-		return Config{}, fmt.Errorf("CONSUMER_KAFKA_GROUP_ID is required")
+		return Config{}, consumerException.ErrKafkaGroupIDRequired
 	}
 
 	dialTimeout, err := platformConfig.Duration("CONSUMER_KAFKA_DIAL_TIMEOUT", 5*time.Second)

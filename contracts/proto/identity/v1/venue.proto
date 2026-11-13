@@ -1,0 +1,28 @@
+syntax = "proto3";
+package badminton.identity.v1;
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+service IdentityVenueService {
+  rpc ListPublicVenues(TenantListPublicVenuesRequest) returns (TenantVenuesResponse);
+  rpc GetPublicVenue(TenantGetPublicVenueRequest) returns (TenantVenueResponse);
+  rpc GetPublicVenueByID(TenantGetPublicVenueByIDRequest) returns (TenantVenueResponse);
+  rpc ListVenues(TenantListVenuesRequest) returns (TenantVenuesResponse);
+  rpc GetVenue(TenantGetVenueRequest) returns (TenantVenueResponse);
+  rpc CreateVenue(TenantCreateVenueRequest) returns (TenantVenueResponse);
+  rpc UpdateVenue(TenantUpdateVenueRequest) returns (TenantVenueResponse);
+  rpc ArchiveVenue(TenantArchiveVenueRequest) returns (TenantVenueResponse);
+  rpc AuthorizeVenue(TenantAuthorizeVenueRequest) returns (TenantVenueResponse);
+}
+
+message TenantVenue { string id = 1; string organization_id = 2; string name = 3; string slug = 4; string address = 5; string timezone = 6; string status = 7; }
+message TenantVenueResponse { TenantVenue venue = 1; }
+message TenantVenuesResponse { repeated TenantVenue items = 1; }
+message TenantListPublicVenuesRequest {}
+message TenantGetPublicVenueRequest { string slug = 1; }
+message TenantGetPublicVenueByIDRequest { string venue_id = 1; }
+message TenantListVenuesRequest { string access_token = 1; }
+message TenantGetVenueRequest { string access_token = 1; string venue_id = 2; }
+message TenantCreateVenueRequest { string access_token = 1; string organization_id = 2; string name = 3; string slug = 4; string address = 5; string timezone = 6; }
+message TenantUpdateVenueRequest { string access_token = 1; string venue_id = 2; optional string name = 3; optional string slug = 4; optional string address = 5; optional string timezone = 6; }
+message TenantArchiveVenueRequest { string access_token = 1; string venue_id = 2; }
+message TenantAuthorizeVenueRequest { string access_token = 1; string venue_id = 2; bool require_owner = 3; }

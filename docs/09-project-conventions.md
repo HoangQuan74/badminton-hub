@@ -61,22 +61,30 @@ be/
     transport/http/                 # public HTTP routes and adapters
     docs/                           # gateway OpenAPI/Swagger artifacts
   services/<service>/               # independent service module
-    cmd/<service>/                  # process composition and lifecycle
+    cmd/<service>/                  # config, signals, app entrypoint
     config/                         # namespaced service configuration
     internal/
+      app/                          # dependency composition and infrastructure lifecycle
+      constant/                     # resource-prefixed constants and enumerated values
       domain/<module>/              # business rules and module contracts
+      exception/                    # service-owned errors and error mapping
       model/                        # service-local reusable entities/query models
       security/                     # service-owned security helpers
       validation/                   # service-owned validation primitives
+      utils/                        # dependency-free shared primitives
+      repository/postgres/
+        <module>/                   # implementations of domain repository interfaces
+        helper/                     # shared SQLC projections and value conversion
       storage/postgres/
         schema/
           migrations/               # versioned up/down migrations
           seed/                     # local development data only
         query/                      # handwritten SQL split by module
         generated/sqlc/             # generated code; never edit manually
-        repository/<module>/        # module-owned persistence adapters
         transaction/                # shared transaction lifecycle
-      transport/grpc/<module>/     # private gRPC transport by module
+      transport/grpc/
+        <module>/                   # private gRPC adapters by module
+        helper/                     # shared protocol mapping
     test/                           # service-owned tests
   tests/
     integration/<owner>/            # cross-package or infrastructure tests
@@ -112,7 +120,10 @@ mapping. Domain services own business rules and state transitions. Repository
 interfaces belong to the owning domain module; PostgreSQL adapters implement
 those interfaces and map SQLC rows to service-local models.
 
-Entry points compose dependencies. They do not contain business rules.
+Entry points load configuration, establish the shutdown context, and call
+`app.NewServer` / `Run`. `internal/app` composes dependencies and owns database
+lifecycle. Domain services coordinate business workflows through repository
+and transaction interfaces; adapters implement storage mechanics.
 
 ## Naming and spelling
 
@@ -147,10 +158,10 @@ Module-owned use-case inputs stay with the module:
 
 ```text
 internal/domain/<module>/
-  input.go                      # module use-case inputs and validation tags
-  output.go                     # module-owned output types
-  repository.go                 # repository interface and persistence params
-  service.go                    # business logic
+  <module>_input.go              # module use-case inputs and validation tags
+  <module>_output.go             # use-case output only when a distinct type is needed
+  <module>_repository.go         # repository/transaction ports and persistence params
+  <module>_service.go            # business rules and workflow orchestration
 ```
 
 Do not create duplicate domain entities merely because two responses have
@@ -162,6 +173,26 @@ defined in Protobuf or event contracts and generated per owner.
 
 SQLC row types remain inside `storage/postgres/generated/sqlc`. They are storage
 models, not domain models, and must not leak into domain services or handlers.
+
+## Shared code and constants
+
+- Put reusable string/syntax primitives in `internal/utils/<concern>_utils.go`.
+  Utilities use standard or primitive dependencies and do not import business
+  domains, storage adapters, transport, SQLC, or Protobuf.
+- Put shared persistence conversion in `internal/repository/postgres/helper`
+  and shared response/filter conversion in `internal/transport/grpc/helper`.
+  Use `<concern>_helper.go`; keep layer-specific dependencies inside that layer.
+- Share code after identifying real consumers. Keep resource admission,
+  transitions, limits, error selection, and transaction orchestration in the
+  owning service. Avoid reflection-based mappers or a generic CRUD framework.
+- Put status, role, action, and pagination constants in
+  `internal/constant/<resource>_constant.go`. Models retain data types and
+  fields. FE equivalents live in `fe/src/constants/domain.ts`.
+- Use verbs for functions: `List<Resource>`, `Get<Resource>`,
+  `Create<Resource>`, `Update<Resource>`, `Delete<Resource>` or
+  `Archive<Resource>`, and `Map`, `Parse`, `Normalize`, or `Validate` for helpers.
+  Name repository ports by responsibility, such as `StaffRepository`,
+  `StaffAccountRepository`, and `StaffMembershipRepository`.
 
 ## Validation, normalization, and business rules
 
@@ -203,11 +234,13 @@ internal/storage/postgres/
     user.sql                      # user CRUD SQL
     staff.sql                     # staff/access SQL
   generated/sqlc/                 # generated pgx code
-  repository/
-    auth/repository.go
-    user/repository.go
-    staff/repository.go
-  transaction/transaction.go
+  transaction/transaction.go      # begin, commit, rollback only
+
+internal/repository/postgres/
+  auth/auth_repository.go
+  user/user_repository.go
+  staff/staff_repository.go
+  helper/                         # shared adapter mapping and nullable values
 ```
 
 - Write SQL only in `query/<module>.sql`.
@@ -215,8 +248,9 @@ internal/storage/postgres/
 - Never edit `generated/sqlc` manually.
 - Repositories expose domain-relevant operations and return `internal/model`
   values, never SQLC rows.
-- Keep transaction ownership at the repository/use-case boundary that needs
-  atomicity. Use the shared transaction helper for lifecycle and rollback.
+- Domain services own the order and business decisions of atomic workflows.
+  Define transaction ports in the owning domain; adapters implement query/lock
+  primitives and use the shared helper for transaction lifecycle and rollback.
 - Put duplicate handling, constraints, locking, and state invariants in the
   database where the database can enforce them safely.
 - Migrations must be backward-compatible with the previous application version
@@ -228,31 +262,32 @@ Each private gRPC module uses:
 
 ```text
 internal/transport/grpc/<module>/
-  server.go                       # server type and dependency setup
-  <operation>.go                  # related RPC handlers
-  authorization.go               # shared authorization when needed
-  errors.go                       # error mapping when needed
-  response.go                     # response mapping when needed
+  <module>_server.go              # resource server and injected domain dependencies
+  <module>_handler.go             # related RPC handlers
+  <module>_response.go            # response mapping when needed
 ```
 
-- `server.go` defines the server type and its dependencies. Group RPC handlers
-  by responsibility in files such as `auth.go`, `venue.go`, or `court.go`;
-  keep related authorization and response mapping in their own files when
-  shared. Small streaming services may use files named for the stream flow.
-- `errors.go` maps domain errors through shared `be/platform/grpc/error` rules.
-- `response.go` maps service-local models to generated Protobuf responses,
+- `<module>_server.go` defines `<Module>Server` and `New<Module>Server` with
+  injected domain dependencies. Database and configuration wiring belongs to
+  `internal/app`. Split additional handlers by responsibility when necessary;
+  avoid a separate file for every trivial CRUD operation.
+- Use the owning service's `internal/exception/<module>_grpc.go` mapper through
+  shared `be/platform/grpc/error` rules.
+- `<module>_response.go` maps service-local models to generated Protobuf responses,
   including list responses.
 - When one module contains multiple actor flows, prefix each actor-specific
   filename with the actor, followed by its responsibility:
-  `<actor>_handler.go`, `<actor>_server.go`, `<actor>_response.go`, and
-  `<actor>_errors.go`. For example, Identity auth uses `admin_*`, `tenant_*`,
+  `<actor>_handler.go`, `<actor>_server.go`, and `<actor>_response.go`. Put actor
+  error mappings in `internal/exception/<actor>_grpc.go`. Identity auth uses `admin_*`, `tenant_*`,
   and `user_*` so related files stay adjacent when sorted by name. Put shared
-  behavior in responsibility-named files such as `token_response.go` or
-  `errors.go`; do not duplicate it for each actor. Apply the same actor-first
+  behavior in responsibility-named files such as `token_response.go`; keep
+  shared errors in the owning exception package. Apply the same actor-first
   order to domain and storage files, such as `admin_service.go` and
   `admin_repository.go`.
-- Use `be/platform/grpc/endpoint.Run` for the common authorization, execution,
-  error mapping, and typed response flow.
+- Keep simple handlers flat: authorize, build domain input, call the service,
+  map errors with the resource's error mapper, and return its response mapper.
+  Use `be/platform/grpc/endpoint.Run` where callback composition adds value;
+  avoid wrapping a straight-line handler solely to pass fixed mapper/nil args.
 - Keep authorization before domain execution. Derive actor identity from a
   verified token and enforce permissions in the owning service.
 - Keep generated response types module-specific. Do not use
@@ -263,21 +298,43 @@ internal/transport/grpc/<module>/
 Platform owns gRPC lifecycle, metadata, status mapping, and endpoint mechanics.
 Business permissions and response semantics remain in the service.
 
+## Error ownership
+
+Each service owns a single `internal/exception/` package. Split files by module
+and concern: `<module>_error.go`, `<module>_grpc.go`, and
+`<module>_postgres.go` where needed. Configuration errors use `config_error.go`.
+
+- Define sentinels, typed errors, field violations, stable codes, and service
+  error mappings here. Prefix Identity errors by module (`ErrAuthInvalidToken`,
+  `ErrTenantSlugConflict`) so names stay distinct within the shared package.
+- Domain, model, repository, configuration, and transport use those definitions
+  directly. Do not leave duplicate declarations or aliases in feature folders.
+- The exception package must not import service domain, model, repository,
+  configuration, or transport packages; this keeps the dependency acyclic.
+- Keep contextual wrapping (`fmt.Errorf("operation: %w", err)`) at the failing
+  operation. Eligibility checks and business decisions stay in their modules.
+- Gateways own a single `transport/exception/` package for HTTP error envelopes,
+  localized messages, per-resource mappings, and upstream status handling.
+- Keep `errors.Is`/`errors.As`, public status, stable codes, and safe messages
+  unchanged when reorganizing errors. Infrastructure-only shared error
+  mechanics remain in `be/platform`.
+
 ## Code formatting and reviewability
 
 Format code for human review, not only compiler acceptance.
 
 - Keep one meaningful operation per visual block.
-- Start each meaningful processing block with one short English comment that
-  names its purpose: `Validate input`, `Canonicalize values`, `Persist the
-  session`, or `Map the response`.
-- Do not comment every line or restate syntax. Comments explain intent and step
-  boundaries.
+- Separate processing steps with blank lines. Add a short English comment when
+  the purpose or constraint is not obvious from the code.
+- Comments explain intent or a rule; avoid comments that only repeat the next
+  service call or response helper.
 - Keep validation, canonicalization, authorization, business execution,
   persistence, and response mapping in separate blocks.
 - Use one local variable and one error check for each meaningful operation.
-- Expand callbacks, nested structs, composite literals, and calls with more
-  than two meaningful arguments.
+- Keep simple signatures and calls compact when they fit comfortably on one
+  line. Expand complex inputs and structs into explicit blocks; prepare an
+  input variable before passing it to a service. Avoid nested callbacks in
+  straightforward RPC handlers.
 - Avoid dense one-line handlers, chained conditionals, and anonymous blocks that
   hide control flow.
 - Use explicit names such as `accessToken`, `userParams`, `staffRepository`,

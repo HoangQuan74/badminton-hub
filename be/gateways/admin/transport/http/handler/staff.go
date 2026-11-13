@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	exception "github.com/kainguyen/badminton-hub/be/gateways/admin/transport/exception"
+	"github.com/kainguyen/badminton-hub/be/gateways/admin/transport/exception"
 	staffRequest "github.com/kainguyen/badminton-hub/be/gateways/admin/transport/http/request"
 	httpMiddleware "github.com/kainguyen/badminton-hub/be/platform/http/middleware"
 	request "github.com/kainguyen/badminton-hub/be/platform/http/request"
@@ -38,9 +38,10 @@ func NewStaffHandler(client identityV1.IdentityStaffServiceClient) *StaffHandler
 func (h *StaffHandler) List(c *gin.Context) {
 	params, err := request.ListQuery(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{"code": "INVALID_REQUEST", "message": err.Error()}})
+		exception.WriteInvalidRequest(c, err)
 		return
 	}
+
 	result, err := h.client.ListStaff(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.ListStaffRequest{
@@ -52,7 +53,12 @@ func (h *StaffHandler) List(c *gin.Context) {
 			CreatedTo:   params.CreatedTo,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *StaffHandler) Create(c *gin.Context) {
@@ -60,22 +66,40 @@ func (h *StaffHandler) Create(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.CreateStaff(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.CreateStaffRequest{
-			AccessToken: request.BearerToken(c), Email: input.Email, Password: input.Password,
-			FullName: input.FullName, IsAdmin: input.IsAdmin, RoleId: input.RoleID,
+			AccessToken: request.BearerToken(c),
+			Email:       input.Email,
+			Password:    input.Password,
+			FullName:    input.FullName,
+			IsAdmin:     input.IsAdmin,
+			RoleId:      input.RoleID,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusCreated)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusCreated,
+	)
 }
 
 func (h *StaffHandler) Get(c *gin.Context) {
 	result, err := h.client.GetStaff(
 		request.RPCContext(c, platformService.AdminGateway),
-		&identityV1.GetStaffRequest{AccessToken: request.BearerToken(c), StaffId: request.Param(c, "staff_id")},
+		&identityV1.GetStaffRequest{
+			AccessToken: request.BearerToken(c),
+			StaffId:     request.Param(c, "staff_id"),
+		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *StaffHandler) Update(c *gin.Context) {
@@ -83,22 +107,39 @@ func (h *StaffHandler) Update(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.UpdateStaff(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.UpdateStaffRequest{
-			AccessToken: request.BearerToken(c), StaffId: request.Param(c, "staff_id"),
-			Email: input.Email, FullName: input.FullName, Status: input.Status,
+			AccessToken: request.BearerToken(c),
+			StaffId:     request.Param(c, "staff_id"),
+			Email:       input.Email,
+			FullName:    input.FullName,
+			Status:      input.Status,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *StaffHandler) Delete(c *gin.Context) {
 	result, err := h.client.DeleteStaff(
 		request.RPCContext(c, platformService.AdminGateway),
-		&identityV1.DeleteStaffRequest{AccessToken: request.BearerToken(c), StaffId: request.Param(c, "staff_id")},
+		&identityV1.DeleteStaffRequest{
+			AccessToken: request.BearerToken(c),
+			StaffId:     request.Param(c, "staff_id"),
+		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusNoContent)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusNoContent,
+	)
 }
 
 func (h *StaffHandler) UpdateAccess(c *gin.Context) {
@@ -106,12 +147,20 @@ func (h *StaffHandler) UpdateAccess(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.UpdateStaffAccess(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.UpdateStaffAccessRequest{
-			AccessToken: request.BearerToken(c), StaffId: request.Param(c, "staff_id"),
-			IsAdmin: input.IsAdmin, RoleId: input.RoleID,
+			AccessToken: request.BearerToken(c),
+			StaffId:     request.Param(c, "staff_id"),
+			IsAdmin:     input.IsAdmin,
+			RoleId:      input.RoleID,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }

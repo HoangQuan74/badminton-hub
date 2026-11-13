@@ -19,46 +19,28 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	IdentityTenantService_ListOrganizations_FullMethodName    = "/badminton.identity.v1.IdentityTenantService/ListOrganizations"
-	IdentityTenantService_GetOrganization_FullMethodName      = "/badminton.identity.v1.IdentityTenantService/GetOrganization"
-	IdentityTenantService_CreateOrganization_FullMethodName   = "/badminton.identity.v1.IdentityTenantService/CreateOrganization"
-	IdentityTenantService_UpdateOrganization_FullMethodName   = "/badminton.identity.v1.IdentityTenantService/UpdateOrganization"
-	IdentityTenantService_ArchiveOrganization_FullMethodName  = "/badminton.identity.v1.IdentityTenantService/ArchiveOrganization"
-	IdentityTenantService_ListPublicVenues_FullMethodName     = "/badminton.identity.v1.IdentityTenantService/ListPublicVenues"
-	IdentityTenantService_GetPublicVenue_FullMethodName       = "/badminton.identity.v1.IdentityTenantService/GetPublicVenue"
-	IdentityTenantService_GetPublicVenueByID_FullMethodName   = "/badminton.identity.v1.IdentityTenantService/GetPublicVenueByID"
-	IdentityTenantService_ListVenues_FullMethodName           = "/badminton.identity.v1.IdentityTenantService/ListVenues"
-	IdentityTenantService_GetVenue_FullMethodName             = "/badminton.identity.v1.IdentityTenantService/GetVenue"
-	IdentityTenantService_CreateVenue_FullMethodName          = "/badminton.identity.v1.IdentityTenantService/CreateVenue"
-	IdentityTenantService_UpdateVenue_FullMethodName          = "/badminton.identity.v1.IdentityTenantService/UpdateVenue"
-	IdentityTenantService_ArchiveVenue_FullMethodName         = "/badminton.identity.v1.IdentityTenantService/ArchiveVenue"
-	IdentityTenantService_AuthorizeVenue_FullMethodName       = "/badminton.identity.v1.IdentityTenantService/AuthorizeVenue"
-	IdentityTenantService_SetOrganizationStaff_FullMethodName = "/badminton.identity.v1.IdentityTenantService/SetOrganizationStaff"
-	IdentityTenantService_SetVenueStaff_FullMethodName        = "/badminton.identity.v1.IdentityTenantService/SetVenueStaff"
+	IdentityTenantService_ListOrganizations_FullMethodName   = "/badminton.identity.v1.IdentityTenantService/ListOrganizations"
+	IdentityTenantService_GetOrganization_FullMethodName     = "/badminton.identity.v1.IdentityTenantService/GetOrganization"
+	IdentityTenantService_CreateOrganization_FullMethodName  = "/badminton.identity.v1.IdentityTenantService/CreateOrganization"
+	IdentityTenantService_UpdateOrganization_FullMethodName  = "/badminton.identity.v1.IdentityTenantService/UpdateOrganization"
+	IdentityTenantService_ArchiveOrganization_FullMethodName = "/badminton.identity.v1.IdentityTenantService/ArchiveOrganization"
+	IdentityTenantService_ListRegistrations_FullMethodName   = "/badminton.identity.v1.IdentityTenantService/ListRegistrations"
+	IdentityTenantService_ReviewRegistration_FullMethodName  = "/badminton.identity.v1.IdentityTenantService/ReviewRegistration"
 )
 
 // IdentityTenantServiceClient is the client API for IdentityTenantService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 //
-// Identity is authoritative for tenant, venue, and staff scope.
+// Tenant owns organization CRUD. Venue and Staff have their own services.
 type IdentityTenantServiceClient interface {
 	ListOrganizations(ctx context.Context, in *TenantListOrganizationsRequest, opts ...grpc.CallOption) (*TenantOrganizationsResponse, error)
 	GetOrganization(ctx context.Context, in *TenantGetOrganizationRequest, opts ...grpc.CallOption) (*TenantOrganizationResponse, error)
 	CreateOrganization(ctx context.Context, in *TenantCreateOrganizationRequest, opts ...grpc.CallOption) (*TenantOrganizationResponse, error)
 	UpdateOrganization(ctx context.Context, in *TenantUpdateOrganizationRequest, opts ...grpc.CallOption) (*TenantOrganizationResponse, error)
 	ArchiveOrganization(ctx context.Context, in *TenantArchiveOrganizationRequest, opts ...grpc.CallOption) (*TenantOrganizationResponse, error)
-	ListPublicVenues(ctx context.Context, in *TenantListPublicVenuesRequest, opts ...grpc.CallOption) (*TenantVenuesResponse, error)
-	GetPublicVenue(ctx context.Context, in *TenantGetPublicVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	GetPublicVenueByID(ctx context.Context, in *TenantGetPublicVenueByIDRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	ListVenues(ctx context.Context, in *TenantListVenuesRequest, opts ...grpc.CallOption) (*TenantVenuesResponse, error)
-	GetVenue(ctx context.Context, in *TenantGetVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	CreateVenue(ctx context.Context, in *TenantCreateVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	UpdateVenue(ctx context.Context, in *TenantUpdateVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	ArchiveVenue(ctx context.Context, in *TenantArchiveVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	AuthorizeVenue(ctx context.Context, in *TenantAuthorizeVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error)
-	SetOrganizationStaff(ctx context.Context, in *TenantSetOrganizationStaffRequest, opts ...grpc.CallOption) (*TenantStaffResponse, error)
-	SetVenueStaff(ctx context.Context, in *TenantSetVenueStaffRequest, opts ...grpc.CallOption) (*TenantVenueStaffResponse, error)
+	ListRegistrations(ctx context.Context, in *TenantListRegistrationsRequest, opts ...grpc.CallOption) (*TenantRegistrationsResponse, error)
+	ReviewRegistration(ctx context.Context, in *TenantReviewRegistrationRequest, opts ...grpc.CallOption) (*TenantRegistrationResponse, error)
 }
 
 type identityTenantServiceClient struct {
@@ -119,110 +101,20 @@ func (c *identityTenantServiceClient) ArchiveOrganization(ctx context.Context, i
 	return out, nil
 }
 
-func (c *identityTenantServiceClient) ListPublicVenues(ctx context.Context, in *TenantListPublicVenuesRequest, opts ...grpc.CallOption) (*TenantVenuesResponse, error) {
+func (c *identityTenantServiceClient) ListRegistrations(ctx context.Context, in *TenantListRegistrationsRequest, opts ...grpc.CallOption) (*TenantRegistrationsResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenuesResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_ListPublicVenues_FullMethodName, in, out, cOpts...)
+	out := new(TenantRegistrationsResponse)
+	err := c.cc.Invoke(ctx, IdentityTenantService_ListRegistrations_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *identityTenantServiceClient) GetPublicVenue(ctx context.Context, in *TenantGetPublicVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
+func (c *identityTenantServiceClient) ReviewRegistration(ctx context.Context, in *TenantReviewRegistrationRequest, opts ...grpc.CallOption) (*TenantRegistrationResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_GetPublicVenue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) GetPublicVenueByID(ctx context.Context, in *TenantGetPublicVenueByIDRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_GetPublicVenueByID_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) ListVenues(ctx context.Context, in *TenantListVenuesRequest, opts ...grpc.CallOption) (*TenantVenuesResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenuesResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_ListVenues_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) GetVenue(ctx context.Context, in *TenantGetVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_GetVenue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) CreateVenue(ctx context.Context, in *TenantCreateVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_CreateVenue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) UpdateVenue(ctx context.Context, in *TenantUpdateVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_UpdateVenue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) ArchiveVenue(ctx context.Context, in *TenantArchiveVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_ArchiveVenue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) AuthorizeVenue(ctx context.Context, in *TenantAuthorizeVenueRequest, opts ...grpc.CallOption) (*TenantVenueResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_AuthorizeVenue_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) SetOrganizationStaff(ctx context.Context, in *TenantSetOrganizationStaffRequest, opts ...grpc.CallOption) (*TenantStaffResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantStaffResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_SetOrganizationStaff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityTenantServiceClient) SetVenueStaff(ctx context.Context, in *TenantSetVenueStaffRequest, opts ...grpc.CallOption) (*TenantVenueStaffResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(TenantVenueStaffResponse)
-	err := c.cc.Invoke(ctx, IdentityTenantService_SetVenueStaff_FullMethodName, in, out, cOpts...)
+	out := new(TenantRegistrationResponse)
+	err := c.cc.Invoke(ctx, IdentityTenantService_ReviewRegistration_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -233,24 +125,15 @@ func (c *identityTenantServiceClient) SetVenueStaff(ctx context.Context, in *Ten
 // All implementations must embed UnimplementedIdentityTenantServiceServer
 // for forward compatibility.
 //
-// Identity is authoritative for tenant, venue, and staff scope.
+// Tenant owns organization CRUD. Venue and Staff have their own services.
 type IdentityTenantServiceServer interface {
 	ListOrganizations(context.Context, *TenantListOrganizationsRequest) (*TenantOrganizationsResponse, error)
 	GetOrganization(context.Context, *TenantGetOrganizationRequest) (*TenantOrganizationResponse, error)
 	CreateOrganization(context.Context, *TenantCreateOrganizationRequest) (*TenantOrganizationResponse, error)
 	UpdateOrganization(context.Context, *TenantUpdateOrganizationRequest) (*TenantOrganizationResponse, error)
 	ArchiveOrganization(context.Context, *TenantArchiveOrganizationRequest) (*TenantOrganizationResponse, error)
-	ListPublicVenues(context.Context, *TenantListPublicVenuesRequest) (*TenantVenuesResponse, error)
-	GetPublicVenue(context.Context, *TenantGetPublicVenueRequest) (*TenantVenueResponse, error)
-	GetPublicVenueByID(context.Context, *TenantGetPublicVenueByIDRequest) (*TenantVenueResponse, error)
-	ListVenues(context.Context, *TenantListVenuesRequest) (*TenantVenuesResponse, error)
-	GetVenue(context.Context, *TenantGetVenueRequest) (*TenantVenueResponse, error)
-	CreateVenue(context.Context, *TenantCreateVenueRequest) (*TenantVenueResponse, error)
-	UpdateVenue(context.Context, *TenantUpdateVenueRequest) (*TenantVenueResponse, error)
-	ArchiveVenue(context.Context, *TenantArchiveVenueRequest) (*TenantVenueResponse, error)
-	AuthorizeVenue(context.Context, *TenantAuthorizeVenueRequest) (*TenantVenueResponse, error)
-	SetOrganizationStaff(context.Context, *TenantSetOrganizationStaffRequest) (*TenantStaffResponse, error)
-	SetVenueStaff(context.Context, *TenantSetVenueStaffRequest) (*TenantVenueStaffResponse, error)
+	ListRegistrations(context.Context, *TenantListRegistrationsRequest) (*TenantRegistrationsResponse, error)
+	ReviewRegistration(context.Context, *TenantReviewRegistrationRequest) (*TenantRegistrationResponse, error)
 	mustEmbedUnimplementedIdentityTenantServiceServer()
 }
 
@@ -276,38 +159,11 @@ func (UnimplementedIdentityTenantServiceServer) UpdateOrganization(context.Conte
 func (UnimplementedIdentityTenantServiceServer) ArchiveOrganization(context.Context, *TenantArchiveOrganizationRequest) (*TenantOrganizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ArchiveOrganization not implemented")
 }
-func (UnimplementedIdentityTenantServiceServer) ListPublicVenues(context.Context, *TenantListPublicVenuesRequest) (*TenantVenuesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListPublicVenues not implemented")
+func (UnimplementedIdentityTenantServiceServer) ListRegistrations(context.Context, *TenantListRegistrationsRequest) (*TenantRegistrationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRegistrations not implemented")
 }
-func (UnimplementedIdentityTenantServiceServer) GetPublicVenue(context.Context, *TenantGetPublicVenueRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPublicVenue not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) GetPublicVenueByID(context.Context, *TenantGetPublicVenueByIDRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPublicVenueByID not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) ListVenues(context.Context, *TenantListVenuesRequest) (*TenantVenuesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListVenues not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) GetVenue(context.Context, *TenantGetVenueRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetVenue not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) CreateVenue(context.Context, *TenantCreateVenueRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateVenue not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) UpdateVenue(context.Context, *TenantUpdateVenueRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateVenue not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) ArchiveVenue(context.Context, *TenantArchiveVenueRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ArchiveVenue not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) AuthorizeVenue(context.Context, *TenantAuthorizeVenueRequest) (*TenantVenueResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AuthorizeVenue not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) SetOrganizationStaff(context.Context, *TenantSetOrganizationStaffRequest) (*TenantStaffResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetOrganizationStaff not implemented")
-}
-func (UnimplementedIdentityTenantServiceServer) SetVenueStaff(context.Context, *TenantSetVenueStaffRequest) (*TenantVenueStaffResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetVenueStaff not implemented")
+func (UnimplementedIdentityTenantServiceServer) ReviewRegistration(context.Context, *TenantReviewRegistrationRequest) (*TenantRegistrationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReviewRegistration not implemented")
 }
 func (UnimplementedIdentityTenantServiceServer) mustEmbedUnimplementedIdentityTenantServiceServer() {}
 func (UnimplementedIdentityTenantServiceServer) testEmbeddedByValue()                               {}
@@ -420,200 +276,38 @@ func _IdentityTenantService_ArchiveOrganization_Handler(srv interface{}, ctx con
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IdentityTenantService_ListPublicVenues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantListPublicVenuesRequest)
+func _IdentityTenantService_ListRegistrations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TenantListRegistrationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).ListPublicVenues(ctx, in)
+		return srv.(IdentityTenantServiceServer).ListRegistrations(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: IdentityTenantService_ListPublicVenues_FullMethodName,
+		FullMethod: IdentityTenantService_ListRegistrations_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).ListPublicVenues(ctx, req.(*TenantListPublicVenuesRequest))
+		return srv.(IdentityTenantServiceServer).ListRegistrations(ctx, req.(*TenantListRegistrationsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IdentityTenantService_GetPublicVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantGetPublicVenueRequest)
+func _IdentityTenantService_ReviewRegistration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TenantReviewRegistrationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).GetPublicVenue(ctx, in)
+		return srv.(IdentityTenantServiceServer).ReviewRegistration(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: IdentityTenantService_GetPublicVenue_FullMethodName,
+		FullMethod: IdentityTenantService_ReviewRegistration_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).GetPublicVenue(ctx, req.(*TenantGetPublicVenueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_GetPublicVenueByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantGetPublicVenueByIDRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).GetPublicVenueByID(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_GetPublicVenueByID_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).GetPublicVenueByID(ctx, req.(*TenantGetPublicVenueByIDRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_ListVenues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantListVenuesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).ListVenues(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_ListVenues_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).ListVenues(ctx, req.(*TenantListVenuesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_GetVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantGetVenueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).GetVenue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_GetVenue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).GetVenue(ctx, req.(*TenantGetVenueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_CreateVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantCreateVenueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).CreateVenue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_CreateVenue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).CreateVenue(ctx, req.(*TenantCreateVenueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_UpdateVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantUpdateVenueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).UpdateVenue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_UpdateVenue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).UpdateVenue(ctx, req.(*TenantUpdateVenueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_ArchiveVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantArchiveVenueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).ArchiveVenue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_ArchiveVenue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).ArchiveVenue(ctx, req.(*TenantArchiveVenueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_AuthorizeVenue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantAuthorizeVenueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).AuthorizeVenue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_AuthorizeVenue_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).AuthorizeVenue(ctx, req.(*TenantAuthorizeVenueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_SetOrganizationStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantSetOrganizationStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).SetOrganizationStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_SetOrganizationStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).SetOrganizationStaff(ctx, req.(*TenantSetOrganizationStaffRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityTenantService_SetVenueStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TenantSetVenueStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityTenantServiceServer).SetVenueStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityTenantService_SetVenueStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityTenantServiceServer).SetVenueStaff(ctx, req.(*TenantSetVenueStaffRequest))
+		return srv.(IdentityTenantServiceServer).ReviewRegistration(ctx, req.(*TenantReviewRegistrationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -646,48 +340,12 @@ var IdentityTenantService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _IdentityTenantService_ArchiveOrganization_Handler,
 		},
 		{
-			MethodName: "ListPublicVenues",
-			Handler:    _IdentityTenantService_ListPublicVenues_Handler,
+			MethodName: "ListRegistrations",
+			Handler:    _IdentityTenantService_ListRegistrations_Handler,
 		},
 		{
-			MethodName: "GetPublicVenue",
-			Handler:    _IdentityTenantService_GetPublicVenue_Handler,
-		},
-		{
-			MethodName: "GetPublicVenueByID",
-			Handler:    _IdentityTenantService_GetPublicVenueByID_Handler,
-		},
-		{
-			MethodName: "ListVenues",
-			Handler:    _IdentityTenantService_ListVenues_Handler,
-		},
-		{
-			MethodName: "GetVenue",
-			Handler:    _IdentityTenantService_GetVenue_Handler,
-		},
-		{
-			MethodName: "CreateVenue",
-			Handler:    _IdentityTenantService_CreateVenue_Handler,
-		},
-		{
-			MethodName: "UpdateVenue",
-			Handler:    _IdentityTenantService_UpdateVenue_Handler,
-		},
-		{
-			MethodName: "ArchiveVenue",
-			Handler:    _IdentityTenantService_ArchiveVenue_Handler,
-		},
-		{
-			MethodName: "AuthorizeVenue",
-			Handler:    _IdentityTenantService_AuthorizeVenue_Handler,
-		},
-		{
-			MethodName: "SetOrganizationStaff",
-			Handler:    _IdentityTenantService_SetOrganizationStaff_Handler,
-		},
-		{
-			MethodName: "SetVenueStaff",
-			Handler:    _IdentityTenantService_SetVenueStaff_Handler,
+			MethodName: "ReviewRegistration",
+			Handler:    _IdentityTenantService_ReviewRegistration_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

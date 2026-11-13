@@ -8,6 +8,7 @@ const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage').then((mod
 const RegisterPage = lazy(() => import('@/features/auth/pages/RegisterPage').then((module) => ({ default: module.RegisterPage })))
 const UserHomePage = lazy(() => import('@/features/user/pages/UserHomePage').then((module) => ({ default: module.UserHomePage })))
 const TenantDashboardPage = lazy(() => import('@/features/tenant/pages/TenantDashboardPage').then((module) => ({ default: module.TenantDashboardPage })))
+const TenantRegistrationPage = lazy(() => import('@/features/tenant/pages/TenantRegistrationPage').then((module) => ({ default: module.TenantRegistrationPage })))
 const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })))
 
 const fallback = <div className="route-loader">Loading…</div>
@@ -22,7 +23,7 @@ export function router(portal: Portal) {
   const routes = [
     { path: '/login', element: <Suspense fallback={fallback}><LoginPage /></Suspense> },
     ...(portal === 'user' ? [{ path: '/register', element: <Suspense fallback={fallback}><RegisterPage /></Suspense> }] : []),
-    { element: <ProtectedRoute />, children: [{ path: '/', element: protectedPage }] },
+    { element: <ProtectedRoute />, children: [{ path: '/', element: protectedPage }, ...(portal === 'user' ? [{ path: '/tenant/register', element: <Suspense fallback={fallback}><TenantRegistrationPage /></Suspense> }] : [])] },
     { path: '*', element: <NotFoundPage /> }
   ]
 

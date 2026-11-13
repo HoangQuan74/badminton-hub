@@ -141,3 +141,26 @@ footer { display: flex; justify-content: space-between; padding: 25px clamp(24px
   footer { flex-direction: column; gap: 7px; padding: 24px 20px; }.form-row { font-size: 13px; }
   .portal-header { align-items: flex-start; gap: 12px; }.portal-user > span { display: none; }.portal-intro { align-items: flex-start; flex-direction: column; }.portal-intro h1 { font-size: 38px; }.metric-grid { grid-template-columns: 1fr; }.portal-panel { padding: 21px; }.panel-heading { align-items: start; flex-direction: column; }.two-column-panels { grid-template-columns: 1fr; gap: 1px; }.two-column-panels > div { min-height: auto; padding: 22px; }.portal-nav { grid-template-columns: repeat(2, 1fr); }.portal-nav a { justify-content: flex-start; text-align: left; }.portal-nav a svg { display: block; }
 }
+
+
+.resource-manager { margin-block: 1.5rem; }
+.resource-form { margin-block: 1rem; }
+.resource-form fieldset { border: 0; padding: 0; margin: 0 0 1rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.resource-form legend { margin-bottom: 1rem; font-weight: 700; }
+.resource-form label { display: grid; gap: .5rem; }
+.resource-form input, .resource-form select { width: 100%; min-height: 44px; padding: .75rem; border: 1px solid #cbd5e1; border-radius: .5rem; background: #fff; color: #172a25; }
+.resource-form input:focus-visible, .resource-form select:focus-visible { outline: 3px solid #81bfa3; outline-offset: 2px; }
+.resource-form fieldset:disabled { opacity: .7; }
+.resource-actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.resource-form .resource-actions { grid-column: 1 / -1; }
+.resource-list { padding: 0; margin: 1rem 0; list-style: none; }
+.resource-list > li { display: flex; justify-content: space-between; gap: 1rem; align-items: center; padding-block: 1rem; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
+.resource-list p { margin-block: .35rem; }
+@media (max-width: 640px) {
+  .resource-form fieldset { grid-template-columns: 1fr; }
+  .resource-list > li { align-items: flex-start; flex-direction: column; }
+}
+
+.resource-form textarea, .resource-note textarea { width: 100%; min-height: 96px; padding: .75rem; border: 1px solid #cbd5e1; border-radius: .5rem; font: inherit; resize: vertical; }
+.registration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 1rem; margin-block: 1rem; }
+.resource-note { display: grid; gap: .5rem; margin-block: 1rem; }

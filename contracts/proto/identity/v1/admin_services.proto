@@ -15,14 +15,7 @@ service IdentityAdminAuthService {
   rpc ChangePassword(ChangePasswordRequest) returns (Empty);
 }
 
-service IdentityStaffService {
-  rpc ListStaff(ListStaffRequest) returns (StaffListResponse);
-  rpc CreateStaff(CreateStaffRequest) returns (StaffResponse);
-  rpc GetStaff(GetStaffRequest) returns (StaffResponse);
-  rpc UpdateStaff(UpdateStaffRequest) returns (StaffResponse);
-  rpc DeleteStaff(DeleteStaffRequest) returns (Empty);
-  rpc UpdateStaffAccess(UpdateStaffAccessRequest) returns (StaffResponse);
-}
+
 
 service IdentityRoleService {
   rpc ListRoles(ListRolesRequest) returns (RoleListResponse);
@@ -31,5 +24,4 @@ service IdentityRoleService {
   rpc UpdateRole(UpdateRoleRequest) returns (RoleResponse);
   rpc DeleteRole(DeleteRoleRequest) returns (Empty);
   rpc ReplaceRolePermissions(ReplaceRolePermissionsRequest) returns (RoleResponse);
-  rpc ListPermissions(ListPermissionsRequest) returns (PermissionListResponse);
 }

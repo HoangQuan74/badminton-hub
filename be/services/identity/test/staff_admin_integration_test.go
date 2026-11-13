@@ -12,18 +12,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	identityConfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
+	identityApp "github.com/kainguyen/badminton-hub/be/services/identity/internal/app"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/auth"
-	"github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/role"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/staff"
+	identityException "github.com/kainguyen/badminton-hub/be/services/identity/internal/exception"
+	rolepostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/repository/postgres/role"
+	staffpostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/repository/postgres/staff"
+	userpostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/repository/postgres/user"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/security"
-	authpostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/storage/postgres/repository/auth"
-	rolepostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/storage/postgres/repository/role"
-	staffpostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/storage/postgres/repository/staff"
-	userpostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/storage/postgres/repository/user"
-	authgrpc "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/auth"
-	rolegrpc "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/role"
-	staffgrpc "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/staff"
-	usergrpc "github.com/kainguyen/badminton-hub/be/services/identity/internal/transport/grpc/user"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -55,19 +51,15 @@ func TestAdminStaffGRPCContract(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	admin, err := repository.Create(ctx, staff.CreateParams{Email: uuid.NewString() + "@example.test", PasswordHash: hash, FullName: "Admin API test", IsAdmin: true})
+	admin, err := repository.CreateStaff(ctx, staff.CreateStaffParams{Email: uuid.NewString() + "@example.test", PasswordHash: hash, FullName: "Admin API test", IsAdmin: true})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = repository.Delete(context.Background(), admin.ID) })
+	t.Cleanup(func() { _ = repository.DeleteStaff(context.Background(), admin.ID) })
 	cfg := identityConfig.Config{JWTSecret: "integration-test-secret-with-sufficient-length", AccessTokenTTL: time.Minute, RefreshTokenTTL: time.Hour}
 	listener := bufconn.Listen(1024 * 1024)
 	grpcServer := grpc.NewServer()
-	identityV1.RegisterIdentityAdminAuthServiceServer(grpcServer, authgrpc.NewAdminServer(cfg, pool))
-	identityV1.RegisterIdentityStaffServiceServer(grpcServer, staffgrpc.NewStaffServer(cfg, pool))
-	identityV1.RegisterIdentityRoleServiceServer(grpcServer, rolegrpc.NewHandler(cfg, pool))
-	identityV1.RegisterIdentityAuthServiceServer(grpcServer, authgrpc.NewUserServer(cfg, pool))
-	identityV1.RegisterIdentityUserServiceServer(grpcServer, usergrpc.NewUserServer(cfg, pool))
+	identityApp.RegisterGRPCServices(cfg, pool)(grpcServer)
 	go func() { _ = grpcServer.Serve(listener) }()
 	t.Cleanup(grpcServer.Stop)
 	conn, err := grpc.NewClient("passthrough:///buffer", grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) { return listener.Dial() }))
@@ -92,7 +84,7 @@ func TestAdminStaffGRPCContract(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = userpostgres.NewRepository(pool).Delete(context.Background(), createdUser.GetId()) })
+	t.Cleanup(func() { _ = userpostgres.NewRepository(pool).DeleteUser(context.Background(), createdUser.GetId()) })
 	authClient := identityV1.NewIdentityAuthServiceClient(conn)
 	if _, err := authClient.Login(ctx, &identityV1.LoginRequest{Email: userEmail, Password: "user-password", Portal: "user"}); err != nil {
 		t.Fatalf("user login: %v", err)
@@ -110,7 +102,7 @@ func TestAdminStaffGRPCContract(t *testing.T) {
 	if _, err := roleClient.ListRoles(ctx, &identityV1.ListRolesRequest{AccessToken: access}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := roleClient.ListPermissions(ctx, &identityV1.ListPermissionsRequest{AccessToken: access}); err != nil {
+	if _, err := identityV1.NewIdentityPermissionServiceClient(conn).ListPermissions(ctx, &identityV1.ListPermissionsRequest{AccessToken: access}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := roleClient.ListRoles(ctx, &identityV1.ListRolesRequest{AccessToken: "invalid"}); status.Code(err) != codes.Unauthenticated {
@@ -133,14 +125,14 @@ func TestAdminStaffSessionsAndPassword(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	created, err := repository.Create(ctx, staff.CreateParams{Email: uuid.NewString() + "@example.test", PasswordHash: hash, FullName: "Admin test", IsAdmin: true})
+	created, err := repository.CreateStaff(ctx, staff.CreateStaffParams{Email: uuid.NewString() + "@example.test", PasswordHash: hash, FullName: "Admin test", IsAdmin: true})
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = repository.Delete(context.Background(), created.ID) })
-	service := auth.NewAdminService(authpostgres.NewAuthRepository(pool), auth.NewTokenManager("integration-test-secret-with-sufficient-length", time.Minute, time.Hour))
+	t.Cleanup(func() { _ = repository.DeleteStaff(context.Background(), created.ID) })
+	service := staff.NewAccountService(staffpostgres.NewRepository(pool), auth.NewTokenManager("integration-test-secret-with-sufficient-length", time.Minute, time.Hour))
 
-	if _, _, err := service.Login(ctx, created.Email, "wrong"); !errors.Is(err, auth.ErrInvalidCredentials) {
+	if _, _, err := service.Login(ctx, created.Email, "wrong"); !errors.Is(err, identityException.ErrAuthInvalidCredentials) {
 		t.Fatalf("wrong password: %v", err)
 	}
 	_, pair, err := service.Login(ctx, created.Email, "password-one")
@@ -161,7 +153,7 @@ func TestAdminStaffSessionsAndPassword(t *testing.T) {
 	for err := range results {
 		if err == nil {
 			successes++
-		} else if errors.Is(err, auth.ErrInvalidToken) {
+		} else if errors.Is(err, identityException.ErrAuthInvalidToken) {
 			rejected++
 		} else {
 			t.Fatalf("refresh: %v", err)
@@ -170,7 +162,7 @@ func TestAdminStaffSessionsAndPassword(t *testing.T) {
 	if successes != 1 || rejected != 1 {
 		t.Fatalf("refresh results success=%d rejected=%d", successes, rejected)
 	}
-	if err := service.ChangePassword(ctx, created.ID, "wrong", "password-two"); !errors.Is(err, auth.ErrInvalidCredentials) {
+	if err := service.ChangePassword(ctx, created.ID, "wrong", "password-two"); !errors.Is(err, identityException.ErrAuthInvalidCredentials) {
 		t.Fatalf("incorrect current password: %v", err)
 	}
 	if err := service.ChangePassword(ctx, created.ID, "password-one", "password-two"); err != nil {
@@ -179,10 +171,10 @@ func TestAdminStaffSessionsAndPassword(t *testing.T) {
 	if _, _, err := service.Login(ctx, created.Email, "password-two"); err != nil {
 		t.Fatalf("new password: %v", err)
 	}
-	if _, err := service.Refresh(ctx, pair.RefreshToken); !errors.Is(err, auth.ErrInvalidToken) {
+	if _, err := service.Refresh(ctx, pair.RefreshToken); !errors.Is(err, identityException.ErrAuthInvalidToken) {
 		t.Fatalf("replayed refresh: %v", err)
 	}
-	if err := service.Logout(ctx, ""); !errors.Is(err, auth.ErrInvalidToken) {
+	if err := service.Logout(ctx, ""); !errors.Is(err, identityException.ErrAuthInvalidToken) {
 		t.Fatalf("empty logout: %v", err)
 	}
 }
@@ -219,10 +211,10 @@ func TestStaffRolePermissionsRollback(t *testing.T) {
 	if err != nil || updated.Description != "updated" {
 		t.Fatalf("update role: %+v %v", updated, err)
 	}
-	if _, err := repository.GetRole(ctx, uuid.NewString()); !errors.Is(err, role.ErrNotFound) {
+	if _, err := repository.GetRole(ctx, uuid.NewString()); !errors.Is(err, identityException.ErrRoleNotFound) {
 		t.Fatalf("missing role: %v", err)
 	}
-	if _, err := repository.GetRole(ctx, "bad-id"); !errors.Is(err, role.ErrInvalidInput) {
+	if _, err := repository.GetRole(ctx, "bad-id"); !errors.Is(err, identityException.ErrRoleInvalidInput) {
 		t.Fatalf("invalid role: %v", err)
 	}
 }

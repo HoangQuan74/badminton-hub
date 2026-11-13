@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: onboard_test
+      POSTGRES_PASSWORD: onboard_test_local
+      POSTGRES_DB: onboard_test
+    ports:
+      - "127.0.0.1::5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onboard_test -d onboard_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  migrate:
+    image: migrate/migrate:v4.19.1
+    volumes:
+      - ../../../services/identity/internal/storage/postgres/schema/migrations:/migrations:ro
+    command:
+      - -path=/migrations
+      - -database=postgres://onboard_test:onboard_test_local@postgres:5432/onboard_test?sslmode=disable
+      - up

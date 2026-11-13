@@ -274,305 +274,12 @@ var IdentityAdminAuthService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	IdentityStaffService_ListStaff_FullMethodName         = "/badminton.identity.v1.IdentityStaffService/ListStaff"
-	IdentityStaffService_CreateStaff_FullMethodName       = "/badminton.identity.v1.IdentityStaffService/CreateStaff"
-	IdentityStaffService_GetStaff_FullMethodName          = "/badminton.identity.v1.IdentityStaffService/GetStaff"
-	IdentityStaffService_UpdateStaff_FullMethodName       = "/badminton.identity.v1.IdentityStaffService/UpdateStaff"
-	IdentityStaffService_DeleteStaff_FullMethodName       = "/badminton.identity.v1.IdentityStaffService/DeleteStaff"
-	IdentityStaffService_UpdateStaffAccess_FullMethodName = "/badminton.identity.v1.IdentityStaffService/UpdateStaffAccess"
-)
-
-// IdentityStaffServiceClient is the client API for IdentityStaffService service.
-//
-// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type IdentityStaffServiceClient interface {
-	ListStaff(ctx context.Context, in *ListStaffRequest, opts ...grpc.CallOption) (*StaffListResponse, error)
-	CreateStaff(ctx context.Context, in *CreateStaffRequest, opts ...grpc.CallOption) (*StaffResponse, error)
-	GetStaff(ctx context.Context, in *GetStaffRequest, opts ...grpc.CallOption) (*StaffResponse, error)
-	UpdateStaff(ctx context.Context, in *UpdateStaffRequest, opts ...grpc.CallOption) (*StaffResponse, error)
-	DeleteStaff(ctx context.Context, in *DeleteStaffRequest, opts ...grpc.CallOption) (*Empty, error)
-	UpdateStaffAccess(ctx context.Context, in *UpdateStaffAccessRequest, opts ...grpc.CallOption) (*StaffResponse, error)
-}
-
-type identityStaffServiceClient struct {
-	cc grpc.ClientConnInterface
-}
-
-func NewIdentityStaffServiceClient(cc grpc.ClientConnInterface) IdentityStaffServiceClient {
-	return &identityStaffServiceClient{cc}
-}
-
-func (c *identityStaffServiceClient) ListStaff(ctx context.Context, in *ListStaffRequest, opts ...grpc.CallOption) (*StaffListResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StaffListResponse)
-	err := c.cc.Invoke(ctx, IdentityStaffService_ListStaff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityStaffServiceClient) CreateStaff(ctx context.Context, in *CreateStaffRequest, opts ...grpc.CallOption) (*StaffResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StaffResponse)
-	err := c.cc.Invoke(ctx, IdentityStaffService_CreateStaff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityStaffServiceClient) GetStaff(ctx context.Context, in *GetStaffRequest, opts ...grpc.CallOption) (*StaffResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StaffResponse)
-	err := c.cc.Invoke(ctx, IdentityStaffService_GetStaff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityStaffServiceClient) UpdateStaff(ctx context.Context, in *UpdateStaffRequest, opts ...grpc.CallOption) (*StaffResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StaffResponse)
-	err := c.cc.Invoke(ctx, IdentityStaffService_UpdateStaff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityStaffServiceClient) DeleteStaff(ctx context.Context, in *DeleteStaffRequest, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, IdentityStaffService_DeleteStaff_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *identityStaffServiceClient) UpdateStaffAccess(ctx context.Context, in *UpdateStaffAccessRequest, opts ...grpc.CallOption) (*StaffResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(StaffResponse)
-	err := c.cc.Invoke(ctx, IdentityStaffService_UpdateStaffAccess_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// IdentityStaffServiceServer is the server API for IdentityStaffService service.
-// All implementations must embed UnimplementedIdentityStaffServiceServer
-// for forward compatibility.
-type IdentityStaffServiceServer interface {
-	ListStaff(context.Context, *ListStaffRequest) (*StaffListResponse, error)
-	CreateStaff(context.Context, *CreateStaffRequest) (*StaffResponse, error)
-	GetStaff(context.Context, *GetStaffRequest) (*StaffResponse, error)
-	UpdateStaff(context.Context, *UpdateStaffRequest) (*StaffResponse, error)
-	DeleteStaff(context.Context, *DeleteStaffRequest) (*Empty, error)
-	UpdateStaffAccess(context.Context, *UpdateStaffAccessRequest) (*StaffResponse, error)
-	mustEmbedUnimplementedIdentityStaffServiceServer()
-}
-
-// UnimplementedIdentityStaffServiceServer must be embedded to have
-// forward compatible implementations.
-//
-// NOTE: this should be embedded by value instead of pointer to avoid a nil
-// pointer dereference when methods are called.
-type UnimplementedIdentityStaffServiceServer struct{}
-
-func (UnimplementedIdentityStaffServiceServer) ListStaff(context.Context, *ListStaffRequest) (*StaffListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListStaff not implemented")
-}
-func (UnimplementedIdentityStaffServiceServer) CreateStaff(context.Context, *CreateStaffRequest) (*StaffResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateStaff not implemented")
-}
-func (UnimplementedIdentityStaffServiceServer) GetStaff(context.Context, *GetStaffRequest) (*StaffResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetStaff not implemented")
-}
-func (UnimplementedIdentityStaffServiceServer) UpdateStaff(context.Context, *UpdateStaffRequest) (*StaffResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateStaff not implemented")
-}
-func (UnimplementedIdentityStaffServiceServer) DeleteStaff(context.Context, *DeleteStaffRequest) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteStaff not implemented")
-}
-func (UnimplementedIdentityStaffServiceServer) UpdateStaffAccess(context.Context, *UpdateStaffAccessRequest) (*StaffResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateStaffAccess not implemented")
-}
-func (UnimplementedIdentityStaffServiceServer) mustEmbedUnimplementedIdentityStaffServiceServer() {}
-func (UnimplementedIdentityStaffServiceServer) testEmbeddedByValue()                              {}
-
-// UnsafeIdentityStaffServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to IdentityStaffServiceServer will
-// result in compilation errors.
-type UnsafeIdentityStaffServiceServer interface {
-	mustEmbedUnimplementedIdentityStaffServiceServer()
-}
-
-func RegisterIdentityStaffServiceServer(s grpc.ServiceRegistrar, srv IdentityStaffServiceServer) {
-	// If the following call pancis, it indicates UnimplementedIdentityStaffServiceServer was
-	// embedded by pointer and is nil.  This will cause panics if an
-	// unimplemented method is ever invoked, so we test this at initialization
-	// time to prevent it from happening at runtime later due to I/O.
-	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
-		t.testEmbeddedByValue()
-	}
-	s.RegisterService(&IdentityStaffService_ServiceDesc, srv)
-}
-
-func _IdentityStaffService_ListStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityStaffServiceServer).ListStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityStaffService_ListStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityStaffServiceServer).ListStaff(ctx, req.(*ListStaffRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityStaffService_CreateStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityStaffServiceServer).CreateStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityStaffService_CreateStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityStaffServiceServer).CreateStaff(ctx, req.(*CreateStaffRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityStaffService_GetStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityStaffServiceServer).GetStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityStaffService_GetStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityStaffServiceServer).GetStaff(ctx, req.(*GetStaffRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityStaffService_UpdateStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityStaffServiceServer).UpdateStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityStaffService_UpdateStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityStaffServiceServer).UpdateStaff(ctx, req.(*UpdateStaffRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityStaffService_DeleteStaff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteStaffRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityStaffServiceServer).DeleteStaff(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityStaffService_DeleteStaff_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityStaffServiceServer).DeleteStaff(ctx, req.(*DeleteStaffRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IdentityStaffService_UpdateStaffAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateStaffAccessRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityStaffServiceServer).UpdateStaffAccess(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityStaffService_UpdateStaffAccess_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityStaffServiceServer).UpdateStaffAccess(ctx, req.(*UpdateStaffAccessRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// IdentityStaffService_ServiceDesc is the grpc.ServiceDesc for IdentityStaffService service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var IdentityStaffService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "badminton.identity.v1.IdentityStaffService",
-	HandlerType: (*IdentityStaffServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "ListStaff",
-			Handler:    _IdentityStaffService_ListStaff_Handler,
-		},
-		{
-			MethodName: "CreateStaff",
-			Handler:    _IdentityStaffService_CreateStaff_Handler,
-		},
-		{
-			MethodName: "GetStaff",
-			Handler:    _IdentityStaffService_GetStaff_Handler,
-		},
-		{
-			MethodName: "UpdateStaff",
-			Handler:    _IdentityStaffService_UpdateStaff_Handler,
-		},
-		{
-			MethodName: "DeleteStaff",
-			Handler:    _IdentityStaffService_DeleteStaff_Handler,
-		},
-		{
-			MethodName: "UpdateStaffAccess",
-			Handler:    _IdentityStaffService_UpdateStaffAccess_Handler,
-		},
-	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "identity/v1/admin_services.proto",
-}
-
-const (
 	IdentityRoleService_ListRoles_FullMethodName              = "/badminton.identity.v1.IdentityRoleService/ListRoles"
 	IdentityRoleService_CreateRole_FullMethodName             = "/badminton.identity.v1.IdentityRoleService/CreateRole"
 	IdentityRoleService_GetRole_FullMethodName                = "/badminton.identity.v1.IdentityRoleService/GetRole"
 	IdentityRoleService_UpdateRole_FullMethodName             = "/badminton.identity.v1.IdentityRoleService/UpdateRole"
 	IdentityRoleService_DeleteRole_FullMethodName             = "/badminton.identity.v1.IdentityRoleService/DeleteRole"
 	IdentityRoleService_ReplaceRolePermissions_FullMethodName = "/badminton.identity.v1.IdentityRoleService/ReplaceRolePermissions"
-	IdentityRoleService_ListPermissions_FullMethodName        = "/badminton.identity.v1.IdentityRoleService/ListPermissions"
 )
 
 // IdentityRoleServiceClient is the client API for IdentityRoleService service.
@@ -585,7 +292,6 @@ type IdentityRoleServiceClient interface {
 	UpdateRole(ctx context.Context, in *UpdateRoleRequest, opts ...grpc.CallOption) (*RoleResponse, error)
 	DeleteRole(ctx context.Context, in *DeleteRoleRequest, opts ...grpc.CallOption) (*Empty, error)
 	ReplaceRolePermissions(ctx context.Context, in *ReplaceRolePermissionsRequest, opts ...grpc.CallOption) (*RoleResponse, error)
-	ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*PermissionListResponse, error)
 }
 
 type identityRoleServiceClient struct {
@@ -656,16 +362,6 @@ func (c *identityRoleServiceClient) ReplaceRolePermissions(ctx context.Context, 
 	return out, nil
 }
 
-func (c *identityRoleServiceClient) ListPermissions(ctx context.Context, in *ListPermissionsRequest, opts ...grpc.CallOption) (*PermissionListResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PermissionListResponse)
-	err := c.cc.Invoke(ctx, IdentityRoleService_ListPermissions_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // IdentityRoleServiceServer is the server API for IdentityRoleService service.
 // All implementations must embed UnimplementedIdentityRoleServiceServer
 // for forward compatibility.
@@ -676,7 +372,6 @@ type IdentityRoleServiceServer interface {
 	UpdateRole(context.Context, *UpdateRoleRequest) (*RoleResponse, error)
 	DeleteRole(context.Context, *DeleteRoleRequest) (*Empty, error)
 	ReplaceRolePermissions(context.Context, *ReplaceRolePermissionsRequest) (*RoleResponse, error)
-	ListPermissions(context.Context, *ListPermissionsRequest) (*PermissionListResponse, error)
 	mustEmbedUnimplementedIdentityRoleServiceServer()
 }
 
@@ -704,9 +399,6 @@ func (UnimplementedIdentityRoleServiceServer) DeleteRole(context.Context, *Delet
 }
 func (UnimplementedIdentityRoleServiceServer) ReplaceRolePermissions(context.Context, *ReplaceRolePermissionsRequest) (*RoleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplaceRolePermissions not implemented")
-}
-func (UnimplementedIdentityRoleServiceServer) ListPermissions(context.Context, *ListPermissionsRequest) (*PermissionListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListPermissions not implemented")
 }
 func (UnimplementedIdentityRoleServiceServer) mustEmbedUnimplementedIdentityRoleServiceServer() {}
 func (UnimplementedIdentityRoleServiceServer) testEmbeddedByValue()                             {}
@@ -837,24 +529,6 @@ func _IdentityRoleService_ReplaceRolePermissions_Handler(srv interface{}, ctx co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _IdentityRoleService_ListPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListPermissionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IdentityRoleServiceServer).ListPermissions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IdentityRoleService_ListPermissions_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IdentityRoleServiceServer).ListPermissions(ctx, req.(*ListPermissionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // IdentityRoleService_ServiceDesc is the grpc.ServiceDesc for IdentityRoleService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -885,10 +559,6 @@ var IdentityRoleService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ReplaceRolePermissions",
 			Handler:    _IdentityRoleService_ReplaceRolePermissions_Handler,
-		},
-		{
-			MethodName: "ListPermissions",
-			Handler:    _IdentityRoleService_ListPermissions_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

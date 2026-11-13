@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package badminton.identity.v1;
+
+import "identity/v1/common.proto";
+
+option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
+
+service IdentityPermissionService {
+  rpc ListPermissions(ListPermissionsRequest) returns (PermissionListResponse);
+  rpc CreatePermission(CreatePermissionRequest) returns (PermissionResponse);
+  rpc GetPermission(GetPermissionRequest) returns (PermissionResponse);
+  rpc UpdatePermission(UpdatePermissionRequest) returns (PermissionResponse);
+  rpc DeletePermission(DeletePermissionRequest) returns (Empty);
+}
+
+message PermissionResponse { Permission permission = 1; }
+message CreatePermissionRequest {
+  string access_token = 1;
+  string module = 2;
+  string path = 3;
+  string action = 4;
+  string description = 5;
+}
+message GetPermissionRequest { string access_token = 1; string permission_id = 2; }
+message UpdatePermissionRequest {
+  string access_token = 1;
+  string permission_id = 2;
+  string module = 3;
+  string path = 4;
+  string action = 5;
+  string description = 6;
+}
+message DeletePermissionRequest { string access_token = 1; string permission_id = 2; }
+
+message Permission { string id = 1; string module = 2; string path = 3; string action = 4; string description = 5; }
+message PermissionListResponse { repeated Permission permissions = 1; }
+message ListPermissionsRequest { string access_token = 1; }

@@ -42,11 +42,13 @@ type meResponse struct {
 func NewHandler(client identityV1.IdentityAuthServiceClient) *Handler {
 	return &Handler{client: client}
 }
+
 func (h *Handler) Register(c *gin.Context) {
 	var input authRequest.RegisterRequest
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.Register(
 		request.RPCContext(c, platformService.UserGateway),
 		&identityV1.RegisterRequest{
@@ -56,18 +58,34 @@ func (h *Handler) Register(c *gin.Context) {
 			Phone:    input.Phone,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusCreated)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusCreated,
+	)
 }
+
 func (h *Handler) Login(c *gin.Context) {
 	var input authRequest.CredentialsRequest
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.Login(
 		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.LoginRequest{Email: input.Email, Password: input.Password, Portal: "user"},
+		&identityV1.LoginRequest{
+			Email:    input.Email,
+			Password: input.Password,
+			Portal:   "user",
+		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *Handler) Refresh(c *gin.Context) {
@@ -75,28 +93,53 @@ func (h *Handler) Refresh(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.Refresh(
 		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.RefreshRequest{RefreshToken: input.RefreshToken, Portal: "user"},
+		&identityV1.RefreshRequest{
+			RefreshToken: input.RefreshToken,
+			Portal:       "user",
+		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
+
 func (h *Handler) Logout(c *gin.Context) {
 	var input authRequest.RefreshRequest
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	_, err := h.client.Logout(
 		request.RPCContext(c, platformService.UserGateway),
 		&identityV1.LogoutRequest{RefreshToken: input.RefreshToken},
 	)
-	exception.WriteGRPC(c, nil, err, http.StatusNoContent)
+	exception.WriteGRPC(
+		c,
+		nil,
+		err,
+		http.StatusNoContent,
+	)
 }
+
 func (h *Handler) CurrentUser(c *gin.Context) {
 	token := strings.TrimSpace(strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer "))
 	result, err := h.client.GetCurrentUser(
 		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.GetCurrentUserRequest{AccessToken: token, Portal: "user"},
+		&identityV1.GetCurrentUserRequest{
+			AccessToken: token,
+			Portal:      "user",
+		},
 	)
-	exception.WriteGRPC(c, meResponse{User: result}, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		meResponse{User: result},
+		err,
+		http.StatusOK,
+	)
 }

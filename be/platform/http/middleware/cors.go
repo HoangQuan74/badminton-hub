@@ -9,7 +9,7 @@ import (
 
 const (
 	allowMethods = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-	allowHeaders = "Accept, Accept-Language, Authorization, Content-Type, X-Request-ID, X-Correlation-ID"
+	allowHeaders = "Accept, Accept-Language, Authorization, Content-Type, Idempotency-Key, X-Request-ID, X-Correlation-ID"
 )
 
 // CORS allows browser clients from the configured, comma-separated origins.
@@ -43,7 +43,7 @@ func CORS(configuredOrigins string) gin.HandlerFunc {
 		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Methods", allowMethods)
 		c.Header("Access-Control-Allow-Headers", allowHeaders)
-		c.Header("Access-Control-Expose-Headers", "X-Request-ID, X-Correlation-ID")
+		c.Header("Access-Control-Expose-Headers", "X-Request-ID, X-Correlation-ID, Location, Idempotency-Replayed, Idempotency-Key-Expires-At")
 		c.Header("Vary", "Origin")
 
 		if c.Request.Method == http.MethodOptions {

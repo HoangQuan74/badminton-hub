@@ -1,10 +1,10 @@
 package config
 
 import (
-	"errors"
 	"time"
 
 	"github.com/caarlos0/env/v10"
+	socketException "github.com/kainguyen/badminton-hub/be/services/socket/internal/exception"
 )
 
 type Config struct {
@@ -22,7 +22,7 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	if len(cfg.JWTSecret) < 32 {
-		return Config{}, errors.New("SOCKET_JWT_SECRET must contain at least 32 characters")
+		return Config{}, socketException.ErrJWTSecretTooShort
 	}
 	return cfg, nil
 }

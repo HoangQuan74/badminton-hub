@@ -2,49 +2,43 @@ syntax = "proto3";
 
 package badminton.identity.v1;
 
+import "identity/v1/auth.proto";
+import "identity/v1/staff.proto";
+
 option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
 
-// Identity is authoritative for tenant, venue, and staff scope.
+// Tenant owns organization CRUD. Venue and Staff have their own services.
 service IdentityTenantService {
   rpc ListOrganizations(TenantListOrganizationsRequest) returns (TenantOrganizationsResponse);
   rpc GetOrganization(TenantGetOrganizationRequest) returns (TenantOrganizationResponse);
   rpc CreateOrganization(TenantCreateOrganizationRequest) returns (TenantOrganizationResponse);
   rpc UpdateOrganization(TenantUpdateOrganizationRequest) returns (TenantOrganizationResponse);
   rpc ArchiveOrganization(TenantArchiveOrganizationRequest) returns (TenantOrganizationResponse);
-  rpc ListPublicVenues(TenantListPublicVenuesRequest) returns (TenantVenuesResponse);
-  rpc GetPublicVenue(TenantGetPublicVenueRequest) returns (TenantVenueResponse);
-  rpc GetPublicVenueByID(TenantGetPublicVenueByIDRequest) returns (TenantVenueResponse);
-  rpc ListVenues(TenantListVenuesRequest) returns (TenantVenuesResponse);
-  rpc GetVenue(TenantGetVenueRequest) returns (TenantVenueResponse);
-  rpc CreateVenue(TenantCreateVenueRequest) returns (TenantVenueResponse);
-  rpc UpdateVenue(TenantUpdateVenueRequest) returns (TenantVenueResponse);
-  rpc ArchiveVenue(TenantArchiveVenueRequest) returns (TenantVenueResponse);
-  rpc AuthorizeVenue(TenantAuthorizeVenueRequest) returns (TenantVenueResponse);
-  rpc SetOrganizationStaff(TenantSetOrganizationStaffRequest) returns (TenantStaffResponse);
-  rpc SetVenueStaff(TenantSetVenueStaffRequest) returns (TenantVenueStaffResponse);
+  rpc ListRegistrations(TenantListRegistrationsRequest) returns (TenantRegistrationsResponse);
+  rpc ReviewRegistration(TenantReviewRegistrationRequest) returns (TenantRegistrationResponse);
 }
 
 message TenantOrganization { string id = 1; string name = 2; string slug = 3; string status = 4; string created_at = 5; string updated_at = 6; }
-message TenantVenue { string id = 1; string organization_id = 2; string name = 3; string slug = 4; string address = 5; string timezone = 6; string status = 7; }
-message TenantOrganizationResponse { TenantOrganization organization = 1; }
+message TenantOrganizationResponse {
+  TenantOrganization organization = 1;
+  UserResponse user = 2;
+  TenantStaffResponse membership = 3;
+  bool idempotency_replayed = 4;
+  string idempotency_key_expires_at = 5;
+}
 message TenantOrganizationsResponse { repeated TenantOrganization items = 1; }
-message TenantVenueResponse { TenantVenue venue = 1; }
-message TenantVenuesResponse { repeated TenantVenue items = 1; }
 message TenantListOrganizationsRequest { string access_token = 1; }
 message TenantGetOrganizationRequest { string access_token = 1; string organization_id = 2; }
-message TenantCreateOrganizationRequest { string access_token = 1; string name = 2; string slug = 3; }
+message TenantCreateOrganizationRequest { string access_token = 1; string name = 2; string slug = 3; string idempotency_key = 4; string contact_name = 5; string contact_email = 6; string contact_phone = 7; string note = 8; }
 message TenantUpdateOrganizationRequest { string access_token = 1; string organization_id = 2; optional string name = 3; optional string slug = 4; }
 message TenantArchiveOrganizationRequest { string access_token = 1; string organization_id = 2; }
-message TenantListPublicVenuesRequest {}
-message TenantGetPublicVenueRequest { string slug = 1; }
-message TenantGetPublicVenueByIDRequest { string venue_id = 1; }
-message TenantListVenuesRequest { string access_token = 1; }
-message TenantGetVenueRequest { string access_token = 1; string venue_id = 2; }
-message TenantCreateVenueRequest { string access_token = 1; string organization_id = 2; string name = 3; string slug = 4; string address = 5; string timezone = 6; }
-message TenantUpdateVenueRequest { string access_token = 1; string venue_id = 2; optional string name = 3; optional string slug = 4; optional string address = 5; optional string timezone = 6; }
-message TenantArchiveVenueRequest { string access_token = 1; string venue_id = 2; }
-message TenantAuthorizeVenueRequest { string access_token = 1; string venue_id = 2; bool require_owner = 3; }
-message TenantSetOrganizationStaffRequest { string access_token = 1; string organization_id = 2; string user_id = 3; string role = 4; string status = 5; }
-message TenantStaffResponse { string organization_id = 1; string user_id = 2; string role = 3; string status = 4; }
-message TenantSetVenueStaffRequest { string access_token = 1; string venue_id = 2; string user_id = 3; string status = 4; }
-message TenantVenueStaffResponse { string organization_id = 1; string venue_id = 2; string user_id = 3; string status = 4; }
+
+message TenantListRegistrationsRequest { string access_token = 1; string status = 2; }
+message TenantReviewRegistrationRequest { string access_token = 1; string organization_id = 2; string decision = 3; string note = 4; }
+message TenantRegistration {
+ TenantOrganization organization = 1;
+ string contact_name = 2; string contact_email = 3; string contact_phone = 4; string note = 5;
+ string review_decision = 6; string review_note = 7; string reviewer_id = 8; string reviewed_at = 9;
+}
+message TenantRegistrationsResponse { repeated TenantRegistration items = 1; }
+message TenantRegistrationResponse { TenantRegistration registration = 1; }

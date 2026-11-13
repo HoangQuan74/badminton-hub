@@ -10,7 +10,217 @@ tags:
     description: User registration and token operations.
   - name: Profile
     description: Current user profile.
+  - name: Tenant
+    description: Tenant CRUD through Identity, including creation by authenticated customers.
 paths:
+  /api/v1/tenant:
+    post:
+      operationId: createTenant
+      tags: [Tenant]
+      summary: Create a tenant and assign the authenticated account as its owner.
+      x-implementation-status: implemented
+      description: |
+        Implemented in source; apply Identity migrations 000004 and 000005 before rolling
+        out Identity and then User Gateway. Deployment evidence is separate.
+        Accept an active customer or existing tenant owner using their existing
+        access token. No existing tenant membership is required. Reject admin
+        and suspended accounts; staff enrollment returns TENANT_ROLE_CONFLICT.
+        Atomically provision the owner role, create a PENDING_VERIFICATION
+        organization, its ACTIVE owner membership, registration contacts, and the idempotency result.
+        This neither approves the organization nor creates/publishes a venue.
+        No credentials, tokens, actor IDs, roles, or status fields are accepted
+        in the body. Unknown properties are rejected.
+
+        Trim name and contact fields; lowercase slug and contact email. Omitted
+        contacts fall back to the authenticated account details. The
+        normalized slug must match ^[a-z0-9]+(?:-[a-z0-9]+)*$.
+        Limits apply to both raw and normalized values. Hash normalized business
+        fields for idempotency, excluding token, language, and request IDs.
+        Scope keys by authenticated actor and operation. Retain a committed
+        result for 24 hours from commit; disclose its expiry in the response.
+        Same key and payload replays the original 201 response body; a different
+        payload returns 409 IDEMPOTENCY_KEY_CONFLICT. Recheck account eligibility
+        before replay. Concurrent identical calls create only one organization.
+        Validation/eligibility failures and rolled-back writes do not consume
+        the key. In-flight duplicates wait within the deadline; uncertain
+        500/502/504 or transport outcomes must retry the same key and payload.
+        After expiry, inspect current organizations before starting another
+        attempt; replay is no longer guaranteed. Replay bodies are historical
+        snapshots; refetch the organization for its current state.
+      security: [{bearerAuth: []}]
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: UUID v4. Keep unchanged for retries of the same submitted payload.
+          schema:
+            type: string
+            format: uuid
+            minLength: 36
+            maxLength: 36
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+          example: 84f6cb1a-27b1-4e9b-9a14-95e36cfbbac6
+        - name: Accept-Language
+          in: header
+          description: Optional language preference; supported languages are vi and en. English fallback.
+          schema: {type: string, maxLength: 128}
+          example: vi
+        - name: lang
+          in: query
+          description: Optional error language override, taking precedence over Accept-Language.
+          schema: {type: string, enum: [vi, en]}
+      requestBody:
+        required: true
+        description: application/json, optionally with UTF-8 charset; maximum encoded body size 4096 bytes.
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/TenantCreateRequest'}
+            example:
+              name: Smash Center
+              slug: smash-center
+              contact_name: Nguyen Van A
+              contact_email: owner@example.com
+              contact_phone: '0901234567'
+              note: Please contact me in the morning.
+      responses:
+        '201':
+          description: Enrollment committed, or its original committed response replayed. Approval remains pending.
+          headers:
+            Location:
+              description: Relative authenticated organization-detail URL.
+              schema: {type: string}
+              example: /api/v1/tenant/10000000-0000-4000-8000-000000000001
+            Idempotency-Replayed:
+              description: False for the first committed response; true for a replay.
+              schema: {type: boolean}
+            Idempotency-Key-Expires-At:
+              description: Replay retention deadline, 24 hours after the original commit; never extended by replay.
+              schema: {type: string, format: date-time}
+              example: '2026-11-12T03:00:00Z'
+            X-Request-ID:
+              description: Current request ID, including on replay; not part of the stored response body.
+              schema: {type: string}
+            Cache-Control:
+              description: All responses from this operation use no-store.
+              schema: {type: string, enum: [no-store]}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateResponse'}
+              example:
+                user:
+                  id: 00000000-0000-4000-8000-000000000003
+                  email: owner@example.com
+                  full_name: Nguyen Van A
+                  phone: ''
+                  status: active
+                  created_at: '2026-11-11T02:55:00Z'
+                  roles: [tenant_owner]
+                  is_admin: false
+                organization:
+                  id: 10000000-0000-4000-8000-000000000001
+                  name: Smash Center
+                  slug: smash-center
+                  status: PENDING_VERIFICATION
+                  created_at: '2026-11-11T03:00:00Z'
+                  updated_at: '2026-11-11T03:00:00Z'
+                membership:
+                  organization_id: 10000000-0000-4000-8000-000000000001
+                  user_id: 00000000-0000-4000-8000-000000000003
+                  role: tenant_owner
+                  status: ACTIVE
+        '400':
+          description: INVALID_REQUEST; malformed JSON, unknown properties, invalid name/slug/key, or unsupported lang. Optional field errors use name, slug, or idempotency_key (the header).
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+              example:
+                error:
+                  code: INVALID_REQUEST
+                  message: Please check the submitted information.
+                  request_id: req_example
+                  fields:
+                    - field: slug
+                      code: SLUG_INVALID
+                      message: Use letters, numbers, and single hyphens between segments.
+        '401':
+          description: UNAUTHORIZED; missing, malformed, invalid, expired token, or subject account no longer exists. No writes.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+        '403':
+          description: FORBIDDEN; suspended or admin account. Replay does not bypass eligibility.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+        '409':
+          description: ORGANIZATION_SLUG_ALREADY_EXISTS, IDEMPOTENCY_KEY_CONFLICT, or TENANT_ROLE_CONFLICT. No partial role or membership changes.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+              examples:
+                slugTaken:
+                  value:
+                    error:
+                      code: ORGANIZATION_SLUG_ALREADY_EXISTS
+                      message: This organization slug is already in use.
+                      request_id: req_example
+                      fields:
+                        - {field: slug, code: SLUG_TAKEN, message: Choose another slug.}
+                keyConflict:
+                  value:
+                    error:
+                      code: IDEMPOTENCY_KEY_CONFLICT
+                      message: This key belongs to another submitted payload.
+                      request_id: req_example
+                roleConflict:
+                  value:
+                    error:
+                      code: TENANT_ROLE_CONFLICT
+                      message: This account role cannot enroll through this flow.
+                      request_id: req_example
+        '413':
+          description: PAYLOAD_TOO_LARGE; encoded body exceeds 4096 bytes.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+        '415':
+          description: UNSUPPORTED_MEDIA_TYPE; application/json required.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+        '500':
+          description: INTERNAL_ERROR; safe generic message. A lost response or commit acknowledgement may leave the outcome unknown; retain the key.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+        '502':
+          description: DEPENDENCY_UNAVAILABLE; recognized upstream/storage connectivity failure. Retry the same key and payload.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+        '504':
+          description: DEPENDENCY_TIMEOUT; write outcome may be unknown. Retry the same key and payload.
+          headers: {X-Request-ID: {$ref: '#/components/headers/TenantCreateRequestId'}, Cache-Control: {$ref: '#/components/headers/TenantCreateNoStore'}}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TenantCreateErrorEnvelope'}
+    get:
+      operationId: listTenants
+      tags: [Tenant]
+      responses:
+        '200':
+          description: Organizations with active membership for this operator.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationListResponse'}
   /api/v1/venues:
     get:
       operationId: listPublicVenues
@@ -37,38 +247,10 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/VenueResponse'}
         '404': {description: Published venue not found.}
-  /api/v1/tenant/organizations:
+  /api/v1/tenant/{organization_id}:
     get:
-      operationId: listTenantOrganizations
-      tags: [Catalog]
-      responses:
-        '200':
-          description: Organizations with active membership for this operator.
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/OrganizationListResponse'}
-    post:
-      operationId: createTenantOrganization
-      tags: [Catalog]
-      description: Tenant owner only; creates a PENDING_VERIFICATION organization and its owner membership atomically. Admin approval is separate.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/CreateOrganizationRequest'}
-      responses:
-        '201':
-          description: Organization created; approval is required before venue creation.
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/OrganizationResponse'}
-        '400': {description: Invalid name or slug.}
-        '403': {description: Tenant owner role required.}
-        '409': {description: Organization slug already exists.}
-  /api/v1/tenant/organizations/{organization_id}:
-    get:
-      operationId: getTenantOrganization
-      tags: [Catalog]
+      operationId: getTenant
+      tags: [Tenant]
       parameters:
         - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
       responses:
@@ -79,8 +261,8 @@ paths:
               schema: {$ref: '#/components/schemas/OrganizationResponse'}
         '404': {description: Organization not found or not accessible.}
     patch:
-      operationId: updateTenantOrganization
-      tags: [Catalog]
+      operationId: updateTenant
+      tags: [Tenant]
       description: Owner only; omitted fields are unchanged. Updates are allowed in pending or active state.
       parameters:
         - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
@@ -99,8 +281,8 @@ paths:
         '403': {description: Owner membership required.}
         '409': {description: Slug conflict or organization state does not permit updates.}
     delete:
-      operationId: archiveTenantOrganization
-      tags: [Catalog]
+      operationId: archiveTenant
+      tags: [Tenant]
       description: Owner only; only PENDING_VERIFICATION organizations can be archived. Active organizations require the separate administrative lifecycle.
       parameters:
         - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
@@ -108,11 +290,54 @@ paths:
         '204': {description: Pending organization archived.}
         '403': {description: Owner membership required.}
         '409': {description: Organization is not pending verification.}
-  /api/v1/tenant/organizations/{organization_id}/staff/{user_id}:
+  /api/v1/tenant/{organization_id}/staff:
+    parameters:
+      - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+    get:
+      operationId: listOrganizationStaff
+      tags: [Tenant]
+      description: Owner only. Returns existing memberships with account details and active venue assignment IDs.
+      responses:
+        '200':
+          description: Organization staff directory.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/OrganizationStaffMember'}
+        '403': {description: Owner membership required.}
+    post:
+      operationId: addOrganizationStaff
+      tags: [Tenant]
+      description: Owner of an ACTIVE organization only. Adds an existing active account by email and assigns the requested staff role atomically. No invitation is sent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, role]
+              properties:
+                email: {type: string, format: email}
+                role: {type: string, enum: [tenant_staff, venue_staff]}
+      responses:
+        '201':
+          description: Staff membership added.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OrganizationStaffMember'}
+        '400': {description: Invalid email, role or identifier.}
+        '403': {description: Approved organization owner required.}
+        '404': {description: Account not found.}
+        '409': {description: Account has an incompatible role.}
+  /api/v1/tenant/{organization_id}/staff/{user_id}:
     put:
       operationId: setTenantOrganizationStaff
       tags: [Auth]
-      description: Owner only. Set membership for an existing active user with the matching global staff role.
+      description: Owner only. Set membership for an existing active user with the matching global staff role. Deactivating membership also revokes all venue assignments atomically.
       security: [{bearerAuth: []}]
       parameters:
         - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
@@ -131,6 +356,17 @@ paths:
         '200': {description: Membership updated.}
         '400': {description: 'Invalid role, status or identifier.'}
         '403': {description: Owner access or eligible tenant/user could not be verified.}
+    delete:
+      operationId: removeOrganizationStaff
+      tags: [Tenant]
+      description: Owner only. Deactivates membership and all venue assignments in one transaction. Owner membership cannot be removed here.
+      parameters:
+        - {name: organization_id, in: path, required: true, schema: {type: string, format: uuid}}
+        - {name: user_id, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '204': {description: Staff access revoked.}
+        '400': {description: Invalid identifier.}
+        '403': {description: Owner access or eligible membership could not be verified.}
   /api/v1/tenant/venues/{venue_id}/staff/{user_id}:
     put:
       operationId: setTenantVenueStaff
@@ -153,7 +389,7 @@ paths:
         '200': {description: Venue assignment updated.}
         '400': {description: Invalid status or identifier.}
         '403': {description: Owner access or eligible venue/staff membership could not be verified.}
-  /api/v1/tenant/organizations/{organization_id}/venues:
+  /api/v1/tenant/{organization_id}/venues:
     post:
       operationId: createTenantVenue
       tags: [Catalog]
@@ -570,6 +806,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
 components:
+  headers:
+    TenantCreateRequestId:
+      description: Current request ID; also included in the error body.
+      schema: {type: string}
+    TenantCreateNoStore:
+      description: Never cache responses from the tenant creation operation.
+      schema: {type: string, enum: [no-store]}
   parameters:
     VenueId:
       name: venue_id
@@ -587,6 +830,87 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    TenantCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [name, slug]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+          pattern: '\S'
+          allOf:
+            - pattern: '^[^\u0000]*$'
+          description: Required; 1-120 Unicode characters before and after trimming outer whitespace. Internal spacing/case is preserved; NUL characters are invalid.
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+          pattern: '^\s*[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\s*$'
+          description: Trim outer whitespace and lowercase ASCII letters. Normalized value is 1-100 ASCII characters; no leading/trailing/repeated hyphens. Unique across all organization states, including archived.
+          x-normalized-pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$'
+        contact_name: {type: string, maxLength: 120, description: Optional contact name; defaults to the current account name.}
+        contact_email: {type: string, maxLength: 254, description: Optional email address; defaults to the current account email when empty.}
+        contact_phone: {type: string, maxLength: 30, description: Optional contact phone; defaults to the current account phone when empty.}
+        note: {type: string, maxLength: 1000}
+    TenantCreateResponse:
+      type: object
+      required: [user, organization, membership]
+      properties:
+        user:
+          allOf:
+            - {$ref: '#/components/schemas/User'}
+            - type: object
+              required: [roles, is_admin]
+              properties:
+                roles:
+                  type: array
+                  minItems: 1
+                  maxItems: 1
+                  items: {type: string, enum: [tenant_owner]}
+                is_admin: {type: boolean, enum: [false]}
+                status: {type: string, enum: [active]}
+        organization:
+          allOf:
+            - {$ref: '#/components/schemas/Organization'}
+            - type: object
+              required: [id, name, slug, status, created_at, updated_at]
+              properties:
+                status: {type: string, enum: [PENDING_VERIFICATION]}
+        membership:
+          type: object
+          required: [organization_id, user_id, role, status]
+          properties:
+            organization_id: {type: string, format: uuid}
+            user_id: {type: string, format: uuid}
+            role: {type: string, enum: [tenant_owner]}
+            status: {type: string, enum: [ACTIVE]}
+    TenantCreateErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              enum: [INVALID_REQUEST, UNAUTHORIZED, FORBIDDEN, ORGANIZATION_SLUG_ALREADY_EXISTS, IDEMPOTENCY_KEY_CONFLICT, TENANT_ROLE_CONFLICT, PAYLOAD_TOO_LARGE, UNSUPPORTED_MEDIA_TYPE, INTERNAL_ERROR, DEPENDENCY_UNAVAILABLE, DEPENDENCY_TIMEOUT]
+            message:
+              type: string
+              description: Safe localized text; clients branch on code, never message.
+            request_id: {type: string}
+            fields:
+              type: array
+              description: Optional field feedback; never echoes submitted values.
+              items:
+                type: object
+                required: [field, code, message]
+                properties:
+                  field: {type: string, enum: [name, slug, idempotency_key]}
+                  code: {type: string, enum: [REQUIRED, TOO_LONG, NAME_INVALID, SLUG_INVALID, UUID_INVALID, SLUG_TAKEN]}
+                  message: {type: string}
     Organization:
       type: object
       properties:
@@ -596,12 +920,6 @@ components:
         status: {type: string, enum: [PENDING_VERIFICATION, ACTIVE, SUSPENDED, REJECTED, ARCHIVED]}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}
-    CreateOrganizationRequest:
-      type: object
-      required: [name, slug]
-      properties:
-        name: {type: string, maxLength: 120}
-        slug: {type: string, maxLength: 100}
     UpdateOrganizationRequest:
       type: object
       minProperties: 1
@@ -618,6 +936,18 @@ components:
         items:
           type: array
           items: {$ref: '#/components/schemas/Organization'}
+    OrganizationStaffMember:
+      type: object
+      properties:
+        organization_id: {type: string, format: uuid}
+        user_id: {type: string, format: uuid}
+        role: {type: string, enum: [tenant_owner, tenant_staff, venue_staff]}
+        status: {type: string, enum: [ACTIVE, INACTIVE]}
+        email: {type: string, format: email}
+        full_name: {type: string}
+        venue_ids:
+          type: array
+          items: {type: string, format: uuid}
     CreateVenueRequest:
       type: object
       required: [name, slug]

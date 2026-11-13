@@ -1,10 +1,10 @@
 package identityConfig
 
 import (
-	"errors"
 	"time"
 
 	"github.com/caarlos0/env/v10"
+	identityException "github.com/kainguyen/badminton-hub/be/services/identity/internal/exception"
 )
 
 type Config struct {
@@ -26,7 +26,7 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 	if len(cfg.JWTSecret) < 32 {
-		return Config{}, errors.New("IDENTITY_JWT_SECRET must contain at least 32 characters")
+		return Config{}, identityException.ErrJWTSecretTooShort
 	}
 	return cfg, nil
 }

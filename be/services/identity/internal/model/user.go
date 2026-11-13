@@ -2,20 +2,15 @@ package model
 
 import "time"
 
-type Status string
-
-const (
-	StatusActive    Status = "active"
-	StatusSuspended Status = "suspended"
-)
+type AccountStatus string
 
 type User struct {
 	ID           string
 	Email        string
-	PasswordHash string
+	PasswordHash string `json:"-"`
 	FullName     string
 	Phone        string
-	Status       Status
+	Status       AccountStatus
 	RoleName     string
 	IsAdmin      bool
 	CreatedAt    time.Time

@@ -33,11 +33,20 @@ func (h *TenantAuthHandler) Login(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.Login(
 		request.RPCContext(c, platformService.UserGateway),
-		&identityV1.LoginRequest{Email: input.Email, Password: input.Password},
+		&identityV1.LoginRequest{
+			Email:    input.Email,
+			Password: input.Password,
+		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *TenantAuthHandler) Refresh(c *gin.Context) {
@@ -45,28 +54,47 @@ func (h *TenantAuthHandler) Refresh(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.Refresh(
 		request.RPCContext(c, platformService.UserGateway),
 		&identityV1.RefreshRequest{RefreshToken: input.RefreshToken},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
+
 func (h *TenantAuthHandler) Logout(c *gin.Context) {
 	var input authRequest.RefreshRequest
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	_, err := h.client.Logout(
 		request.RPCContext(c, platformService.UserGateway),
 		&identityV1.LogoutRequest{RefreshToken: input.RefreshToken},
 	)
-	exception.WriteGRPC(c, nil, err, http.StatusNoContent)
+	exception.WriteGRPC(
+		c,
+		nil,
+		err,
+		http.StatusNoContent,
+	)
 }
+
 func (h *TenantAuthHandler) CurrentUser(c *gin.Context) {
 	token := strings.TrimSpace(strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer "))
 	result, err := h.client.GetCurrentUser(
 		request.RPCContext(c, platformService.UserGateway),
 		&identityV1.GetCurrentUserRequest{AccessToken: token},
 	)
-	exception.WriteGRPC(c, meResponse{User: result}, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		meResponse{User: result},
+		err,
+		http.StatusOK,
+	)
 }

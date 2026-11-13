@@ -1,0 +1,19 @@
+{"en":{
+  "INVALID_REQUEST":"Please check the submitted information.",
+  "UNAUTHORIZED":"Authentication is required.",
+  "FORBIDDEN":"This account cannot enroll as an owner.",
+  "ORGANIZATION_SLUG_ALREADY_EXISTS":"This organization slug is already in use.",
+  "IDEMPOTENCY_KEY_CONFLICT":"This key belongs to another submitted payload.",
+  "TENANT_ROLE_CONFLICT":"This account role cannot enroll through this flow.",
+  "PAYLOAD_TOO_LARGE":"The request body exceeds 4096 bytes.",
+  "UNSUPPORTED_MEDIA_TYPE":"Send the request as application/json.",
+  "INTERNAL_ERROR":"The request could not be completed. Keep the same key when retrying.",
+  "DEPENDENCY_UNAVAILABLE":"A required service is unavailable. Retry with the same key.",
+  "DEPENDENCY_TIMEOUT":"The result is uncertain. Retry with the same key.",
+  "REQUIRED":"This field is required.",
+  "TOO_LONG":"This value exceeds the allowed length.",
+  "NAME_INVALID":"The organization name contains an unsupported character.",
+  "SLUG_INVALID":"Use letters, numbers, and single hyphens between segments.",
+  "UUID_INVALID":"Provide a valid UUID v4 idempotency key.",
+  "SLUG_TAKEN":"Choose another organization slug."
+}}

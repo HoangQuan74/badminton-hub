@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/domain/catalog"
+	catalogException "github.com/kainguyen/badminton-hub/be/services/catalog/internal/exception"
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/model"
 )
 
@@ -44,7 +45,7 @@ func TestCreateVenueRejectsInvalidInput(t *testing.T) {
 	for _, input := range tests {
 		repository := &venueRepositoryStub{}
 		_, err := catalog.NewService(repository).CreateVenue(context.Background(), "actor", input)
-		if !errors.Is(err, catalog.ErrInvalidInput) || repository.calls != 0 {
+		if !errors.Is(err, catalogException.ErrInvalidInput) || repository.calls != 0 {
 			t.Fatalf("input=%+v error=%v calls=%d", input, err, repository.calls)
 		}
 	}

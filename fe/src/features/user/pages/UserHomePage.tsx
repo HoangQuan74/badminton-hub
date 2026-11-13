@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { CalendarDays, ChevronRight, Clock3, LogOut, MapPin, Search, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router'
@@ -68,6 +69,7 @@ export function UserHomePage() {
           </div>
         </section>
 
+        <section className="content-section"><Link className="primary-button" to="/tenant/register">{t('registration.title')}</Link></section>
         <section className="quick-strip" id="bookings"><div><span className="quick-icon"><CalendarDays /></span><div><p className="eyebrow">{t('user.upcoming')}</p><h2>{t('user.noBookings')}</h2><p>{t('user.noBookingsDescription')}</p></div></div><button className="secondary-button" type="button">{t('user.exploreVenues')}</button></section>
       </main>
       <footer><span>© 2026 BadmintonHub</span><span>{t('user.footer')}</span></footer>

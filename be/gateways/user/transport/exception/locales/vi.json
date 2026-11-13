@@ -1,0 +1,19 @@
+{"vi":{
+  "INVALID_REQUEST":"Vui lòng kiểm tra thông tin đã nhập.",
+  "UNAUTHORIZED":"Vui lòng đăng nhập để tiếp tục.",
+  "FORBIDDEN":"Tài khoản này không được đăng ký làm chủ sân.",
+  "ORGANIZATION_SLUG_ALREADY_EXISTS":"Slug tổ chức này đã được sử dụng.",
+  "IDEMPOTENCY_KEY_CONFLICT":"Key này thuộc về một nội dung đăng ký khác.",
+  "TENANT_ROLE_CONFLICT":"Vai trò hiện tại chưa hỗ trợ đăng ký làm chủ sân qua luồng này.",
+  "PAYLOAD_TOO_LARGE":"Nội dung gửi lên vượt quá 4096 byte.",
+  "UNSUPPORTED_MEDIA_TYPE":"Vui lòng gửi nội dung dạng application/json.",
+  "INTERNAL_ERROR":"Chưa thể hoàn tất yêu cầu. Giữ nguyên key khi thử lại.",
+  "DEPENDENCY_UNAVAILABLE":"Dịch vụ đang gián đoạn. Vui lòng thử lại với cùng key.",
+  "DEPENDENCY_TIMEOUT":"Chưa xác định được kết quả. Vui lòng thử lại với cùng key.",
+  "REQUIRED":"Thông tin này là bắt buộc.",
+  "TOO_LONG":"Thông tin vượt quá độ dài cho phép.",
+  "NAME_INVALID":"Tên tổ chức có ký tự không được hỗ trợ.",
+  "SLUG_INVALID":"Slug chỉ gồm chữ cái, chữ số và dấu gạch nối giữa các phần.",
+  "UUID_INVALID":"Vui lòng cung cấp idempotency key đúng định dạng UUID v4.",
+  "SLUG_TAKEN":"Vui lòng chọn slug tổ chức khác."
+}}

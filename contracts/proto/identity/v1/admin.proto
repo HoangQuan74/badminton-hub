@@ -3,30 +3,9 @@ syntax = "proto3";
 package badminton.identity.v1;
 
 import "identity/v1/auth.proto";
-import "identity/v1/common.proto";
+import "identity/v1/permission.proto";
 
 option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1";
-
-service IdentityAdminService {
-  rpc Login(AdminLoginRequest) returns (AdminAuthResponse);
-  rpc Refresh(AdminRefreshRequest) returns (AdminRefreshResponse);
-  rpc Logout(AdminLogoutRequest) returns (AdminLogoutResponse);
-  rpc GetCurrentStaff(CurrentStaffRequest) returns (StaffResponse);
-  rpc ChangePassword(ChangePasswordRequest) returns (Empty);
-  rpc ListStaff(ListStaffRequest) returns (StaffListResponse);
-  rpc CreateStaff(CreateStaffRequest) returns (StaffResponse);
-  rpc GetStaff(GetStaffRequest) returns (StaffResponse);
-  rpc UpdateStaff(UpdateStaffRequest) returns (StaffResponse);
-  rpc DeleteStaff(DeleteStaffRequest) returns (Empty);
-  rpc UpdateStaffAccess(UpdateStaffAccessRequest) returns (StaffResponse);
-  rpc ListRoles(ListRolesRequest) returns (RoleListResponse);
-  rpc CreateRole(CreateRoleRequest) returns (RoleResponse);
-  rpc GetRole(GetRoleRequest) returns (RoleResponse);
-  rpc UpdateRole(UpdateRoleRequest) returns (RoleResponse);
-  rpc DeleteRole(DeleteRoleRequest) returns (Empty);
-  rpc ReplaceRolePermissions(ReplaceRolePermissionsRequest) returns (RoleResponse);
-  rpc ListPermissions(ListPermissionsRequest) returns (PermissionListResponse);
-}
 
 message AdminLoginRequest { string email = 1; string password = 2; }
 message AdminRefreshRequest { string refresh_token = 1; }
@@ -72,7 +51,3 @@ message GetRoleRequest { string access_token = 1; string role_id = 2; }
 message UpdateRoleRequest { string access_token = 1; string role_id = 2; string name = 3; string description = 4; }
 message DeleteRoleRequest { string access_token = 1; string role_id = 2; }
 message ReplaceRolePermissionsRequest { string access_token = 1; string role_id = 2; repeated string permission_ids = 3; }
-
-message Permission { string id = 1; string module = 2; string path = 3; string action = 4; string description = 5; }
-message PermissionListResponse { repeated Permission permissions = 1; }
-message ListPermissionsRequest { string access_token = 1; }

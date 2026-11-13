@@ -105,108 +105,20 @@ func (x *TenantOrganization) GetUpdatedAt() string {
 	return ""
 }
 
-type TenantVenue struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Name           string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Slug           string                 `protobuf:"bytes,4,opt,name=slug,proto3" json:"slug,omitempty"`
-	Address        string                 `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`
-	Timezone       string                 `protobuf:"bytes,6,opt,name=timezone,proto3" json:"timezone,omitempty"`
-	Status         string                 `protobuf:"bytes,7,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *TenantVenue) Reset() {
-	*x = TenantVenue{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantVenue) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantVenue) ProtoMessage() {}
-
-func (x *TenantVenue) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantVenue.ProtoReflect.Descriptor instead.
-func (*TenantVenue) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *TenantVenue) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *TenantVenue) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *TenantVenue) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *TenantVenue) GetSlug() string {
-	if x != nil {
-		return x.Slug
-	}
-	return ""
-}
-
-func (x *TenantVenue) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *TenantVenue) GetTimezone() string {
-	if x != nil {
-		return x.Timezone
-	}
-	return ""
-}
-
-func (x *TenantVenue) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
 type TenantOrganizationResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Organization  *TenantOrganization    `protobuf:"bytes,1,opt,name=organization,proto3" json:"organization,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	Organization            *TenantOrganization    `protobuf:"bytes,1,opt,name=organization,proto3" json:"organization,omitempty"`
+	User                    *UserResponse          `protobuf:"bytes,2,opt,name=user,proto3" json:"user,omitempty"`
+	Membership              *TenantStaffResponse   `protobuf:"bytes,3,opt,name=membership,proto3" json:"membership,omitempty"`
+	IdempotencyReplayed     bool                   `protobuf:"varint,4,opt,name=idempotency_replayed,json=idempotencyReplayed,proto3" json:"idempotency_replayed,omitempty"`
+	IdempotencyKeyExpiresAt string                 `protobuf:"bytes,5,opt,name=idempotency_key_expires_at,json=idempotencyKeyExpiresAt,proto3" json:"idempotency_key_expires_at,omitempty"`
+	unknownFields           protoimpl.UnknownFields
+	sizeCache               protoimpl.SizeCache
 }
 
 func (x *TenantOrganizationResponse) Reset() {
 	*x = TenantOrganizationResponse{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[2]
+	mi := &file_identity_v1_tenant_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -218,7 +130,7 @@ func (x *TenantOrganizationResponse) String() string {
 func (*TenantOrganizationResponse) ProtoMessage() {}
 
 func (x *TenantOrganizationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[2]
+	mi := &file_identity_v1_tenant_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -231,7 +143,7 @@ func (x *TenantOrganizationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantOrganizationResponse.ProtoReflect.Descriptor instead.
 func (*TenantOrganizationResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{2}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *TenantOrganizationResponse) GetOrganization() *TenantOrganization {
@@ -239,6 +151,34 @@ func (x *TenantOrganizationResponse) GetOrganization() *TenantOrganization {
 		return x.Organization
 	}
 	return nil
+}
+
+func (x *TenantOrganizationResponse) GetUser() *UserResponse {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+func (x *TenantOrganizationResponse) GetMembership() *TenantStaffResponse {
+	if x != nil {
+		return x.Membership
+	}
+	return nil
+}
+
+func (x *TenantOrganizationResponse) GetIdempotencyReplayed() bool {
+	if x != nil {
+		return x.IdempotencyReplayed
+	}
+	return false
+}
+
+func (x *TenantOrganizationResponse) GetIdempotencyKeyExpiresAt() string {
+	if x != nil {
+		return x.IdempotencyKeyExpiresAt
+	}
+	return ""
 }
 
 type TenantOrganizationsResponse struct {
@@ -250,7 +190,7 @@ type TenantOrganizationsResponse struct {
 
 func (x *TenantOrganizationsResponse) Reset() {
 	*x = TenantOrganizationsResponse{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[3]
+	mi := &file_identity_v1_tenant_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -262,7 +202,7 @@ func (x *TenantOrganizationsResponse) String() string {
 func (*TenantOrganizationsResponse) ProtoMessage() {}
 
 func (x *TenantOrganizationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[3]
+	mi := &file_identity_v1_tenant_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -275,98 +215,10 @@ func (x *TenantOrganizationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantOrganizationsResponse.ProtoReflect.Descriptor instead.
 func (*TenantOrganizationsResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{3}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TenantOrganizationsResponse) GetItems() []*TenantOrganization {
-	if x != nil {
-		return x.Items
-	}
-	return nil
-}
-
-type TenantVenueResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Venue         *TenantVenue           `protobuf:"bytes,1,opt,name=venue,proto3" json:"venue,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantVenueResponse) Reset() {
-	*x = TenantVenueResponse{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantVenueResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantVenueResponse) ProtoMessage() {}
-
-func (x *TenantVenueResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantVenueResponse.ProtoReflect.Descriptor instead.
-func (*TenantVenueResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *TenantVenueResponse) GetVenue() *TenantVenue {
-	if x != nil {
-		return x.Venue
-	}
-	return nil
-}
-
-type TenantVenuesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*TenantVenue         `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantVenuesResponse) Reset() {
-	*x = TenantVenuesResponse{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantVenuesResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantVenuesResponse) ProtoMessage() {}
-
-func (x *TenantVenuesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantVenuesResponse.ProtoReflect.Descriptor instead.
-func (*TenantVenuesResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *TenantVenuesResponse) GetItems() []*TenantVenue {
 	if x != nil {
 		return x.Items
 	}
@@ -382,7 +234,7 @@ type TenantListOrganizationsRequest struct {
 
 func (x *TenantListOrganizationsRequest) Reset() {
 	*x = TenantListOrganizationsRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[6]
+	mi := &file_identity_v1_tenant_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -394,7 +246,7 @@ func (x *TenantListOrganizationsRequest) String() string {
 func (*TenantListOrganizationsRequest) ProtoMessage() {}
 
 func (x *TenantListOrganizationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[6]
+	mi := &file_identity_v1_tenant_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -407,7 +259,7 @@ func (x *TenantListOrganizationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantListOrganizationsRequest.ProtoReflect.Descriptor instead.
 func (*TenantListOrganizationsRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{6}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TenantListOrganizationsRequest) GetAccessToken() string {
@@ -427,7 +279,7 @@ type TenantGetOrganizationRequest struct {
 
 func (x *TenantGetOrganizationRequest) Reset() {
 	*x = TenantGetOrganizationRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[7]
+	mi := &file_identity_v1_tenant_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -439,7 +291,7 @@ func (x *TenantGetOrganizationRequest) String() string {
 func (*TenantGetOrganizationRequest) ProtoMessage() {}
 
 func (x *TenantGetOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[7]
+	mi := &file_identity_v1_tenant_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -452,7 +304,7 @@ func (x *TenantGetOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantGetOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*TenantGetOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{7}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TenantGetOrganizationRequest) GetAccessToken() string {
@@ -470,17 +322,22 @@ func (x *TenantGetOrganizationRequest) GetOrganizationId() string {
 }
 
 type TenantCreateOrganizationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken    string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Slug           string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
+	IdempotencyKey string                 `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	ContactName    string                 `protobuf:"bytes,5,opt,name=contact_name,json=contactName,proto3" json:"contact_name,omitempty"`
+	ContactEmail   string                 `protobuf:"bytes,6,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	ContactPhone   string                 `protobuf:"bytes,7,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	Note           string                 `protobuf:"bytes,8,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *TenantCreateOrganizationRequest) Reset() {
 	*x = TenantCreateOrganizationRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[8]
+	mi := &file_identity_v1_tenant_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -492,7 +349,7 @@ func (x *TenantCreateOrganizationRequest) String() string {
 func (*TenantCreateOrganizationRequest) ProtoMessage() {}
 
 func (x *TenantCreateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[8]
+	mi := &file_identity_v1_tenant_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -505,7 +362,7 @@ func (x *TenantCreateOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantCreateOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*TenantCreateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{8}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *TenantCreateOrganizationRequest) GetAccessToken() string {
@@ -529,6 +386,41 @@ func (x *TenantCreateOrganizationRequest) GetSlug() string {
 	return ""
 }
 
+func (x *TenantCreateOrganizationRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *TenantCreateOrganizationRequest) GetContactName() string {
+	if x != nil {
+		return x.ContactName
+	}
+	return ""
+}
+
+func (x *TenantCreateOrganizationRequest) GetContactEmail() string {
+	if x != nil {
+		return x.ContactEmail
+	}
+	return ""
+}
+
+func (x *TenantCreateOrganizationRequest) GetContactPhone() string {
+	if x != nil {
+		return x.ContactPhone
+	}
+	return ""
+}
+
+func (x *TenantCreateOrganizationRequest) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
 type TenantUpdateOrganizationRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken    string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
@@ -541,7 +433,7 @@ type TenantUpdateOrganizationRequest struct {
 
 func (x *TenantUpdateOrganizationRequest) Reset() {
 	*x = TenantUpdateOrganizationRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[9]
+	mi := &file_identity_v1_tenant_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -553,7 +445,7 @@ func (x *TenantUpdateOrganizationRequest) String() string {
 func (*TenantUpdateOrganizationRequest) ProtoMessage() {}
 
 func (x *TenantUpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[9]
+	mi := &file_identity_v1_tenant_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -566,7 +458,7 @@ func (x *TenantUpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantUpdateOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*TenantUpdateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{9}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *TenantUpdateOrganizationRequest) GetAccessToken() string {
@@ -607,7 +499,7 @@ type TenantArchiveOrganizationRequest struct {
 
 func (x *TenantArchiveOrganizationRequest) Reset() {
 	*x = TenantArchiveOrganizationRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[10]
+	mi := &file_identity_v1_tenant_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -619,7 +511,7 @@ func (x *TenantArchiveOrganizationRequest) String() string {
 func (*TenantArchiveOrganizationRequest) ProtoMessage() {}
 
 func (x *TenantArchiveOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[10]
+	mi := &file_identity_v1_tenant_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -632,7 +524,7 @@ func (x *TenantArchiveOrganizationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantArchiveOrganizationRequest.ProtoReflect.Descriptor instead.
 func (*TenantArchiveOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{10}
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TenantArchiveOrganizationRequest) GetAccessToken() string {
@@ -649,26 +541,255 @@ func (x *TenantArchiveOrganizationRequest) GetOrganizationId() string {
 	return ""
 }
 
-type TenantListPublicVenuesRequest struct {
+type TenantListRegistrationsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TenantListPublicVenuesRequest) Reset() {
-	*x = TenantListPublicVenuesRequest{}
+func (x *TenantListRegistrationsRequest) Reset() {
+	*x = TenantListRegistrationsRequest{}
+	mi := &file_identity_v1_tenant_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TenantListRegistrationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TenantListRegistrationsRequest) ProtoMessage() {}
+
+func (x *TenantListRegistrationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_tenant_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TenantListRegistrationsRequest.ProtoReflect.Descriptor instead.
+func (*TenantListRegistrationsRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *TenantListRegistrationsRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *TenantListRegistrationsRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type TenantReviewRegistrationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	AccessToken    string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Decision       string                 `protobuf:"bytes,3,opt,name=decision,proto3" json:"decision,omitempty"`
+	Note           string                 `protobuf:"bytes,4,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TenantReviewRegistrationRequest) Reset() {
+	*x = TenantReviewRegistrationRequest{}
+	mi := &file_identity_v1_tenant_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TenantReviewRegistrationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TenantReviewRegistrationRequest) ProtoMessage() {}
+
+func (x *TenantReviewRegistrationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_tenant_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TenantReviewRegistrationRequest.ProtoReflect.Descriptor instead.
+func (*TenantReviewRegistrationRequest) Descriptor() ([]byte, []int) {
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *TenantReviewRegistrationRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *TenantReviewRegistrationRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *TenantReviewRegistrationRequest) GetDecision() string {
+	if x != nil {
+		return x.Decision
+	}
+	return ""
+}
+
+func (x *TenantReviewRegistrationRequest) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
+type TenantRegistration struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Organization   *TenantOrganization    `protobuf:"bytes,1,opt,name=organization,proto3" json:"organization,omitempty"`
+	ContactName    string                 `protobuf:"bytes,2,opt,name=contact_name,json=contactName,proto3" json:"contact_name,omitempty"`
+	ContactEmail   string                 `protobuf:"bytes,3,opt,name=contact_email,json=contactEmail,proto3" json:"contact_email,omitempty"`
+	ContactPhone   string                 `protobuf:"bytes,4,opt,name=contact_phone,json=contactPhone,proto3" json:"contact_phone,omitempty"`
+	Note           string                 `protobuf:"bytes,5,opt,name=note,proto3" json:"note,omitempty"`
+	ReviewDecision string                 `protobuf:"bytes,6,opt,name=review_decision,json=reviewDecision,proto3" json:"review_decision,omitempty"`
+	ReviewNote     string                 `protobuf:"bytes,7,opt,name=review_note,json=reviewNote,proto3" json:"review_note,omitempty"`
+	ReviewerId     string                 `protobuf:"bytes,8,opt,name=reviewer_id,json=reviewerId,proto3" json:"reviewer_id,omitempty"`
+	ReviewedAt     string                 `protobuf:"bytes,9,opt,name=reviewed_at,json=reviewedAt,proto3" json:"reviewed_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TenantRegistration) Reset() {
+	*x = TenantRegistration{}
+	mi := &file_identity_v1_tenant_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TenantRegistration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TenantRegistration) ProtoMessage() {}
+
+func (x *TenantRegistration) ProtoReflect() protoreflect.Message {
+	mi := &file_identity_v1_tenant_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TenantRegistration.ProtoReflect.Descriptor instead.
+func (*TenantRegistration) Descriptor() ([]byte, []int) {
+	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *TenantRegistration) GetOrganization() *TenantOrganization {
+	if x != nil {
+		return x.Organization
+	}
+	return nil
+}
+
+func (x *TenantRegistration) GetContactName() string {
+	if x != nil {
+		return x.ContactName
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetContactEmail() string {
+	if x != nil {
+		return x.ContactEmail
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetContactPhone() string {
+	if x != nil {
+		return x.ContactPhone
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetReviewDecision() string {
+	if x != nil {
+		return x.ReviewDecision
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetReviewNote() string {
+	if x != nil {
+		return x.ReviewNote
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetReviewerId() string {
+	if x != nil {
+		return x.ReviewerId
+	}
+	return ""
+}
+
+func (x *TenantRegistration) GetReviewedAt() string {
+	if x != nil {
+		return x.ReviewedAt
+	}
+	return ""
+}
+
+type TenantRegistrationsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Items         []*TenantRegistration  `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TenantRegistrationsResponse) Reset() {
+	*x = TenantRegistrationsResponse{}
 	mi := &file_identity_v1_tenant_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TenantListPublicVenuesRequest) String() string {
+func (x *TenantRegistrationsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TenantListPublicVenuesRequest) ProtoMessage() {}
+func (*TenantRegistrationsResponse) ProtoMessage() {}
 
-func (x *TenantListPublicVenuesRequest) ProtoReflect() protoreflect.Message {
+func (x *TenantRegistrationsResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_identity_v1_tenant_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -680,32 +801,39 @@ func (x *TenantListPublicVenuesRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TenantListPublicVenuesRequest.ProtoReflect.Descriptor instead.
-func (*TenantListPublicVenuesRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use TenantRegistrationsResponse.ProtoReflect.Descriptor instead.
+func (*TenantRegistrationsResponse) Descriptor() ([]byte, []int) {
 	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{11}
 }
 
-type TenantGetPublicVenueRequest struct {
+func (x *TenantRegistrationsResponse) GetItems() []*TenantRegistration {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+type TenantRegistrationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
+	Registration  *TenantRegistration    `protobuf:"bytes,1,opt,name=registration,proto3" json:"registration,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TenantGetPublicVenueRequest) Reset() {
-	*x = TenantGetPublicVenueRequest{}
+func (x *TenantRegistrationResponse) Reset() {
+	*x = TenantRegistrationResponse{}
 	mi := &file_identity_v1_tenant_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TenantGetPublicVenueRequest) String() string {
+func (x *TenantRegistrationResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TenantGetPublicVenueRequest) ProtoMessage() {}
+func (*TenantRegistrationResponse) ProtoMessage() {}
 
-func (x *TenantGetPublicVenueRequest) ProtoReflect() protoreflect.Message {
+func (x *TenantRegistrationResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_identity_v1_tenant_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -717,723 +845,23 @@ func (x *TenantGetPublicVenueRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TenantGetPublicVenueRequest.ProtoReflect.Descriptor instead.
-func (*TenantGetPublicVenueRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use TenantRegistrationResponse.ProtoReflect.Descriptor instead.
+func (*TenantRegistrationResponse) Descriptor() ([]byte, []int) {
 	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{12}
 }
 
-func (x *TenantGetPublicVenueRequest) GetSlug() string {
+func (x *TenantRegistrationResponse) GetRegistration() *TenantRegistration {
 	if x != nil {
-		return x.Slug
+		return x.Registration
 	}
-	return ""
-}
-
-type TenantGetPublicVenueByIDRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	VenueId       string                 `protobuf:"bytes,1,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantGetPublicVenueByIDRequest) Reset() {
-	*x = TenantGetPublicVenueByIDRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[13]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantGetPublicVenueByIDRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantGetPublicVenueByIDRequest) ProtoMessage() {}
-
-func (x *TenantGetPublicVenueByIDRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[13]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantGetPublicVenueByIDRequest.ProtoReflect.Descriptor instead.
-func (*TenantGetPublicVenueByIDRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{13}
-}
-
-func (x *TenantGetPublicVenueByIDRequest) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-type TenantListVenuesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantListVenuesRequest) Reset() {
-	*x = TenantListVenuesRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[14]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantListVenuesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantListVenuesRequest) ProtoMessage() {}
-
-func (x *TenantListVenuesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[14]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantListVenuesRequest.ProtoReflect.Descriptor instead.
-func (*TenantListVenuesRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{14}
-}
-
-func (x *TenantListVenuesRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-type TenantGetVenueRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	VenueId       string                 `protobuf:"bytes,2,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantGetVenueRequest) Reset() {
-	*x = TenantGetVenueRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[15]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantGetVenueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantGetVenueRequest) ProtoMessage() {}
-
-func (x *TenantGetVenueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[15]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantGetVenueRequest.ProtoReflect.Descriptor instead.
-func (*TenantGetVenueRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{15}
-}
-
-func (x *TenantGetVenueRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantGetVenueRequest) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-type TenantCreateVenueRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken    string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Name           string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Slug           string                 `protobuf:"bytes,4,opt,name=slug,proto3" json:"slug,omitempty"`
-	Address        string                 `protobuf:"bytes,5,opt,name=address,proto3" json:"address,omitempty"`
-	Timezone       string                 `protobuf:"bytes,6,opt,name=timezone,proto3" json:"timezone,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *TenantCreateVenueRequest) Reset() {
-	*x = TenantCreateVenueRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[16]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantCreateVenueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantCreateVenueRequest) ProtoMessage() {}
-
-func (x *TenantCreateVenueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[16]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantCreateVenueRequest.ProtoReflect.Descriptor instead.
-func (*TenantCreateVenueRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *TenantCreateVenueRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantCreateVenueRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *TenantCreateVenueRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *TenantCreateVenueRequest) GetSlug() string {
-	if x != nil {
-		return x.Slug
-	}
-	return ""
-}
-
-func (x *TenantCreateVenueRequest) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-func (x *TenantCreateVenueRequest) GetTimezone() string {
-	if x != nil {
-		return x.Timezone
-	}
-	return ""
-}
-
-type TenantUpdateVenueRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	VenueId       string                 `protobuf:"bytes,2,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	Name          *string                `protobuf:"bytes,3,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Slug          *string                `protobuf:"bytes,4,opt,name=slug,proto3,oneof" json:"slug,omitempty"`
-	Address       *string                `protobuf:"bytes,5,opt,name=address,proto3,oneof" json:"address,omitempty"`
-	Timezone      *string                `protobuf:"bytes,6,opt,name=timezone,proto3,oneof" json:"timezone,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantUpdateVenueRequest) Reset() {
-	*x = TenantUpdateVenueRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[17]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantUpdateVenueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantUpdateVenueRequest) ProtoMessage() {}
-
-func (x *TenantUpdateVenueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[17]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantUpdateVenueRequest.ProtoReflect.Descriptor instead.
-func (*TenantUpdateVenueRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *TenantUpdateVenueRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantUpdateVenueRequest) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-func (x *TenantUpdateVenueRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *TenantUpdateVenueRequest) GetSlug() string {
-	if x != nil && x.Slug != nil {
-		return *x.Slug
-	}
-	return ""
-}
-
-func (x *TenantUpdateVenueRequest) GetAddress() string {
-	if x != nil && x.Address != nil {
-		return *x.Address
-	}
-	return ""
-}
-
-func (x *TenantUpdateVenueRequest) GetTimezone() string {
-	if x != nil && x.Timezone != nil {
-		return *x.Timezone
-	}
-	return ""
-}
-
-type TenantArchiveVenueRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	VenueId       string                 `protobuf:"bytes,2,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantArchiveVenueRequest) Reset() {
-	*x = TenantArchiveVenueRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantArchiveVenueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantArchiveVenueRequest) ProtoMessage() {}
-
-func (x *TenantArchiveVenueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantArchiveVenueRequest.ProtoReflect.Descriptor instead.
-func (*TenantArchiveVenueRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *TenantArchiveVenueRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantArchiveVenueRequest) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-type TenantAuthorizeVenueRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	VenueId       string                 `protobuf:"bytes,2,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	RequireOwner  bool                   `protobuf:"varint,3,opt,name=require_owner,json=requireOwner,proto3" json:"require_owner,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantAuthorizeVenueRequest) Reset() {
-	*x = TenantAuthorizeVenueRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantAuthorizeVenueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantAuthorizeVenueRequest) ProtoMessage() {}
-
-func (x *TenantAuthorizeVenueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantAuthorizeVenueRequest.ProtoReflect.Descriptor instead.
-func (*TenantAuthorizeVenueRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{19}
-}
-
-func (x *TenantAuthorizeVenueRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantAuthorizeVenueRequest) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-func (x *TenantAuthorizeVenueRequest) GetRequireOwner() bool {
-	if x != nil {
-		return x.RequireOwner
-	}
-	return false
-}
-
-type TenantSetOrganizationStaffRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken    string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	OrganizationId string                 `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	UserId         string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Role           string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	Status         string                 `protobuf:"bytes,5,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *TenantSetOrganizationStaffRequest) Reset() {
-	*x = TenantSetOrganizationStaffRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantSetOrganizationStaffRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantSetOrganizationStaffRequest) ProtoMessage() {}
-
-func (x *TenantSetOrganizationStaffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantSetOrganizationStaffRequest.ProtoReflect.Descriptor instead.
-func (*TenantSetOrganizationStaffRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *TenantSetOrganizationStaffRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantSetOrganizationStaffRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *TenantSetOrganizationStaffRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *TenantSetOrganizationStaffRequest) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
-func (x *TenantSetOrganizationStaffRequest) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-type TenantStaffResponse struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	UserId         string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Role           string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Status         string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *TenantStaffResponse) Reset() {
-	*x = TenantStaffResponse{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantStaffResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantStaffResponse) ProtoMessage() {}
-
-func (x *TenantStaffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantStaffResponse.ProtoReflect.Descriptor instead.
-func (*TenantStaffResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{21}
-}
-
-func (x *TenantStaffResponse) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *TenantStaffResponse) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *TenantStaffResponse) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
-func (x *TenantStaffResponse) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-type TenantSetVenueStaffRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	VenueId       string                 `protobuf:"bytes,2,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *TenantSetVenueStaffRequest) Reset() {
-	*x = TenantSetVenueStaffRequest{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantSetVenueStaffRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantSetVenueStaffRequest) ProtoMessage() {}
-
-func (x *TenantSetVenueStaffRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantSetVenueStaffRequest.ProtoReflect.Descriptor instead.
-func (*TenantSetVenueStaffRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{22}
-}
-
-func (x *TenantSetVenueStaffRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
-func (x *TenantSetVenueStaffRequest) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-func (x *TenantSetVenueStaffRequest) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *TenantSetVenueStaffRequest) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-type TenantVenueStaffResponse struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	VenueId        string                 `protobuf:"bytes,2,opt,name=venue_id,json=venueId,proto3" json:"venue_id,omitempty"`
-	UserId         string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Status         string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *TenantVenueStaffResponse) Reset() {
-	*x = TenantVenueStaffResponse{}
-	mi := &file_identity_v1_tenant_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *TenantVenueStaffResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*TenantVenueStaffResponse) ProtoMessage() {}
-
-func (x *TenantVenueStaffResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_tenant_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use TenantVenueStaffResponse.ProtoReflect.Descriptor instead.
-func (*TenantVenueStaffResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_tenant_proto_rawDescGZIP(), []int{23}
-}
-
-func (x *TenantVenueStaffResponse) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *TenantVenueStaffResponse) GetVenueId() string {
-	if x != nil {
-		return x.VenueId
-	}
-	return ""
-}
-
-func (x *TenantVenueStaffResponse) GetUserId() string {
-	if x != nil {
-		return x.UserId
-	}
-	return ""
-}
-
-func (x *TenantVenueStaffResponse) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
+	return nil
 }
 
 var File_identity_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_identity_v1_tenant_proto_rawDesc = "" +
 	"\n" +
-	"\x18identity/v1/tenant.proto\x12\x15badminton.identity.v1\"\xa2\x01\n" +
+	"\x18identity/v1/tenant.proto\x12\x15badminton.identity.v1\x1a\x16identity/v1/auth.proto\x1a\x17identity/v1/staff.proto\"\xa2\x01\n" +
 	"\x12TenantOrganization\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
@@ -1442,32 +870,31 @@ const file_identity_v1_tenant_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"\xbc\x01\n" +
-	"\vTenantVenue\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12'\n" +
-	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x04 \x01(\tR\x04slug\x12\x18\n" +
-	"\aaddress\x18\x05 \x01(\tR\aaddress\x12\x1a\n" +
-	"\btimezone\x18\x06 \x01(\tR\btimezone\x12\x16\n" +
-	"\x06status\x18\a \x01(\tR\x06status\"k\n" +
+	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"\xe0\x02\n" +
 	"\x1aTenantOrganizationResponse\x12M\n" +
-	"\forganization\x18\x01 \x01(\v2).badminton.identity.v1.TenantOrganizationR\forganization\"^\n" +
+	"\forganization\x18\x01 \x01(\v2).badminton.identity.v1.TenantOrganizationR\forganization\x127\n" +
+	"\x04user\x18\x02 \x01(\v2#.badminton.identity.v1.UserResponseR\x04user\x12J\n" +
+	"\n" +
+	"membership\x18\x03 \x01(\v2*.badminton.identity.v1.TenantStaffResponseR\n" +
+	"membership\x121\n" +
+	"\x14idempotency_replayed\x18\x04 \x01(\bR\x13idempotencyReplayed\x12;\n" +
+	"\x1aidempotency_key_expires_at\x18\x05 \x01(\tR\x17idempotencyKeyExpiresAt\"^\n" +
 	"\x1bTenantOrganizationsResponse\x12?\n" +
-	"\x05items\x18\x01 \x03(\v2).badminton.identity.v1.TenantOrganizationR\x05items\"O\n" +
-	"\x13TenantVenueResponse\x128\n" +
-	"\x05venue\x18\x01 \x01(\v2\".badminton.identity.v1.TenantVenueR\x05venue\"P\n" +
-	"\x14TenantVenuesResponse\x128\n" +
-	"\x05items\x18\x01 \x03(\v2\".badminton.identity.v1.TenantVenueR\x05items\"C\n" +
+	"\x05items\x18\x01 \x03(\v2).badminton.identity.v1.TenantOrganizationR\x05items\"C\n" +
 	"\x1eTenantListOrganizationsRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"j\n" +
 	"\x1cTenantGetOrganizationRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12'\n" +
-	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\"l\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\"\x96\x02\n" +
 	"\x1fTenantCreateOrganizationRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x03 \x01(\tR\x04slug\"\xb1\x01\n" +
+	"\x04slug\x18\x03 \x01(\tR\x04slug\x12'\n" +
+	"\x0fidempotency_key\x18\x04 \x01(\tR\x0eidempotencyKey\x12!\n" +
+	"\fcontact_name\x18\x05 \x01(\tR\vcontactName\x12#\n" +
+	"\rcontact_email\x18\x06 \x01(\tR\fcontactEmail\x12#\n" +
+	"\rcontact_phone\x18\a \x01(\tR\fcontactPhone\x12\x12\n" +
+	"\x04note\x18\b \x01(\tR\x04note\"\xb1\x01\n" +
 	"\x1fTenantUpdateOrganizationRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12'\n" +
 	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x17\n" +
@@ -1477,82 +904,40 @@ const file_identity_v1_tenant_proto_rawDesc = "" +
 	"\x05_slug\"n\n" +
 	" TenantArchiveOrganizationRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12'\n" +
-	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\"\x1f\n" +
-	"\x1dTenantListPublicVenuesRequest\"1\n" +
-	"\x1bTenantGetPublicVenueRequest\x12\x12\n" +
-	"\x04slug\x18\x01 \x01(\tR\x04slug\"<\n" +
-	"\x1fTenantGetPublicVenueByIDRequest\x12\x19\n" +
-	"\bvenue_id\x18\x01 \x01(\tR\avenueId\"<\n" +
-	"\x17TenantListVenuesRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"U\n" +
-	"\x15TenantGetVenueRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x19\n" +
-	"\bvenue_id\x18\x02 \x01(\tR\avenueId\"\xc4\x01\n" +
-	"\x18TenantCreateVenueRequest\x12!\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\"[\n" +
+	"\x1eTenantListRegistrationsRequest\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\"\x9d\x01\n" +
+	"\x1fTenantReviewRegistrationRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12'\n" +
-	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x12\n" +
-	"\x04name\x18\x03 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x04 \x01(\tR\x04slug\x12\x18\n" +
-	"\aaddress\x18\x05 \x01(\tR\aaddress\x12\x1a\n" +
-	"\btimezone\x18\x06 \x01(\tR\btimezone\"\xf5\x01\n" +
-	"\x18TenantUpdateVenueRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x19\n" +
-	"\bvenue_id\x18\x02 \x01(\tR\avenueId\x12\x17\n" +
-	"\x04name\x18\x03 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x17\n" +
-	"\x04slug\x18\x04 \x01(\tH\x01R\x04slug\x88\x01\x01\x12\x1d\n" +
-	"\aaddress\x18\x05 \x01(\tH\x02R\aaddress\x88\x01\x01\x12\x1f\n" +
-	"\btimezone\x18\x06 \x01(\tH\x03R\btimezone\x88\x01\x01B\a\n" +
-	"\x05_nameB\a\n" +
-	"\x05_slugB\n" +
-	"\n" +
-	"\b_addressB\v\n" +
-	"\t_timezone\"Y\n" +
-	"\x19TenantArchiveVenueRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x19\n" +
-	"\bvenue_id\x18\x02 \x01(\tR\avenueId\"\x80\x01\n" +
-	"\x1bTenantAuthorizeVenueRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x19\n" +
-	"\bvenue_id\x18\x02 \x01(\tR\avenueId\x12#\n" +
-	"\rrequire_owner\x18\x03 \x01(\bR\frequireOwner\"\xb4\x01\n" +
-	"!TenantSetOrganizationStaffRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12'\n" +
-	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x12\n" +
-	"\x04role\x18\x04 \x01(\tR\x04role\x12\x16\n" +
-	"\x06status\x18\x05 \x01(\tR\x06status\"\x83\x01\n" +
-	"\x13TenantStaffResponse\x12'\n" +
-	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status\"\x8b\x01\n" +
-	"\x1aTenantSetVenueStaffRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x19\n" +
-	"\bvenue_id\x18\x02 \x01(\tR\avenueId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status\"\x8f\x01\n" +
-	"\x18TenantVenueStaffResponse\x12'\n" +
-	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x19\n" +
-	"\bvenue_id\x18\x02 \x01(\tR\avenueId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status2\xf7\x0e\n" +
+	"\x0forganization_id\x18\x02 \x01(\tR\x0eorganizationId\x12\x1a\n" +
+	"\bdecision\x18\x03 \x01(\tR\bdecision\x12\x12\n" +
+	"\x04note\x18\x04 \x01(\tR\x04note\"\xf0\x02\n" +
+	"\x12TenantRegistration\x12M\n" +
+	"\forganization\x18\x01 \x01(\v2).badminton.identity.v1.TenantOrganizationR\forganization\x12!\n" +
+	"\fcontact_name\x18\x02 \x01(\tR\vcontactName\x12#\n" +
+	"\rcontact_email\x18\x03 \x01(\tR\fcontactEmail\x12#\n" +
+	"\rcontact_phone\x18\x04 \x01(\tR\fcontactPhone\x12\x12\n" +
+	"\x04note\x18\x05 \x01(\tR\x04note\x12'\n" +
+	"\x0freview_decision\x18\x06 \x01(\tR\x0ereviewDecision\x12\x1f\n" +
+	"\vreview_note\x18\a \x01(\tR\n" +
+	"reviewNote\x12\x1f\n" +
+	"\vreviewer_id\x18\b \x01(\tR\n" +
+	"reviewerId\x12\x1f\n" +
+	"\vreviewed_at\x18\t \x01(\tR\n" +
+	"reviewedAt\"^\n" +
+	"\x1bTenantRegistrationsResponse\x12?\n" +
+	"\x05items\x18\x01 \x03(\v2).badminton.identity.v1.TenantRegistrationR\x05items\"k\n" +
+	"\x1aTenantRegistrationResponse\x12M\n" +
+	"\fregistration\x18\x01 \x01(\v2).badminton.identity.v1.TenantRegistrationR\fregistration2\x99\a\n" +
 	"\x15IdentityTenantService\x12~\n" +
 	"\x11ListOrganizations\x125.badminton.identity.v1.TenantListOrganizationsRequest\x1a2.badminton.identity.v1.TenantOrganizationsResponse\x12y\n" +
 	"\x0fGetOrganization\x123.badminton.identity.v1.TenantGetOrganizationRequest\x1a1.badminton.identity.v1.TenantOrganizationResponse\x12\x7f\n" +
 	"\x12CreateOrganization\x126.badminton.identity.v1.TenantCreateOrganizationRequest\x1a1.badminton.identity.v1.TenantOrganizationResponse\x12\x7f\n" +
 	"\x12UpdateOrganization\x126.badminton.identity.v1.TenantUpdateOrganizationRequest\x1a1.badminton.identity.v1.TenantOrganizationResponse\x12\x81\x01\n" +
-	"\x13ArchiveOrganization\x127.badminton.identity.v1.TenantArchiveOrganizationRequest\x1a1.badminton.identity.v1.TenantOrganizationResponse\x12u\n" +
-	"\x10ListPublicVenues\x124.badminton.identity.v1.TenantListPublicVenuesRequest\x1a+.badminton.identity.v1.TenantVenuesResponse\x12p\n" +
-	"\x0eGetPublicVenue\x122.badminton.identity.v1.TenantGetPublicVenueRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12x\n" +
-	"\x12GetPublicVenueByID\x126.badminton.identity.v1.TenantGetPublicVenueByIDRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12i\n" +
-	"\n" +
-	"ListVenues\x12..badminton.identity.v1.TenantListVenuesRequest\x1a+.badminton.identity.v1.TenantVenuesResponse\x12d\n" +
-	"\bGetVenue\x12,.badminton.identity.v1.TenantGetVenueRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12j\n" +
-	"\vCreateVenue\x12/.badminton.identity.v1.TenantCreateVenueRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12j\n" +
-	"\vUpdateVenue\x12/.badminton.identity.v1.TenantUpdateVenueRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12l\n" +
-	"\fArchiveVenue\x120.badminton.identity.v1.TenantArchiveVenueRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12p\n" +
-	"\x0eAuthorizeVenue\x122.badminton.identity.v1.TenantAuthorizeVenueRequest\x1a*.badminton.identity.v1.TenantVenueResponse\x12|\n" +
-	"\x14SetOrganizationStaff\x128.badminton.identity.v1.TenantSetOrganizationStaffRequest\x1a*.badminton.identity.v1.TenantStaffResponse\x12s\n" +
-	"\rSetVenueStaff\x121.badminton.identity.v1.TenantSetVenueStaffRequest\x1a/.badminton.identity.v1.TenantVenueStaffResponseBIZGgithub.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1b\x06proto3"
+	"\x13ArchiveOrganization\x127.badminton.identity.v1.TenantArchiveOrganizationRequest\x1a1.badminton.identity.v1.TenantOrganizationResponse\x12~\n" +
+	"\x11ListRegistrations\x125.badminton.identity.v1.TenantListRegistrationsRequest\x1a2.badminton.identity.v1.TenantRegistrationsResponse\x12\x7f\n" +
+	"\x12ReviewRegistration\x126.badminton.identity.v1.TenantReviewRegistrationRequest\x1a1.badminton.identity.v1.TenantRegistrationResponseBIZGgithub.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_identity_v1_tenant_proto_rawDescOnce sync.Once
@@ -1566,75 +951,51 @@ func file_identity_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_identity_v1_tenant_proto_rawDescData
 }
 
-var file_identity_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_identity_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_identity_v1_tenant_proto_goTypes = []any{
-	(*TenantOrganization)(nil),                // 0: badminton.identity.v1.TenantOrganization
-	(*TenantVenue)(nil),                       // 1: badminton.identity.v1.TenantVenue
-	(*TenantOrganizationResponse)(nil),        // 2: badminton.identity.v1.TenantOrganizationResponse
-	(*TenantOrganizationsResponse)(nil),       // 3: badminton.identity.v1.TenantOrganizationsResponse
-	(*TenantVenueResponse)(nil),               // 4: badminton.identity.v1.TenantVenueResponse
-	(*TenantVenuesResponse)(nil),              // 5: badminton.identity.v1.TenantVenuesResponse
-	(*TenantListOrganizationsRequest)(nil),    // 6: badminton.identity.v1.TenantListOrganizationsRequest
-	(*TenantGetOrganizationRequest)(nil),      // 7: badminton.identity.v1.TenantGetOrganizationRequest
-	(*TenantCreateOrganizationRequest)(nil),   // 8: badminton.identity.v1.TenantCreateOrganizationRequest
-	(*TenantUpdateOrganizationRequest)(nil),   // 9: badminton.identity.v1.TenantUpdateOrganizationRequest
-	(*TenantArchiveOrganizationRequest)(nil),  // 10: badminton.identity.v1.TenantArchiveOrganizationRequest
-	(*TenantListPublicVenuesRequest)(nil),     // 11: badminton.identity.v1.TenantListPublicVenuesRequest
-	(*TenantGetPublicVenueRequest)(nil),       // 12: badminton.identity.v1.TenantGetPublicVenueRequest
-	(*TenantGetPublicVenueByIDRequest)(nil),   // 13: badminton.identity.v1.TenantGetPublicVenueByIDRequest
-	(*TenantListVenuesRequest)(nil),           // 14: badminton.identity.v1.TenantListVenuesRequest
-	(*TenantGetVenueRequest)(nil),             // 15: badminton.identity.v1.TenantGetVenueRequest
-	(*TenantCreateVenueRequest)(nil),          // 16: badminton.identity.v1.TenantCreateVenueRequest
-	(*TenantUpdateVenueRequest)(nil),          // 17: badminton.identity.v1.TenantUpdateVenueRequest
-	(*TenantArchiveVenueRequest)(nil),         // 18: badminton.identity.v1.TenantArchiveVenueRequest
-	(*TenantAuthorizeVenueRequest)(nil),       // 19: badminton.identity.v1.TenantAuthorizeVenueRequest
-	(*TenantSetOrganizationStaffRequest)(nil), // 20: badminton.identity.v1.TenantSetOrganizationStaffRequest
-	(*TenantStaffResponse)(nil),               // 21: badminton.identity.v1.TenantStaffResponse
-	(*TenantSetVenueStaffRequest)(nil),        // 22: badminton.identity.v1.TenantSetVenueStaffRequest
-	(*TenantVenueStaffResponse)(nil),          // 23: badminton.identity.v1.TenantVenueStaffResponse
+	(*TenantOrganization)(nil),               // 0: badminton.identity.v1.TenantOrganization
+	(*TenantOrganizationResponse)(nil),       // 1: badminton.identity.v1.TenantOrganizationResponse
+	(*TenantOrganizationsResponse)(nil),      // 2: badminton.identity.v1.TenantOrganizationsResponse
+	(*TenantListOrganizationsRequest)(nil),   // 3: badminton.identity.v1.TenantListOrganizationsRequest
+	(*TenantGetOrganizationRequest)(nil),     // 4: badminton.identity.v1.TenantGetOrganizationRequest
+	(*TenantCreateOrganizationRequest)(nil),  // 5: badminton.identity.v1.TenantCreateOrganizationRequest
+	(*TenantUpdateOrganizationRequest)(nil),  // 6: badminton.identity.v1.TenantUpdateOrganizationRequest
+	(*TenantArchiveOrganizationRequest)(nil), // 7: badminton.identity.v1.TenantArchiveOrganizationRequest
+	(*TenantListRegistrationsRequest)(nil),   // 8: badminton.identity.v1.TenantListRegistrationsRequest
+	(*TenantReviewRegistrationRequest)(nil),  // 9: badminton.identity.v1.TenantReviewRegistrationRequest
+	(*TenantRegistration)(nil),               // 10: badminton.identity.v1.TenantRegistration
+	(*TenantRegistrationsResponse)(nil),      // 11: badminton.identity.v1.TenantRegistrationsResponse
+	(*TenantRegistrationResponse)(nil),       // 12: badminton.identity.v1.TenantRegistrationResponse
+	(*UserResponse)(nil),                     // 13: badminton.identity.v1.UserResponse
+	(*TenantStaffResponse)(nil),              // 14: badminton.identity.v1.TenantStaffResponse
 }
 var file_identity_v1_tenant_proto_depIdxs = []int32{
 	0,  // 0: badminton.identity.v1.TenantOrganizationResponse.organization:type_name -> badminton.identity.v1.TenantOrganization
-	0,  // 1: badminton.identity.v1.TenantOrganizationsResponse.items:type_name -> badminton.identity.v1.TenantOrganization
-	1,  // 2: badminton.identity.v1.TenantVenueResponse.venue:type_name -> badminton.identity.v1.TenantVenue
-	1,  // 3: badminton.identity.v1.TenantVenuesResponse.items:type_name -> badminton.identity.v1.TenantVenue
-	6,  // 4: badminton.identity.v1.IdentityTenantService.ListOrganizations:input_type -> badminton.identity.v1.TenantListOrganizationsRequest
-	7,  // 5: badminton.identity.v1.IdentityTenantService.GetOrganization:input_type -> badminton.identity.v1.TenantGetOrganizationRequest
-	8,  // 6: badminton.identity.v1.IdentityTenantService.CreateOrganization:input_type -> badminton.identity.v1.TenantCreateOrganizationRequest
-	9,  // 7: badminton.identity.v1.IdentityTenantService.UpdateOrganization:input_type -> badminton.identity.v1.TenantUpdateOrganizationRequest
-	10, // 8: badminton.identity.v1.IdentityTenantService.ArchiveOrganization:input_type -> badminton.identity.v1.TenantArchiveOrganizationRequest
-	11, // 9: badminton.identity.v1.IdentityTenantService.ListPublicVenues:input_type -> badminton.identity.v1.TenantListPublicVenuesRequest
-	12, // 10: badminton.identity.v1.IdentityTenantService.GetPublicVenue:input_type -> badminton.identity.v1.TenantGetPublicVenueRequest
-	13, // 11: badminton.identity.v1.IdentityTenantService.GetPublicVenueByID:input_type -> badminton.identity.v1.TenantGetPublicVenueByIDRequest
-	14, // 12: badminton.identity.v1.IdentityTenantService.ListVenues:input_type -> badminton.identity.v1.TenantListVenuesRequest
-	15, // 13: badminton.identity.v1.IdentityTenantService.GetVenue:input_type -> badminton.identity.v1.TenantGetVenueRequest
-	16, // 14: badminton.identity.v1.IdentityTenantService.CreateVenue:input_type -> badminton.identity.v1.TenantCreateVenueRequest
-	17, // 15: badminton.identity.v1.IdentityTenantService.UpdateVenue:input_type -> badminton.identity.v1.TenantUpdateVenueRequest
-	18, // 16: badminton.identity.v1.IdentityTenantService.ArchiveVenue:input_type -> badminton.identity.v1.TenantArchiveVenueRequest
-	19, // 17: badminton.identity.v1.IdentityTenantService.AuthorizeVenue:input_type -> badminton.identity.v1.TenantAuthorizeVenueRequest
-	20, // 18: badminton.identity.v1.IdentityTenantService.SetOrganizationStaff:input_type -> badminton.identity.v1.TenantSetOrganizationStaffRequest
-	22, // 19: badminton.identity.v1.IdentityTenantService.SetVenueStaff:input_type -> badminton.identity.v1.TenantSetVenueStaffRequest
-	3,  // 20: badminton.identity.v1.IdentityTenantService.ListOrganizations:output_type -> badminton.identity.v1.TenantOrganizationsResponse
-	2,  // 21: badminton.identity.v1.IdentityTenantService.GetOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
-	2,  // 22: badminton.identity.v1.IdentityTenantService.CreateOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
-	2,  // 23: badminton.identity.v1.IdentityTenantService.UpdateOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
-	2,  // 24: badminton.identity.v1.IdentityTenantService.ArchiveOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
-	5,  // 25: badminton.identity.v1.IdentityTenantService.ListPublicVenues:output_type -> badminton.identity.v1.TenantVenuesResponse
-	4,  // 26: badminton.identity.v1.IdentityTenantService.GetPublicVenue:output_type -> badminton.identity.v1.TenantVenueResponse
-	4,  // 27: badminton.identity.v1.IdentityTenantService.GetPublicVenueByID:output_type -> badminton.identity.v1.TenantVenueResponse
-	5,  // 28: badminton.identity.v1.IdentityTenantService.ListVenues:output_type -> badminton.identity.v1.TenantVenuesResponse
-	4,  // 29: badminton.identity.v1.IdentityTenantService.GetVenue:output_type -> badminton.identity.v1.TenantVenueResponse
-	4,  // 30: badminton.identity.v1.IdentityTenantService.CreateVenue:output_type -> badminton.identity.v1.TenantVenueResponse
-	4,  // 31: badminton.identity.v1.IdentityTenantService.UpdateVenue:output_type -> badminton.identity.v1.TenantVenueResponse
-	4,  // 32: badminton.identity.v1.IdentityTenantService.ArchiveVenue:output_type -> badminton.identity.v1.TenantVenueResponse
-	4,  // 33: badminton.identity.v1.IdentityTenantService.AuthorizeVenue:output_type -> badminton.identity.v1.TenantVenueResponse
-	21, // 34: badminton.identity.v1.IdentityTenantService.SetOrganizationStaff:output_type -> badminton.identity.v1.TenantStaffResponse
-	23, // 35: badminton.identity.v1.IdentityTenantService.SetVenueStaff:output_type -> badminton.identity.v1.TenantVenueStaffResponse
-	20, // [20:36] is the sub-list for method output_type
-	4,  // [4:20] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	13, // 1: badminton.identity.v1.TenantOrganizationResponse.user:type_name -> badminton.identity.v1.UserResponse
+	14, // 2: badminton.identity.v1.TenantOrganizationResponse.membership:type_name -> badminton.identity.v1.TenantStaffResponse
+	0,  // 3: badminton.identity.v1.TenantOrganizationsResponse.items:type_name -> badminton.identity.v1.TenantOrganization
+	0,  // 4: badminton.identity.v1.TenantRegistration.organization:type_name -> badminton.identity.v1.TenantOrganization
+	10, // 5: badminton.identity.v1.TenantRegistrationsResponse.items:type_name -> badminton.identity.v1.TenantRegistration
+	10, // 6: badminton.identity.v1.TenantRegistrationResponse.registration:type_name -> badminton.identity.v1.TenantRegistration
+	3,  // 7: badminton.identity.v1.IdentityTenantService.ListOrganizations:input_type -> badminton.identity.v1.TenantListOrganizationsRequest
+	4,  // 8: badminton.identity.v1.IdentityTenantService.GetOrganization:input_type -> badminton.identity.v1.TenantGetOrganizationRequest
+	5,  // 9: badminton.identity.v1.IdentityTenantService.CreateOrganization:input_type -> badminton.identity.v1.TenantCreateOrganizationRequest
+	6,  // 10: badminton.identity.v1.IdentityTenantService.UpdateOrganization:input_type -> badminton.identity.v1.TenantUpdateOrganizationRequest
+	7,  // 11: badminton.identity.v1.IdentityTenantService.ArchiveOrganization:input_type -> badminton.identity.v1.TenantArchiveOrganizationRequest
+	8,  // 12: badminton.identity.v1.IdentityTenantService.ListRegistrations:input_type -> badminton.identity.v1.TenantListRegistrationsRequest
+	9,  // 13: badminton.identity.v1.IdentityTenantService.ReviewRegistration:input_type -> badminton.identity.v1.TenantReviewRegistrationRequest
+	2,  // 14: badminton.identity.v1.IdentityTenantService.ListOrganizations:output_type -> badminton.identity.v1.TenantOrganizationsResponse
+	1,  // 15: badminton.identity.v1.IdentityTenantService.GetOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
+	1,  // 16: badminton.identity.v1.IdentityTenantService.CreateOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
+	1,  // 17: badminton.identity.v1.IdentityTenantService.UpdateOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
+	1,  // 18: badminton.identity.v1.IdentityTenantService.ArchiveOrganization:output_type -> badminton.identity.v1.TenantOrganizationResponse
+	11, // 19: badminton.identity.v1.IdentityTenantService.ListRegistrations:output_type -> badminton.identity.v1.TenantRegistrationsResponse
+	12, // 20: badminton.identity.v1.IdentityTenantService.ReviewRegistration:output_type -> badminton.identity.v1.TenantRegistrationResponse
+	14, // [14:21] is the sub-list for method output_type
+	7,  // [7:14] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_identity_v1_tenant_proto_init() }
@@ -1642,15 +1003,16 @@ func file_identity_v1_tenant_proto_init() {
 	if File_identity_v1_tenant_proto != nil {
 		return
 	}
-	file_identity_v1_tenant_proto_msgTypes[9].OneofWrappers = []any{}
-	file_identity_v1_tenant_proto_msgTypes[17].OneofWrappers = []any{}
+	file_identity_v1_auth_proto_init()
+	file_identity_v1_staff_proto_init()
+	file_identity_v1_tenant_proto_msgTypes[6].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_identity_v1_tenant_proto_rawDesc), len(file_identity_v1_tenant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   24,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

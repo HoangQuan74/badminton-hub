@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: BadmintonHub Admin Gateway API
   version: 1.0.0
-  description: Admin routes forwarded by the Admin Gateway to Identity.
+  description: Public Admin Gateway routes backed by the private Identity gRPC service.
 servers:
   - url: /
 tags:
@@ -13,7 +13,9 @@ tags:
   - name: Role
     description: Role and role permission management.
   - name: Permission
-    description: Permission catalog.
+    description: Permission management.
+  - name: Tenant
+    description: Tenant contacts and registration review.
 security:
   - bearerAuth: []
 paths:
@@ -154,16 +156,184 @@ paths:
       responses:
         '200': {description: Role permissions replaced.}
         '403': {description: Admin permission required.}
-  /api/v1/admin/permissions:
+  /api/v1/admin/permissions/:
     get:
       operationId: listPermissions
       tags: [Permission]
       responses:
-        '200': {description: Permission catalog.}
-        '403': {description: Admin permission required.}
+        '200':
+          description: Permission catalog.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permissions:
+                    type: array
+                    items: {$ref: '#/components/schemas/Permission'}
+        '403': {description: Active administrator required.}
+    post:
+      operationId: createPermission
+      tags: [Permission]
+      requestBody: {$ref: '#/components/requestBodies/PermissionInput'}
+      responses:
+        '201': {$ref: '#/components/responses/PermissionResponse'}
+        '400': {description: Invalid permission.}
+        '403': {description: Active administrator required.}
+        '409': {description: Module, path and action already exist; code PERMISSION_ALREADY_EXISTS.}
+  /api/v1/admin/permissions/{permission_id}:
+    parameters:
+      - {name: permission_id, in: path, required: true, schema: {type: string, format: uuid}}
+    get:
+      operationId: getPermission
+      tags: [Permission]
+      responses:
+        '200': {$ref: '#/components/responses/PermissionResponse'}
+        '403': {description: Active administrator required.}
+        '404': {description: Permission not found; code PERMISSION_NOT_FOUND.}
+    put:
+      operationId: updatePermission
+      tags: [Permission]
+      requestBody: {$ref: '#/components/requestBodies/PermissionInput'}
+      responses:
+        '200': {$ref: '#/components/responses/PermissionResponse'}
+        '400': {description: Invalid permission.}
+        '403': {description: Active administrator required.}
+        '404': {description: Permission not found; code PERMISSION_NOT_FOUND.}
+        '409': {description: Module, path and action already exist; code PERMISSION_ALREADY_EXISTS.}
+    delete:
+      operationId: deletePermission
+      tags: [Permission]
+      responses:
+        '204': {description: Permission deleted.}
+        '403': {description: Active administrator required.}
+        '404': {description: Permission not found; code PERMISSION_NOT_FOUND.}
+  /api/v1/admin/tenants:
+    get:
+      operationId: listTenantRegistrations
+      tags: [Tenant]
+      description: Active administrator only. Returns organizations with their registration contact details and latest review information.
+      parameters:
+        - name: status
+          in: query
+          schema: {type: string, enum: [PENDING_VERIFICATION, ACTIVE, REJECTED, SUSPENDED, ARCHIVED]}
+      responses:
+        '200':
+          description: Tenant review queue.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/TenantRegistration'}
+        '400': {description: Invalid status filter.}
+        '403': {description: Active administrator required.}
+  /api/v1/admin/tenants/{organization_id}/approve:
+    parameters:
+      - {$ref: '#/components/parameters/OrganizationId'}
+    post:
+      operationId: approveTenantRegistration
+      tags: [Tenant]
+      description: Changes PENDING_VERIFICATION to ACTIVE and records the reviewer and note atomically. Repeating the same decision returns the existing result without a second review record.
+      requestBody: {$ref: '#/components/requestBodies/TenantReviewInput'}
+      responses:
+        '200': {$ref: '#/components/responses/TenantRegistrationResponse'}
+        '400': {description: Invalid identifier or note.}
+        '403': {description: Active administrator required.}
+        '404': {description: Tenant not found; code TENANT_NOT_FOUND.}
+        '409': {description: Conflicting decision or non-pending organization; code TENANT_STATE_CONFLICT.}
+  /api/v1/admin/tenants/{organization_id}/reject:
+    parameters:
+      - {$ref: '#/components/parameters/OrganizationId'}
+    post:
+      operationId: rejectTenantRegistration
+      tags: [Tenant]
+      description: Changes PENDING_VERIFICATION to REJECTED and records the reviewer and note atomically. Repeating the same decision returns the existing result.
+      requestBody: {$ref: '#/components/requestBodies/TenantReviewInput'}
+      responses:
+        '200': {$ref: '#/components/responses/TenantRegistrationResponse'}
+        '400': {description: Invalid identifier or note.}
+        '403': {description: Active administrator required.}
+        '404': {description: Tenant not found; code TENANT_NOT_FOUND.}
+        '409': {description: Conflicting decision or non-pending organization; code TENANT_STATE_CONFLICT.}
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  parameters:
+    OrganizationId:
+      name: organization_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  requestBodies:
+    PermissionInput:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/PermissionInput'}
+    TenantReviewInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              note: {type: string, maxLength: 1000}
+          example: {note: Contact details verified.}
+  responses:
+    PermissionResponse:
+      description: Permission details.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              permission: {$ref: '#/components/schemas/Permission'}
+    TenantRegistrationResponse:
+      description: Reviewed tenant registration.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              registration: {$ref: '#/components/schemas/TenantRegistration'}
+  schemas:
+    PermissionInput:
+      type: object
+      required: [module, path, action]
+      properties:
+        module: {type: string, maxLength: 100, description: Trimmed and lowercased.}
+        path: {type: string, maxLength: 300}
+        action: {type: string, enum: [CREATE, READ, UPDATE, DELETE]}
+        description: {type: string, maxLength: 500}
+    Permission:
+      allOf:
+        - {$ref: '#/components/schemas/PermissionInput'}
+        - type: object
+          properties:
+            id: {type: string, format: uuid}
+    TenantRegistration:
+      type: object
+      properties:
+        organization:
+          type: object
+          properties:
+            id: {type: string, format: uuid}
+            name: {type: string}
+            slug: {type: string}
+            status: {type: string, enum: [PENDING_VERIFICATION, ACTIVE, REJECTED, SUSPENDED, ARCHIVED]}
+            created_at: {type: string, format: date-time}
+            updated_at: {type: string, format: date-time}
+        contact_name: {type: string}
+        contact_email: {type: string}
+        contact_phone: {type: string}
+        note: {type: string}
+        review_decision: {type: string}
+        review_note: {type: string}
+        reviewer_id: {type: string}
+        reviewed_at: {type: string, description: RFC3339 timestamp when reviewed; omitted or empty for pending registrations.}

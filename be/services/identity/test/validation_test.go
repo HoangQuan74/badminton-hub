@@ -3,12 +3,12 @@ package identitytest
 import (
 	"testing"
 
-	authDomain "github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/auth"
+	userDomain "github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/user"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/validation"
 )
 
 func TestValidationPackage(t *testing.T) {
-	valid := authDomain.RegisterInput{
+	valid := userDomain.RegisterInput{
 		Email:    "user@example.com",
 		Password: "password123",
 		FullName: "User",
@@ -17,7 +17,7 @@ func TestValidationPackage(t *testing.T) {
 		t.Fatalf("validation.Struct() unexpected error: %v", err)
 	}
 
-	invalid := authDomain.RegisterInput{
+	invalid := userDomain.RegisterInput{
 		Email:    "invalid",
 		Password: "short",
 	}

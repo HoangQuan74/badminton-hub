@@ -1,23 +1,20 @@
 package authgrpc
 
 import (
-	"github.com/jackc/pgx/v5/pgxpool"
-	identityConfig "github.com/kainguyen/badminton-hub/be/services/identity/config"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/auth"
-	authPostgres "github.com/kainguyen/badminton-hub/be/services/identity/internal/storage/postgres/repository/auth"
+	userDomain "github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/user"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
 )
 
 type UserServer struct {
 	identityV1.UnimplementedIdentityAuthServiceServer
-	service *auth.Service
+	session      *sessionHandler
+	registration *userDomain.RegistrationService
 }
 
-func NewUserServer(cfg identityConfig.Config, pool *pgxpool.Pool) *UserServer {
-	// Build the auth repository and token manager dependencies.
-	repository := authPostgres.NewAuthRepository(pool)
-	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.AccessTokenTTL, cfg.RefreshTokenTTL)
+func NewUserServer(service *auth.Service, registration *userDomain.RegistrationService) *UserServer {
 	return &UserServer{
-		service: auth.NewService(repository, tokens),
+		session:      &sessionHandler{service: service},
+		registration: registration,
 	}
 }

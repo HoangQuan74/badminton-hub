@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/smithy-go"
+	catalogException "github.com/kainguyen/badminton-hub/be/services/catalog/internal/exception"
 )
 
 type Config struct {
@@ -29,10 +30,10 @@ type Store struct {
 
 func New(ctx context.Context, input Config) (*Store, error) {
 	if input.Bucket == "" {
-		return nil, fmt.Errorf("CATALOG_S3_BUCKET is required when storage is enabled")
+		return nil, catalogException.ErrS3BucketRequired
 	}
 	if (input.AccessKey == "") != (input.SecretKey == "") {
-		return nil, fmt.Errorf("both Catalog S3 access key and secret key are required")
+		return nil, catalogException.ErrS3CredentialsRequired
 	}
 	options := []func(*awsConfig.LoadOptions) error{awsConfig.WithRegion(input.Region)}
 	if input.AccessKey != "" {
@@ -67,7 +68,7 @@ func (s *Store) Get(ctx context.Context, key string, limit int64) ([]byte, error
 		return nil, err
 	}
 	if int64(len(content)) > limit {
-		return nil, fmt.Errorf("stored object exceeds image size limit")
+		return nil, catalogException.ErrStoredImageTooLarge
 	}
 	return content, nil
 }

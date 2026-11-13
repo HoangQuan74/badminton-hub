@@ -11,7 +11,7 @@ type Permission struct {
 	ID, Module, Path, Action, Description string
 }
 
-type AdminCredentials struct {
+type StaffCredentials struct {
 	Staff        Staff
 	PasswordHash string
 }

@@ -104,14 +104,14 @@ func (q *Queries) FindActiveSessionForUpdate(ctx context.Context, arg FindActive
 	return user_id, err
 }
 
-const findAdminByEmail = `-- name: FindAdminByEmail :one
+const findStaffCredentialsByEmail = `-- name: FindStaffCredentialsByEmail :one
 SELECT u.id, u.email, u.full_name, u.password_hash, u.status, u.is_admin,
        COALESCE(u.role_id::text, '')::text AS role_id, COALESCE(r.name, '')::text AS role_name
 FROM identity.users u LEFT JOIN identity.roles r ON r.id = u.role_id
 WHERE LOWER(u.email) = LOWER($1) AND u.is_admin
 `
 
-type FindAdminByEmailRow struct {
+type FindStaffCredentialsByEmailRow struct {
 	ID           uuid.UUID `json:"id"`
 	Email        string    `json:"email"`
 	FullName     string    `json:"full_name"`
@@ -122,9 +122,9 @@ type FindAdminByEmailRow struct {
 	RoleName     string    `json:"role_name"`
 }
 
-func (q *Queries) FindAdminByEmail(ctx context.Context, lower string) (FindAdminByEmailRow, error) {
-	row := q.db.QueryRow(ctx, findAdminByEmail, lower)
-	var i FindAdminByEmailRow
+func (q *Queries) FindStaffCredentialsByEmail(ctx context.Context, lower string) (FindStaffCredentialsByEmailRow, error) {
+	row := q.db.QueryRow(ctx, findStaffCredentialsByEmail, lower)
+	var i FindStaffCredentialsByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -138,15 +138,15 @@ func (q *Queries) FindAdminByEmail(ctx context.Context, lower string) (FindAdmin
 	return i, err
 }
 
-const findAdminSessionForUpdate = `-- name: FindAdminSessionForUpdate :one
+const findStaffSessionForUpdate = `-- name: FindStaffSessionForUpdate :one
 SELECT s.user_id FROM identity.auth_sessions s JOIN identity.users u ON u.id = s.user_id
 WHERE s.refresh_token_hash = $1 AND s.revoked_at IS NULL AND s.expires_at > NOW()
   AND u.status = 'active' AND u.is_admin
 FOR UPDATE OF s
 `
 
-func (q *Queries) FindAdminSessionForUpdate(ctx context.Context, refreshTokenHash []byte) (uuid.UUID, error) {
-	row := q.db.QueryRow(ctx, findAdminSessionForUpdate, refreshTokenHash)
+func (q *Queries) FindStaffSessionForUpdate(ctx context.Context, refreshTokenHash []byte) (uuid.UUID, error) {
+	row := q.db.QueryRow(ctx, findStaffSessionForUpdate, refreshTokenHash)
 	var user_id uuid.UUID
 	err := row.Scan(&user_id)
 	return user_id, err
@@ -230,12 +230,12 @@ func (q *Queries) FindUserByID(ctx context.Context, id uuid.UUID) (FindUserByIDR
 	return i, err
 }
 
-const getAdminPasswordHash = `-- name: GetAdminPasswordHash :one
+const getStaffPasswordHash = `-- name: GetStaffPasswordHash :one
 SELECT password_hash FROM identity.users WHERE id = $1
 `
 
-func (q *Queries) GetAdminPasswordHash(ctx context.Context, id uuid.UUID) (string, error) {
-	row := q.db.QueryRow(ctx, getAdminPasswordHash, id)
+func (q *Queries) GetStaffPasswordHash(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getStaffPasswordHash, id)
 	var password_hash string
 	err := row.Scan(&password_hash)
 	return password_hash, err
@@ -261,16 +261,16 @@ func (q *Queries) RevokeAuthSession(ctx context.Context, arg RevokeAuthSessionPa
 	return result.RowsAffected(), nil
 }
 
-const updateAdminPassword = `-- name: UpdateAdminPassword :exec
+const updateStaffPassword = `-- name: UpdateStaffPassword :exec
 UPDATE identity.users SET password_hash = $2, updated_at = NOW() WHERE id = $1
 `
 
-type UpdateAdminPasswordParams struct {
+type UpdateStaffPasswordParams struct {
 	ID           uuid.UUID `json:"id"`
 	PasswordHash string    `json:"password_hash"`
 }
 
-func (q *Queries) UpdateAdminPassword(ctx context.Context, arg UpdateAdminPasswordParams) error {
-	_, err := q.db.Exec(ctx, updateAdminPassword, arg.ID, arg.PasswordHash)
+func (q *Queries) UpdateStaffPassword(ctx context.Context, arg UpdateStaffPasswordParams) error {
+	_, err := q.db.Exec(ctx, updateStaffPassword, arg.ID, arg.PasswordHash)
 	return err
 }

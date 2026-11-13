@@ -1,3 +1,7 @@
+import { TenantRegistrationQueue } from '@/features/tenant/TenantRegistrationQueue'
+import { PermissionManager } from '@/features/permission/PermissionManager'
+import { RoleManager } from '@/features/role/RoleManager'
+import { StaffManager } from '@/features/staff/StaffManager'
 import { AlertTriangle, Building2, CheckCircle2, ClipboardCheck, LayoutDashboard, ShieldCheck, UsersRound } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
@@ -57,15 +61,14 @@ export function AdminDashboardPage() {
         <article className="metric-card"><span className="metric-icon"><CheckCircle2 size={18} /></span><p>{t('portal.paymentsToReview')}</p><strong>—</strong><small>{t('portal.noData')}</small></article>
       </section>
 
-      <section className="portal-panel" id="organizations">
-        <div className="panel-heading"><div><p className="eyebrow">{t('portal.governance')}</p><h2>{t('portal.reviewQueue')}</h2></div><button className="text-button" type="button" disabled>{t('portal.openQueue')} <span aria-hidden="true">→</span></button></div>
-        <div className="portal-empty"><ClipboardCheck size={24} /><h3>{t('portal.noApprovalData')}</h3><p>{t('portal.noApprovalDescription')}</p></div>
-      </section>
+      {user.is_admin && <TenantRegistrationQueue />}
 
       <section className="portal-panel two-column-panels" id="venues">
         <div><p className="eyebrow">{t('portal.monitoring')}</p><h2>{t('portal.venuesAndCourts')}</h2><p className="panel-muted">{t('portal.venueBookingDescription')}</p><button className="panel-link" type="button" disabled>{t('portal.openMonitoring')} <span aria-hidden="true">→</span></button></div>
         <div id="users"><p className="eyebrow">{t('portal.accessControl')}</p><h2>{t('portal.accessControl')}</h2><p className="panel-muted">{t('portal.userAccessDescription')}</p><button className="panel-link" type="button" disabled>{t('portal.openAccessReview')} <span aria-hidden="true">→</span></button></div>
       </section>
+
+      {user.is_admin ? <><StaffManager /><RoleManager /><PermissionManager /></> : <p role="status">{t('access.restricted')}</p>}
 
       <button className="portal-settings" type="button" disabled><ShieldCheck size={17} /> {t('portal.platformSettings')}</button>
     </PortalShell>

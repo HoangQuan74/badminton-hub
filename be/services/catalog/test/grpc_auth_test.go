@@ -17,17 +17,15 @@ import (
 )
 
 type identityStub struct {
-	identityV1.IdentityAuthServiceClient
+	identityV1.IdentityTenantAuthServiceClient
 	userID string
 	roles  []string
 	err    error
 	token  string
-	portal string
 }
 
 func (s *identityStub) GetCurrentUser(_ context.Context, request *identityV1.GetCurrentUserRequest, _ ...grpc.CallOption) (*identityV1.UserResponse, error) {
 	s.token = request.GetAccessToken()
-	s.portal = request.GetPortal()
 	if s.err != nil {
 		return nil, s.err
 	}
@@ -48,7 +46,7 @@ func (r *actorRepository) ListTenantVenues(_ context.Context, actor string) ([]m
 func TestTenantGRPCVerifiesTokenAndIgnoresSuppliedActor(t *testing.T) {
 	repository := &actorRepository{}
 	identity := &identityStub{userID: "verified-user"}
-	server := cataloggrpc.NewServer(catalog.NewService(repository), identity)
+	server := cataloggrpc.NewCatalogServer(catalog.NewService(repository), identity)
 	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", "Bearer valid-token"))
 	_, err := server.ListTenantVenues(ctx, &catalogV1.ListTenantVenuesRequest{ActorUserId: "forged-user"})
 	if err != nil {
@@ -57,8 +55,8 @@ func TestTenantGRPCVerifiesTokenAndIgnoresSuppliedActor(t *testing.T) {
 	if repository.actor != "verified-user" {
 		t.Fatalf("actor = %q, want verified-user", repository.actor)
 	}
-	if identity.token != "valid-token" || identity.portal != "tenant" {
-		t.Fatalf("Identity received token %q and portal %q", identity.token, identity.portal)
+	if identity.token != "valid-token" {
+		t.Fatalf("Identity received token %q", identity.token)
 	}
 }
 
@@ -81,7 +79,7 @@ func TestTenantGRPCFailsClosed(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repository := &actorRepository{}
 			identity := &identityStub{userID: tt.identityID, err: tt.identityErr}
-			server := cataloggrpc.NewServer(catalog.NewService(repository), identity)
+			server := cataloggrpc.NewCatalogServer(catalog.NewService(repository), identity)
 			ctx := metadata.NewIncomingContext(context.Background(), metadata.MD{"authorization": tt.header})
 			_, err := server.ListTenantVenues(ctx, &catalogV1.ListTenantVenuesRequest{ActorUserId: "forged-user"})
 			if status.Code(err) != tt.want {
@@ -96,21 +94,10 @@ func TestTenantGRPCFailsClosed(t *testing.T) {
 
 func TestGRPCDoesNotExposeDatabaseError(t *testing.T) {
 	repository := &actorRepository{err: errors.New("database credentials or query")}
-	server := cataloggrpc.NewServer(catalog.NewService(repository), &identityStub{userID: "verified-user"})
+	server := cataloggrpc.NewCatalogServer(catalog.NewService(repository), &identityStub{userID: "verified-user"})
 	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", "Bearer valid"))
 	_, err := server.ListTenantVenues(ctx, &catalogV1.ListTenantVenuesRequest{})
 	if status.Code(err) != codes.Internal || status.Convert(err).Message() != "catalog operation failed" {
 		t.Fatalf("error = %v", err)
-	}
-}
-
-func TestCreateOrganizationRequiresVerifiedOwnerRole(t *testing.T) {
-	repository := &repositoryStub{}
-	identity := &identityStub{userID: "verified-user", roles: []string{"tenant_staff"}}
-	server := cataloggrpc.NewServer(catalog.NewService(repository), identity)
-	ctx := metadata.NewIncomingContext(context.Background(), metadata.Pairs("authorization", "Bearer valid-token"))
-	_, err := server.CreateOrganization(ctx, &catalogV1.CreateOrganizationRequest{Name: "Test", Slug: "test"})
-	if status.Code(err) != codes.PermissionDenied {
-		t.Fatalf("code = %v, want permission denied", status.Code(err))
 	}
 }

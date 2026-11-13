@@ -1,3 +1,4 @@
+import { BuiltinRole } from '@/constants/domain'
 import { http, publicHttp } from '@/lib/http'
 import { portal } from '@/app/portal'
 import { tokenStorage } from './auth.storage'
@@ -14,7 +15,8 @@ function staffAsUser(staff: AdminAuthResponse['staff']): User {
     phone: '',
     status: staff.status,
     created_at: staff.created_at,
-    roles: ['admin']
+    roles: [BuiltinRole.Admin],
+    is_admin: staff.is_admin
   }
 }
 

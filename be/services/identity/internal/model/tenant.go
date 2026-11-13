@@ -11,15 +11,9 @@ type Organization struct {
 	UpdatedAt time.Time
 }
 
-type Venue struct {
-	ID             string
-	OrganizationID string
-	Name           string
-	Slug           string
-	Address        string
-	Timezone       string
-	Status         string
+type TenantRegistration struct {
+	Organization                                  Organization
+	ContactName, ContactEmail, ContactPhone, Note string
+	ReviewDecision, ReviewNote, ReviewerID        string
+	ReviewedAt                                    time.Time
 }
-
-type OrganizationStaff struct{ OrganizationID, UserID, Role, Status string }
-type VenueStaff struct{ OrganizationID, VenueID, UserID, Status string }

@@ -40,7 +40,8 @@ func New(dependencies Dependencies) (*gin.Engine, error) {
 	handler.RegisterAuth(engine, adminAuthClient)
 	handler.RegisterStaff(engine, staffClient)
 	handler.RegisterRole(engine, roleClient)
-	handler.RegisterPermission(engine, roleClient)
+	handler.RegisterTenant(engine, identityV1.NewIdentityTenantServiceClient(connection))
+	handler.RegisterPermission(engine, identityV1.NewIdentityPermissionServiceClient(connection))
 
 	engine.GET("/health", health)
 	engine.GET("/ready", ready)

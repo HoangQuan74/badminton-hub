@@ -1,8 +1,9 @@
 # Identity Tasks
 
 Track the remaining Identity work identified by source review on 2026-11-11.
-All tasks below are `TODO`; this document records planned work, not completed
-implementation or runtime verification. Priorities and sequencing are proposed.
+Statuses distinguish remaining work from verified backend implementation.
+Priorities and sequencing are proposed; completion still requires the acceptance
+evidence listed for the full task, including frontend where applicable.
 
 ## Scope and current baseline
 
@@ -24,6 +25,10 @@ Requirements: [Owner Onboarding](../analysis/01-owner-onboarding.md),
 [Migration Security](../design/06-microservice-migration.md#security).
 Implementation reference: [Identity README](../../be/services/identity/README.md).
 
+Full-stack design and planned files:
+[Owner Onboarding and Tenant Share Links](../design/07-owner-onboarding-and-tenant-links.md).
+The user confirmed customer links on the User domain at `/t/{slug}`.
+
 ## Task register
 
 `P0` closes an existing business-flow or authorization gap. `P1` completes
@@ -33,7 +38,7 @@ hardening to finish before deployment beyond the local trust model.
 
 | ID | Task | Priority | Scope | Status | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| IDENTITY-01 | Complete owner onboarding | P0 | MVP | TODO | IDENTITY-04 |
+| IDENTITY-01 | Complete owner onboarding with FE | P0 | MVP | In Progress | IDENTITY-04 |
 | IDENTITY-02 | Review organizations and audit decisions | P0 | MVP | TODO | IDENTITY-04 |
 | IDENTITY-03 | Submit, approve, and publish venues | P0 | MVP | TODO | IDENTITY-02 |
 | IDENTITY-04 | Enforce permissions and active-account checks | P0 | MVP | TODO | None |
@@ -47,6 +52,7 @@ hardening to finish before deployment beyond the local trust model.
 | IDENTITY-12 | Migrate JWT signing to asymmetric keys and JWKS | P1 | Production | TODO | None |
 | IDENTITY-13 | Make health checks reflect dependency failures | P1 | Production | TODO | None |
 | IDENTITY-14 | Complete verification evidence and refresh documentation | P1 | MVP + Production | TODO | Applicable release tasks |
+| IDENTITY-15 | Add public tenant links and customer auth return with FE | P1 | MVP | TODO | IDENTITY-02, IDENTITY-03 for public release |
 
 PIC and target dates are unassigned. Update the register and task checkboxes
 together. Mark a task `Done` only when its acceptance checks have evidence;
@@ -70,17 +76,29 @@ record skipped checks and missing runtime/deployment evidence separately.
 
 ### IDENTITY-01 — Complete owner onboarding
 
-- [ ] Define an explicit owner registration or account-upgrade use case. Normal
+Contract: [Owner Onboarding API](../design/08-owner-onboarding-api-contract.md)
+(backend implemented; FE remains outstanding).
+
+- [x] Keep tenant CRUD and owner enrollment in `domain/tenant`, tenant repository,
+  tenant gRPC transport, and Gateway `handler/tenant`; use `create.go` for creation.
+- [x] Define an explicit owner registration or account-upgrade use case. Normal
   registration must not accept arbitrary client-supplied roles or admin flags.
-- [ ] Remove the current dead end: registration creates a regular user, while
+- [x] Remove the current dead end: registration creates a regular user, while
   organization creation requires the global `tenant_owner` role.
-- [ ] Provision required system roles in versioned migrations rather than
+- [x] Provision required system roles in versioned migrations rather than
   relying on local development seeds. Preserve existing customer access.
-- [ ] Persist the required role/membership changes atomically and define safe
+- [x] Persist the required role/membership changes atomically and define safe
   behavior for repeated or concurrent onboarding requests.
+- [ ] Deliver the User-origin onboarding form, validation, pending organization
+  result, current-user refresh, and Tenant portal login action together with
+  the API. Preserve separate portal origins and token namespaces.
+- [x] Implement validation at the Identity boundary and database constraints;
+  expose stable, safe error codes and optional field violations through gRPC
+  details and Gateway mapping, including distinct slug/idempotency conflicts.
 - **Acceptance/tests:** a newly registered account can follow the chosen owner
-  flow, create its first organization in `PENDING_VERIFICATION`, and read only
-  its own organization without manual SQL or seeded owner credentials.
+  flow through the browser, create its first organization in
+  `PENDING_VERIFICATION`, and read only its own organization without manual SQL
+  or seeded owner credentials. Verify conflict/timeout/retry and both languages.
 
 ### IDENTITY-02 — Review organizations and audit decisions
 
@@ -223,6 +241,26 @@ record skipped checks and missing runtime/deployment evidence separately.
 
 ## Verification and completion
 
+### IDENTITY-15 — Add public tenant links and customer auth return with FE
+
+- [ ] Resolve organization slugs publicly through Identity/User Gateway and
+  expose only active organizations and their published venues. Use existing
+  Catalog public operations for court/image data.
+- [ ] Add User pages `/t/:tenantSlug` and
+  `/t/:tenantSlug/venues/:venueSlug`, and a copy/open customer link component in
+  Tenant FE. The slug identifies the organization, not an operator portal.
+- [ ] Preserve a validated local destination through customer login/register;
+  customer signup does not create tenant staff membership or permissions.
+- [ ] Check tenant/venue ownership in backend public reads; handle unknown,
+  pending, suspended, empty, loading, and dependency failure states in both languages.
+- [ ] Connect court selection to Booking when that slice exists. Until then,
+  keep booking unavailable and record the dependency rather than claiming a
+  completed reservation flow.
+- **Acceptance/tests:** a tenant shares its configured User-domain URL; a guest
+  can browse, register/login, and return to the same tenant/venue. Cover direct
+  URL reload, another tenant's venue, external redirect attempts, stale auth,
+  and absence of private membership/review data in public responses.
+
 ### IDENTITY-14 — Complete verification evidence and refresh documentation
 
 - [ ] Add focused unit and PostgreSQL integration checks for each implemented
@@ -231,6 +269,9 @@ record skipped checks and missing runtime/deployment evidence separately.
 - [ ] Add contract coverage and a Gateway E2E journey: fresh registration →
   owner onboarding → organization approval → venue creation/submission/approval
   → public visibility → staff assignment → access revocation.
+- [ ] Record browser evidence for owner onboarding and tenant share links,
+  including auth return and separate portal sessions; record Booking acceptance
+  separately when that service slice is implemented.
 - [ ] Regenerate SQLC/Protobuf artifacts when their sources change and run the
   relevant drift checks. Keep local seeds out of Dev/Production rollout.
 - [ ] Update OpenAPI, service README, AI context, API/event reference, and stale

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/domain/catalog"
+	catalogException "github.com/kainguyen/badminton-hub/be/services/catalog/internal/exception"
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/model"
 )
 
@@ -87,10 +88,10 @@ func TestUploadVenueImageRejectsInvalidAndUnauthorized(t *testing.T) {
 		authErr error
 		want    error
 	}{
-		{name: "empty", want: catalog.ErrInvalidInput},
-		{name: "invalid file", content: []byte("not an image"), want: catalog.ErrInvalidInput},
-		{name: "too large", content: make([]byte, catalog.MaxVenueImageBytes+1), want: catalog.ErrInvalidInput},
-		{name: "staff forbidden", content: samplePNG(t), authErr: catalog.ErrForbidden, want: catalog.ErrForbidden},
+		{name: "empty", want: catalogException.ErrInvalidInput},
+		{name: "invalid file", content: []byte("not an image"), want: catalogException.ErrInvalidInput},
+		{name: "too large", content: make([]byte, catalog.MaxVenueImageBytes+1), want: catalogException.ErrInvalidInput},
+		{name: "staff forbidden", content: samplePNG(t), authErr: catalogException.ErrForbidden, want: catalogException.ErrForbidden},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,7 +118,7 @@ func TestUploadVenueImageReportsStorageFailure(t *testing.T) {
 	store := &imageStoreStub{putErr: errors.New("storage offline")}
 	repository := &imageRepositoryStub{}
 	_, err := catalog.NewImageService(repository, store).Upload(context.Background(), "actor", "venue", samplePNG(t))
-	if !errors.Is(err, catalog.ErrImageStorage) || repository.saved.ID != "" || store.deletes != 1 {
+	if !errors.Is(err, catalogException.ErrImageStorage) || repository.saved.ID != "" || store.deletes != 1 {
 		t.Fatalf("error=%v saved=%+v", err, repository.saved)
 	}
 }

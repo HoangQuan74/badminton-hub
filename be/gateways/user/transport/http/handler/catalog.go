@@ -10,15 +10,12 @@ import (
 	platformService "github.com/kainguyen/badminton-hub/be/platform/service"
 	catalogV1 "github.com/kainguyen/badminton-hub/contracts/gen/catalog/v1"
 	identityV1 "github.com/kainguyen/badminton-hub/contracts/gen/identity/v1"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/status"
 )
 
 type CatalogHandler struct {
-	identity  identityV1.IdentityAuthServiceClient
-	catalog   catalogV1.CatalogServiceClient
-	directory identityV1.IdentityTenantServiceClient
+	identity identityV1.IdentityTenantAuthServiceClient
+	catalog  catalogV1.CatalogServiceClient
 }
 
 type courtRequest struct {
@@ -27,10 +24,10 @@ type courtRequest struct {
 	Status              string `json:"status"`
 }
 
-func RegisterCatalog(engine *gin.Engine, identity identityV1.IdentityAuthServiceClient, catalog catalogV1.CatalogServiceClient, directories ...identityV1.IdentityTenantServiceClient) {
-	handler := &CatalogHandler{identity: identity, catalog: catalog}
-	if len(directories) > 0 {
-		handler.directory = directories[0]
+func RegisterCatalog(engine *gin.Engine, identity identityV1.IdentityTenantAuthServiceClient, catalog catalogV1.CatalogServiceClient) {
+	handler := &CatalogHandler{
+		identity: identity,
+		catalog:  catalog,
 	}
 
 	engine.GET("/api/v1/venues", handler.ListPublicVenues)
@@ -41,18 +38,8 @@ func RegisterCatalog(engine *gin.Engine, identity identityV1.IdentityAuthService
 
 	tenant := engine.Group("/api/v1/tenant")
 	tenant.Use(requireTenantBearer)
-	tenant.PUT("/organizations/:organization_id/staff/:user_id", handler.SetOrganizationStaff)
-	tenant.PUT("/venues/:venue_id/staff/:user_id", handler.SetVenueStaff)
-	tenant.GET("/organizations", handler.ListOrganizations)
-	tenant.POST("/organizations", handler.CreateOrganization)
-	tenant.GET("/organizations/:organization_id", handler.GetOrganization)
-	tenant.PATCH("/organizations/:organization_id", handler.UpdateOrganization)
-	tenant.DELETE("/organizations/:organization_id", handler.ArchiveOrganization)
 	tenant.GET("/venues", handler.ListTenantVenues)
 	tenant.GET("/venues/:venue_id", handler.GetTenantVenue)
-	tenant.POST("/organizations/:organization_id/venues", handler.CreateVenue)
-	tenant.PATCH("/venues/:venue_id", handler.UpdateVenue)
-	tenant.DELETE("/venues/:venue_id", handler.ArchiveVenue)
 	tenant.GET("/courts/:court_id", handler.GetTenantCourt)
 	tenant.GET("/venues/:venue_id/courts", handler.ListTenantCourts)
 	tenant.GET("/venues/:venue_id/images", handler.ListTenantVenueImages)
@@ -65,40 +52,78 @@ func RegisterCatalog(engine *gin.Engine, identity identityV1.IdentityAuthService
 
 func requireTenantBearer(c *gin.Context) {
 	if request.BearerToken(c) == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": gin.H{"code": "UNAUTHORIZED", "message": "Authentication required."}})
+		exception.AbortUnauthorized(c)
 		return
 	}
+
 	c.Next()
 }
 
 func (h *CatalogHandler) ListPublicVenues(c *gin.Context) {
 	result, err := h.catalog.ListPublicVenues(request.RPCContext(c, platformService.UserGateway), &catalogV1.ListPublicVenuesRequest{})
-	exception.WriteGRPC(c, result, err, http.StatusOK, venueErrors)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+		exception.VenueErrors,
+	)
 }
 
 func (h *CatalogHandler) ListPublicVenueCourts(c *gin.Context) {
 	result, err := h.catalog.ListPublicVenueCourts(request.RPCContext(c, platformService.UserGateway), &catalogV1.ListPublicVenueCourtsRequest{VenueId: c.Param("venue_id")})
-	exception.WriteGRPC(c, result, err, http.StatusOK, venueErrors)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+		exception.VenueErrors,
+	)
 }
 
 func (h *CatalogHandler) ListTenantVenues(c *gin.Context) {
 	actorID, err := h.tenantActorID(c)
 	if err != nil {
-		exception.WriteGRPC(c, nil, err, http.StatusOK)
+		exception.WriteGRPC(
+			c,
+			nil,
+			err,
+			http.StatusOK,
+		)
 		return
 	}
+
 	result, err := h.catalog.ListTenantVenues(catalogTenantContext(c), &catalogV1.ListTenantVenuesRequest{ActorUserId: actorID})
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *CatalogHandler) ListTenantCourts(c *gin.Context) {
 	actorID, err := h.tenantActorID(c)
 	if err != nil {
-		exception.WriteGRPC(c, nil, err, http.StatusOK)
+		exception.WriteGRPC(
+			c,
+			nil,
+			err,
+			http.StatusOK,
+		)
 		return
 	}
-	result, err := h.catalog.ListTenantCourts(catalogTenantContext(c), &catalogV1.ListTenantCourtsRequest{ActorUserId: actorID, VenueId: c.Param("venue_id")})
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+
+	result, err := h.catalog.ListTenantCourts(catalogTenantContext(c), &catalogV1.ListTenantCourtsRequest{
+		ActorUserId: actorID,
+		VenueId:     c.Param("venue_id"),
+	})
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *CatalogHandler) CreateCourt(c *gin.Context) {
@@ -106,13 +131,31 @@ func (h *CatalogHandler) CreateCourt(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	actorID, err := h.tenantActorID(c)
 	if err != nil {
-		exception.WriteGRPC(c, nil, err, http.StatusOK)
+		exception.WriteGRPC(
+			c,
+			nil,
+			err,
+			http.StatusOK,
+		)
 		return
 	}
-	result, err := h.catalog.CreateCourt(catalogTenantContext(c), &catalogV1.CreateCourtRequest{ActorUserId: actorID, VenueId: c.Param("venue_id"), Name: input.Name, SlotIntervalMinutes: input.SlotIntervalMinutes})
-	exception.WriteGRPC(c, result, err, http.StatusCreated, courtErrors)
+
+	result, err := h.catalog.CreateCourt(catalogTenantContext(c), &catalogV1.CreateCourtRequest{
+		ActorUserId:         actorID,
+		VenueId:             c.Param("venue_id"),
+		Name:                input.Name,
+		SlotIntervalMinutes: input.SlotIntervalMinutes,
+	})
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusCreated,
+		exception.CourtErrors,
+	)
 }
 
 func (h *CatalogHandler) UpdateCourt(c *gin.Context) {
@@ -120,38 +163,78 @@ func (h *CatalogHandler) UpdateCourt(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	actorID, err := h.tenantActorID(c)
 	if err != nil {
-		exception.WriteGRPC(c, nil, err, http.StatusOK)
+		exception.WriteGRPC(
+			c,
+			nil,
+			err,
+			http.StatusOK,
+		)
 		return
 	}
-	result, err := h.catalog.UpdateCourt(catalogTenantContext(c), &catalogV1.UpdateCourtRequest{ActorUserId: actorID, CourtId: c.Param("court_id"), Name: input.Name, SlotIntervalMinutes: input.SlotIntervalMinutes, Status: input.Status})
-	exception.WriteGRPC(c, result, err, http.StatusOK, courtErrors)
+
+	result, err := h.catalog.UpdateCourt(catalogTenantContext(c), &catalogV1.UpdateCourtRequest{
+		ActorUserId:         actorID,
+		CourtId:             c.Param("court_id"),
+		Name:                input.Name,
+		SlotIntervalMinutes: input.SlotIntervalMinutes,
+		Status:              input.Status,
+	})
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+		exception.CourtErrors,
+	)
 }
 
 func (h *CatalogHandler) ArchiveCourt(c *gin.Context) {
 	actorID, err := h.tenantActorID(c)
 	if err != nil {
-		exception.WriteGRPC(c, nil, err, http.StatusOK)
+		exception.WriteGRPC(
+			c,
+			nil,
+			err,
+			http.StatusOK,
+		)
 		return
 	}
-	result, err := h.catalog.ArchiveCourt(catalogTenantContext(c), &catalogV1.ArchiveCourtRequest{ActorUserId: actorID, CourtId: c.Param("court_id")})
-	exception.WriteGRPC(c, result, err, http.StatusNoContent, courtErrors)
+
+	result, err := h.catalog.ArchiveCourt(catalogTenantContext(c), &catalogV1.ArchiveCourtRequest{
+		ActorUserId: actorID,
+		CourtId:     c.Param("court_id"),
+	})
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusNoContent,
+		exception.CourtErrors,
+	)
 }
 
 func (h *CatalogHandler) tenantActorID(c *gin.Context) (string, error) {
-	user, err := h.identity.GetCurrentUser(request.RPCContext(c, platformService.UserGateway), &identityV1.GetCurrentUserRequest{AccessToken: request.BearerToken(c), Portal: "tenant"})
+	user, err := h.identity.GetCurrentUser(request.RPCContext(c, platformService.UserGateway), &identityV1.GetCurrentUserRequest{AccessToken: request.BearerToken(c)})
 	if err != nil {
 		return "", err
 	}
+
 	if user.GetId() == "" {
-		return "", status.Error(codes.PermissionDenied, "tenant user is required")
+		return "", exception.ErrGRPCTenantUserRequired
 	}
+
 	return user.GetId(), nil
 }
 
 // catalogTenantContext forwards the caller token for service-side verification.
 func catalogTenantContext(c *gin.Context) context.Context {
 	ctx := request.RPCContext(c, platformService.UserGateway)
-	return metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+request.BearerToken(c))
+	return metadata.AppendToOutgoingContext(
+		ctx,
+		"authorization",
+		"Bearer "+request.BearerToken(c),
+	)
 }

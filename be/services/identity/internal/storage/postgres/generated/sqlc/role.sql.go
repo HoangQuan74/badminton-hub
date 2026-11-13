@@ -100,44 +100,6 @@ func (q *Queries) GetRole(ctx context.Context, id uuid.UUID) (GetRoleRow, error)
 	return i, err
 }
 
-const listPermissions = `-- name: ListPermissions :many
-SELECT id, module, path, action, description FROM identity.permissions ORDER BY module, path, action
-`
-
-type ListPermissionsRow struct {
-	ID          uuid.UUID `json:"id"`
-	Module      string    `json:"module"`
-	Path        string    `json:"path"`
-	Action      string    `json:"action"`
-	Description string    `json:"description"`
-}
-
-func (q *Queries) ListPermissions(ctx context.Context) ([]ListPermissionsRow, error) {
-	rows, err := q.db.Query(ctx, listPermissions)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ListPermissionsRow{}
-	for rows.Next() {
-		var i ListPermissionsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Module,
-			&i.Path,
-			&i.Action,
-			&i.Description,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listRoles = `-- name: ListRoles :many
 SELECT id, name, description, created_at FROM identity.roles ORDER BY name
 `

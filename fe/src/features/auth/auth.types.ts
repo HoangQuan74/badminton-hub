@@ -1,5 +1,6 @@
-export type UserStatus = 'active' | 'suspended'
-export type UserRole = 'customer' | 'tenant_owner' | 'tenant_staff' | 'venue_staff' | 'admin'
+import type { AccountStatus, BuiltinRole } from '@/constants/domain'
+export type UserStatus = AccountStatus
+export type UserRole = BuiltinRole
 
 export interface User {
   id: string
@@ -10,6 +11,7 @@ export interface User {
   created_at: string
   /** Optional until the User Gateway exposes roles in its public user response. */
   roles?: UserRole[]
+  is_admin?: boolean
 }
 
 export interface Tokens {

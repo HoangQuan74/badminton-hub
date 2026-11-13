@@ -2,9 +2,11 @@ package identitytest
 
 import (
 	"errors"
-	identityAuth "github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/auth"
 	"testing"
 	"time"
+
+	identityAuth "github.com/kainguyen/badminton-hub/be/services/identity/internal/domain/auth"
+	identityException "github.com/kainguyen/badminton-hub/be/services/identity/internal/exception"
 )
 
 func TestAccessTokenRoundTrip(t *testing.T) {
@@ -25,8 +27,8 @@ func TestAccessTokenRoundTrip(t *testing.T) {
 func TestParseAccessTokenRejectsInvalidToken(t *testing.T) {
 	manager := identityAuth.NewTokenManager("01234567890123456789012345678901", 15*time.Minute, time.Hour)
 	_, err := manager.ParseAccessToken("not-a-token")
-	if !errors.Is(err, identityAuth.ErrInvalidToken) {
-		t.Fatalf("error = %v, want identityAuth.ErrInvalidToken", err)
+	if !errors.Is(err, identityException.ErrAuthInvalidToken) {
+		t.Fatalf("error = %v, want identityException.ErrAuthInvalidToken", err)
 	}
 }
 

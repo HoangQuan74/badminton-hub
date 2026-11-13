@@ -8,11 +8,6 @@ import (
 
 // Directory is implemented by Identity, the authority for tenant and venue state.
 type Directory interface {
-	ListOrganizations(context.Context) ([]model.Organization, error)
-	GetOrganization(context.Context, string) (model.Organization, error)
-	CreateOrganization(context.Context, CreateOrganizationInput) (model.Organization, error)
-	UpdateOrganization(context.Context, string, UpdateOrganizationInput) (model.Organization, error)
-	ArchiveOrganization(context.Context, string) (model.Organization, error)
 	ListPublicVenues(context.Context) ([]model.Venue, error)
 	GetPublicVenue(context.Context, string) (model.Venue, error)
 	GetPublicVenueByID(context.Context, string) (model.Venue, error)

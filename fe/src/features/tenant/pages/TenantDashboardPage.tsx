@@ -1,3 +1,9 @@
+import { BuiltinRole } from '@/constants/domain'
+import { CourtStatus } from '@/constants/domain'
+import { VenueManager } from '@/features/venue/VenueManager'
+import { TenantStaffManager } from '@/features/staff/TenantStaffManager'
+import { TenantManager } from '@/features/tenant/TenantManager'
+import { CreateTenantForm } from '@/features/tenant/CreateTenantForm'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Building2, CalendarDays, ChevronRight, CircleHelp, LayoutDashboard, Pencil, Plus, Settings2, Trash2, UsersRound } from 'lucide-react'
@@ -16,7 +22,7 @@ export function TenantDashboardPage() {
   const reset = useAuthStore((state) => state.reset)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const canManageCourts = user.roles?.includes('tenant_owner') ?? false
+  const canManageCourts = user.roles?.includes(BuiltinRole.TenantOwner) ?? false
   const venuesQuery = useQuery({ queryKey: ['tenant-venues'], queryFn: catalogApi.listTenantVenues })
   const [selectedVenueId, setSelectedVenueId] = useState('')
   const [courtName, setCourtName] = useState('')
@@ -29,11 +35,11 @@ export function TenantDashboardPage() {
     enabled: Boolean(selectedVenueId)
   })
   useEffect(() => {
-    if (!selectedVenueId && venuesQuery.data?.[0]) setSelectedVenueId(venuesQuery.data[0].id)
-  }, [selectedVenueId, venuesQuery.data])
+    if (venuesQuery.isSuccess && !venuesQuery.data.some((venue) => venue.id === selectedVenueId)) setSelectedVenueId(venuesQuery.data[0]?.id ?? '')
+  }, [selectedVenueId, venuesQuery.data, venuesQuery.isSuccess])
   const saveCourt = useMutation({
     mutationFn: async () => {
-      const payload = { name: courtName, slot_interval_minutes: slotInterval, ...(editingCourtId ? { status: 'ACTIVE' as const } : {}) }
+      const payload = { name: courtName, slot_interval_minutes: slotInterval, ...(editingCourtId ? { status: CourtStatus.Active } : {}) }
       return editingCourtId ? catalogApi.updateCourt(editingCourtId, payload) : catalogApi.createCourt(selectedVenueId, payload)
     },
     onSuccess: () => {
@@ -64,7 +70,7 @@ export function TenantDashboardPage() {
     { label: t('portal.overview'), href: '/', icon: LayoutDashboard },
     { label: t('portal.venuesAndCourts'), href: '/#venues', icon: Building2 },
     { label: t('portal.schedule'), href: '/#bookings', icon: CalendarDays },
-    { label: t('portal.staff'), href: '/#staff', icon: UsersRound }
+    { label: t('portal.staff'), href: '/#staff-management', icon: UsersRound }
   ]
 
   return (
@@ -82,10 +88,13 @@ export function TenantDashboardPage() {
           <h1>{t('portal.tenantHeading')}</h1>
           <p>{t('portal.tenantDescription')}</p>
         </div>
-        <button className="primary-button" type="button" disabled><Building2 size={18} /> {t('portal.createVenue')}</button>
+        <a className="primary-button" href="#venue-management"><Building2 size={18} /> {t('portal.createVenue')}</a>
       </section>
 
       <div className="portal-notice" role="status"><CircleHelp size={18} /> {venuesQuery.isError ? t('portal.tenantLoadError') : t('portal.tenantNotice')}</div>
+
+      <TenantManager />
+      {canManageCourts && <><CreateTenantForm /><VenueManager /><TenantStaffManager /></>}
 
       <section className="metric-grid" aria-label="Tổng quan tenant">
         <article className="metric-card">
@@ -167,7 +176,7 @@ export function TenantDashboardPage() {
 
       <section className="portal-panel two-column-panels" id="bookings">
         <div><p className="eyebrow">{t('portal.operations')}</p><h2>{t('portal.schedule')}</h2><p className="panel-muted">{t('portal.scheduleDescription')}</p><Link className="panel-link" to="/#bookings">{t('portal.openSchedule')} <ChevronRight size={16} /></Link></div>
-        <div id="staff"><p className="eyebrow">{t('portal.access')}</p><h2>{t('portal.staff')}</h2><p className="panel-muted">{t('portal.staffDescription')}</p><button className="panel-link" type="button" disabled>{t('portal.inviteStaff')} <ChevronRight size={16} /></button></div>
+        <div><p className="eyebrow">{t('portal.access')}</p><h2>{t('portal.staff')}</h2><p className="panel-muted">{t('member.description')}</p><a className="panel-link" href="#staff-management">{t('member.title')} <ChevronRight size={16} /></a></div>
       </section>
 
       <button className="portal-settings" type="button" disabled><Settings2 size={17} /> {t('portal.tenantSettings')}</button>

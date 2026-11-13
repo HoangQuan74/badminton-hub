@@ -30,14 +30,7 @@ const file_identity_v1_admin_services_proto_rawDesc = "" +
 	"\aRefresh\x12*.badminton.identity.v1.AdminRefreshRequest\x1a+.badminton.identity.v1.AdminRefreshResponse\x12_\n" +
 	"\x06Logout\x12).badminton.identity.v1.AdminLogoutRequest\x1a*.badminton.identity.v1.AdminLogoutResponse\x12c\n" +
 	"\x0fGetCurrentStaff\x12*.badminton.identity.v1.CurrentStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12\\\n" +
-	"\x0eChangePassword\x12,.badminton.identity.v1.ChangePasswordRequest\x1a\x1c.badminton.identity.v1.Empty2\xd4\x04\n" +
-	"\x14IdentityStaffService\x12^\n" +
-	"\tListStaff\x12'.badminton.identity.v1.ListStaffRequest\x1a(.badminton.identity.v1.StaffListResponse\x12^\n" +
-	"\vCreateStaff\x12).badminton.identity.v1.CreateStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12X\n" +
-	"\bGetStaff\x12&.badminton.identity.v1.GetStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12^\n" +
-	"\vUpdateStaff\x12).badminton.identity.v1.UpdateStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12V\n" +
-	"\vDeleteStaff\x12).badminton.identity.v1.DeleteStaffRequest\x1a\x1c.badminton.identity.v1.Empty\x12j\n" +
-	"\x11UpdateStaffAccess\x12/.badminton.identity.v1.UpdateStaffAccessRequest\x1a$.badminton.identity.v1.StaffResponse2\xc1\x05\n" +
+	"\x0eChangePassword\x12,.badminton.identity.v1.ChangePasswordRequest\x1a\x1c.badminton.identity.v1.Empty2\xd0\x04\n" +
 	"\x13IdentityRoleService\x12]\n" +
 	"\tListRoles\x12'.badminton.identity.v1.ListRolesRequest\x1a'.badminton.identity.v1.RoleListResponse\x12[\n" +
 	"\n" +
@@ -47,8 +40,7 @@ const file_identity_v1_admin_services_proto_rawDesc = "" +
 	"UpdateRole\x12(.badminton.identity.v1.UpdateRoleRequest\x1a#.badminton.identity.v1.RoleResponse\x12T\n" +
 	"\n" +
 	"DeleteRole\x12(.badminton.identity.v1.DeleteRoleRequest\x1a\x1c.badminton.identity.v1.Empty\x12s\n" +
-	"\x16ReplaceRolePermissions\x124.badminton.identity.v1.ReplaceRolePermissionsRequest\x1a#.badminton.identity.v1.RoleResponse\x12o\n" +
-	"\x0fListPermissions\x12-.badminton.identity.v1.ListPermissionsRequest\x1a-.badminton.identity.v1.PermissionListResponseBIZGgithub.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1b\x06proto3"
+	"\x16ReplaceRolePermissions\x124.badminton.identity.v1.ReplaceRolePermissionsRequest\x1a#.badminton.identity.v1.RoleResponseBIZGgithub.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1b\x06proto3"
 
 var file_identity_v1_admin_services_proto_goTypes = []any{
 	(*AdminLoginRequest)(nil),             // 0: badminton.identity.v1.AdminLoginRequest
@@ -56,28 +48,19 @@ var file_identity_v1_admin_services_proto_goTypes = []any{
 	(*AdminLogoutRequest)(nil),            // 2: badminton.identity.v1.AdminLogoutRequest
 	(*CurrentStaffRequest)(nil),           // 3: badminton.identity.v1.CurrentStaffRequest
 	(*ChangePasswordRequest)(nil),         // 4: badminton.identity.v1.ChangePasswordRequest
-	(*ListStaffRequest)(nil),              // 5: badminton.identity.v1.ListStaffRequest
-	(*CreateStaffRequest)(nil),            // 6: badminton.identity.v1.CreateStaffRequest
-	(*GetStaffRequest)(nil),               // 7: badminton.identity.v1.GetStaffRequest
-	(*UpdateStaffRequest)(nil),            // 8: badminton.identity.v1.UpdateStaffRequest
-	(*DeleteStaffRequest)(nil),            // 9: badminton.identity.v1.DeleteStaffRequest
-	(*UpdateStaffAccessRequest)(nil),      // 10: badminton.identity.v1.UpdateStaffAccessRequest
-	(*ListRolesRequest)(nil),              // 11: badminton.identity.v1.ListRolesRequest
-	(*CreateRoleRequest)(nil),             // 12: badminton.identity.v1.CreateRoleRequest
-	(*GetRoleRequest)(nil),                // 13: badminton.identity.v1.GetRoleRequest
-	(*UpdateRoleRequest)(nil),             // 14: badminton.identity.v1.UpdateRoleRequest
-	(*DeleteRoleRequest)(nil),             // 15: badminton.identity.v1.DeleteRoleRequest
-	(*ReplaceRolePermissionsRequest)(nil), // 16: badminton.identity.v1.ReplaceRolePermissionsRequest
-	(*ListPermissionsRequest)(nil),        // 17: badminton.identity.v1.ListPermissionsRequest
-	(*AdminAuthResponse)(nil),             // 18: badminton.identity.v1.AdminAuthResponse
-	(*AdminRefreshResponse)(nil),          // 19: badminton.identity.v1.AdminRefreshResponse
-	(*AdminLogoutResponse)(nil),           // 20: badminton.identity.v1.AdminLogoutResponse
-	(*StaffResponse)(nil),                 // 21: badminton.identity.v1.StaffResponse
-	(*Empty)(nil),                         // 22: badminton.identity.v1.Empty
-	(*StaffListResponse)(nil),             // 23: badminton.identity.v1.StaffListResponse
-	(*RoleListResponse)(nil),              // 24: badminton.identity.v1.RoleListResponse
-	(*RoleResponse)(nil),                  // 25: badminton.identity.v1.RoleResponse
-	(*PermissionListResponse)(nil),        // 26: badminton.identity.v1.PermissionListResponse
+	(*ListRolesRequest)(nil),              // 5: badminton.identity.v1.ListRolesRequest
+	(*CreateRoleRequest)(nil),             // 6: badminton.identity.v1.CreateRoleRequest
+	(*GetRoleRequest)(nil),                // 7: badminton.identity.v1.GetRoleRequest
+	(*UpdateRoleRequest)(nil),             // 8: badminton.identity.v1.UpdateRoleRequest
+	(*DeleteRoleRequest)(nil),             // 9: badminton.identity.v1.DeleteRoleRequest
+	(*ReplaceRolePermissionsRequest)(nil), // 10: badminton.identity.v1.ReplaceRolePermissionsRequest
+	(*AdminAuthResponse)(nil),             // 11: badminton.identity.v1.AdminAuthResponse
+	(*AdminRefreshResponse)(nil),          // 12: badminton.identity.v1.AdminRefreshResponse
+	(*AdminLogoutResponse)(nil),           // 13: badminton.identity.v1.AdminLogoutResponse
+	(*StaffResponse)(nil),                 // 14: badminton.identity.v1.StaffResponse
+	(*Empty)(nil),                         // 15: badminton.identity.v1.Empty
+	(*RoleListResponse)(nil),              // 16: badminton.identity.v1.RoleListResponse
+	(*RoleResponse)(nil),                  // 17: badminton.identity.v1.RoleResponse
 }
 var file_identity_v1_admin_services_proto_depIdxs = []int32{
 	0,  // 0: badminton.identity.v1.IdentityAdminAuthService.Login:input_type -> badminton.identity.v1.AdminLoginRequest
@@ -85,39 +68,25 @@ var file_identity_v1_admin_services_proto_depIdxs = []int32{
 	2,  // 2: badminton.identity.v1.IdentityAdminAuthService.Logout:input_type -> badminton.identity.v1.AdminLogoutRequest
 	3,  // 3: badminton.identity.v1.IdentityAdminAuthService.GetCurrentStaff:input_type -> badminton.identity.v1.CurrentStaffRequest
 	4,  // 4: badminton.identity.v1.IdentityAdminAuthService.ChangePassword:input_type -> badminton.identity.v1.ChangePasswordRequest
-	5,  // 5: badminton.identity.v1.IdentityStaffService.ListStaff:input_type -> badminton.identity.v1.ListStaffRequest
-	6,  // 6: badminton.identity.v1.IdentityStaffService.CreateStaff:input_type -> badminton.identity.v1.CreateStaffRequest
-	7,  // 7: badminton.identity.v1.IdentityStaffService.GetStaff:input_type -> badminton.identity.v1.GetStaffRequest
-	8,  // 8: badminton.identity.v1.IdentityStaffService.UpdateStaff:input_type -> badminton.identity.v1.UpdateStaffRequest
-	9,  // 9: badminton.identity.v1.IdentityStaffService.DeleteStaff:input_type -> badminton.identity.v1.DeleteStaffRequest
-	10, // 10: badminton.identity.v1.IdentityStaffService.UpdateStaffAccess:input_type -> badminton.identity.v1.UpdateStaffAccessRequest
-	11, // 11: badminton.identity.v1.IdentityRoleService.ListRoles:input_type -> badminton.identity.v1.ListRolesRequest
-	12, // 12: badminton.identity.v1.IdentityRoleService.CreateRole:input_type -> badminton.identity.v1.CreateRoleRequest
-	13, // 13: badminton.identity.v1.IdentityRoleService.GetRole:input_type -> badminton.identity.v1.GetRoleRequest
-	14, // 14: badminton.identity.v1.IdentityRoleService.UpdateRole:input_type -> badminton.identity.v1.UpdateRoleRequest
-	15, // 15: badminton.identity.v1.IdentityRoleService.DeleteRole:input_type -> badminton.identity.v1.DeleteRoleRequest
-	16, // 16: badminton.identity.v1.IdentityRoleService.ReplaceRolePermissions:input_type -> badminton.identity.v1.ReplaceRolePermissionsRequest
-	17, // 17: badminton.identity.v1.IdentityRoleService.ListPermissions:input_type -> badminton.identity.v1.ListPermissionsRequest
-	18, // 18: badminton.identity.v1.IdentityAdminAuthService.Login:output_type -> badminton.identity.v1.AdminAuthResponse
-	19, // 19: badminton.identity.v1.IdentityAdminAuthService.Refresh:output_type -> badminton.identity.v1.AdminRefreshResponse
-	20, // 20: badminton.identity.v1.IdentityAdminAuthService.Logout:output_type -> badminton.identity.v1.AdminLogoutResponse
-	21, // 21: badminton.identity.v1.IdentityAdminAuthService.GetCurrentStaff:output_type -> badminton.identity.v1.StaffResponse
-	22, // 22: badminton.identity.v1.IdentityAdminAuthService.ChangePassword:output_type -> badminton.identity.v1.Empty
-	23, // 23: badminton.identity.v1.IdentityStaffService.ListStaff:output_type -> badminton.identity.v1.StaffListResponse
-	21, // 24: badminton.identity.v1.IdentityStaffService.CreateStaff:output_type -> badminton.identity.v1.StaffResponse
-	21, // 25: badminton.identity.v1.IdentityStaffService.GetStaff:output_type -> badminton.identity.v1.StaffResponse
-	21, // 26: badminton.identity.v1.IdentityStaffService.UpdateStaff:output_type -> badminton.identity.v1.StaffResponse
-	22, // 27: badminton.identity.v1.IdentityStaffService.DeleteStaff:output_type -> badminton.identity.v1.Empty
-	21, // 28: badminton.identity.v1.IdentityStaffService.UpdateStaffAccess:output_type -> badminton.identity.v1.StaffResponse
-	24, // 29: badminton.identity.v1.IdentityRoleService.ListRoles:output_type -> badminton.identity.v1.RoleListResponse
-	25, // 30: badminton.identity.v1.IdentityRoleService.CreateRole:output_type -> badminton.identity.v1.RoleResponse
-	25, // 31: badminton.identity.v1.IdentityRoleService.GetRole:output_type -> badminton.identity.v1.RoleResponse
-	25, // 32: badminton.identity.v1.IdentityRoleService.UpdateRole:output_type -> badminton.identity.v1.RoleResponse
-	22, // 33: badminton.identity.v1.IdentityRoleService.DeleteRole:output_type -> badminton.identity.v1.Empty
-	25, // 34: badminton.identity.v1.IdentityRoleService.ReplaceRolePermissions:output_type -> badminton.identity.v1.RoleResponse
-	26, // 35: badminton.identity.v1.IdentityRoleService.ListPermissions:output_type -> badminton.identity.v1.PermissionListResponse
-	18, // [18:36] is the sub-list for method output_type
-	0,  // [0:18] is the sub-list for method input_type
+	5,  // 5: badminton.identity.v1.IdentityRoleService.ListRoles:input_type -> badminton.identity.v1.ListRolesRequest
+	6,  // 6: badminton.identity.v1.IdentityRoleService.CreateRole:input_type -> badminton.identity.v1.CreateRoleRequest
+	7,  // 7: badminton.identity.v1.IdentityRoleService.GetRole:input_type -> badminton.identity.v1.GetRoleRequest
+	8,  // 8: badminton.identity.v1.IdentityRoleService.UpdateRole:input_type -> badminton.identity.v1.UpdateRoleRequest
+	9,  // 9: badminton.identity.v1.IdentityRoleService.DeleteRole:input_type -> badminton.identity.v1.DeleteRoleRequest
+	10, // 10: badminton.identity.v1.IdentityRoleService.ReplaceRolePermissions:input_type -> badminton.identity.v1.ReplaceRolePermissionsRequest
+	11, // 11: badminton.identity.v1.IdentityAdminAuthService.Login:output_type -> badminton.identity.v1.AdminAuthResponse
+	12, // 12: badminton.identity.v1.IdentityAdminAuthService.Refresh:output_type -> badminton.identity.v1.AdminRefreshResponse
+	13, // 13: badminton.identity.v1.IdentityAdminAuthService.Logout:output_type -> badminton.identity.v1.AdminLogoutResponse
+	14, // 14: badminton.identity.v1.IdentityAdminAuthService.GetCurrentStaff:output_type -> badminton.identity.v1.StaffResponse
+	15, // 15: badminton.identity.v1.IdentityAdminAuthService.ChangePassword:output_type -> badminton.identity.v1.Empty
+	16, // 16: badminton.identity.v1.IdentityRoleService.ListRoles:output_type -> badminton.identity.v1.RoleListResponse
+	17, // 17: badminton.identity.v1.IdentityRoleService.CreateRole:output_type -> badminton.identity.v1.RoleResponse
+	17, // 18: badminton.identity.v1.IdentityRoleService.GetRole:output_type -> badminton.identity.v1.RoleResponse
+	17, // 19: badminton.identity.v1.IdentityRoleService.UpdateRole:output_type -> badminton.identity.v1.RoleResponse
+	15, // 20: badminton.identity.v1.IdentityRoleService.DeleteRole:output_type -> badminton.identity.v1.Empty
+	17, // 21: badminton.identity.v1.IdentityRoleService.ReplaceRolePermissions:output_type -> badminton.identity.v1.RoleResponse
+	11, // [11:22] is the sub-list for method output_type
+	0,  // [0:11] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name
@@ -138,7 +107,7 @@ func file_identity_v1_admin_services_proto_init() {
 			NumEnums:      0,
 			NumMessages:   0,
 			NumExtensions: 0,
-			NumServices:   3,
+			NumServices:   2,
 		},
 		GoTypes:           file_identity_v1_admin_services_proto_goTypes,
 		DependencyIndexes: file_identity_v1_admin_services_proto_depIdxs,

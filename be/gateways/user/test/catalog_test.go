@@ -18,7 +18,7 @@ import (
 )
 
 type identityClient struct {
-	identityV1.IdentityAuthServiceClient
+	identityV1.IdentityTenantAuthServiceClient
 }
 
 func (identityClient) GetCurrentUser(_ context.Context, request *identityV1.GetCurrentUserRequest, _ ...grpc.CallOption) (*identityV1.UserResponse, error) {

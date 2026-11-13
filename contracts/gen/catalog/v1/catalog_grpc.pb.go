@@ -19,11 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	CatalogService_ListOrganizations_FullMethodName     = "/badminton.catalog.v1.CatalogService/ListOrganizations"
-	CatalogService_GetOrganization_FullMethodName       = "/badminton.catalog.v1.CatalogService/GetOrganization"
-	CatalogService_CreateOrganization_FullMethodName    = "/badminton.catalog.v1.CatalogService/CreateOrganization"
-	CatalogService_UpdateOrganization_FullMethodName    = "/badminton.catalog.v1.CatalogService/UpdateOrganization"
-	CatalogService_ArchiveOrganization_FullMethodName   = "/badminton.catalog.v1.CatalogService/ArchiveOrganization"
 	CatalogService_UploadVenueImage_FullMethodName      = "/badminton.catalog.v1.CatalogService/UploadVenueImage"
 	CatalogService_ListPublicVenueImages_FullMethodName = "/badminton.catalog.v1.CatalogService/ListPublicVenueImages"
 	CatalogService_ListTenantVenueImages_FullMethodName = "/badminton.catalog.v1.CatalogService/ListTenantVenueImages"
@@ -48,11 +43,6 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CatalogServiceClient interface {
-	ListOrganizations(ctx context.Context, in *ListOrganizationsRequest, opts ...grpc.CallOption) (*OrganizationListResponse, error)
-	GetOrganization(ctx context.Context, in *GetOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error)
-	CreateOrganization(ctx context.Context, in *CreateOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error)
-	UpdateOrganization(ctx context.Context, in *UpdateOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error)
-	ArchiveOrganization(ctx context.Context, in *ArchiveOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error)
 	UploadVenueImage(ctx context.Context, in *UploadVenueImageRequest, opts ...grpc.CallOption) (*VenueImageResponse, error)
 	ListPublicVenueImages(ctx context.Context, in *ListPublicVenueImagesRequest, opts ...grpc.CallOption) (*VenueImageListResponse, error)
 	ListTenantVenueImages(ctx context.Context, in *ListTenantVenueImagesRequest, opts ...grpc.CallOption) (*VenueImageListResponse, error)
@@ -79,56 +69,6 @@ type catalogServiceClient struct {
 
 func NewCatalogServiceClient(cc grpc.ClientConnInterface) CatalogServiceClient {
 	return &catalogServiceClient{cc}
-}
-
-func (c *catalogServiceClient) ListOrganizations(ctx context.Context, in *ListOrganizationsRequest, opts ...grpc.CallOption) (*OrganizationListResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OrganizationListResponse)
-	err := c.cc.Invoke(ctx, CatalogService_ListOrganizations_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *catalogServiceClient) GetOrganization(ctx context.Context, in *GetOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OrganizationResponse)
-	err := c.cc.Invoke(ctx, CatalogService_GetOrganization_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *catalogServiceClient) CreateOrganization(ctx context.Context, in *CreateOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OrganizationResponse)
-	err := c.cc.Invoke(ctx, CatalogService_CreateOrganization_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *catalogServiceClient) UpdateOrganization(ctx context.Context, in *UpdateOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OrganizationResponse)
-	err := c.cc.Invoke(ctx, CatalogService_UpdateOrganization_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *catalogServiceClient) ArchiveOrganization(ctx context.Context, in *ArchiveOrganizationRequest, opts ...grpc.CallOption) (*OrganizationResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(OrganizationResponse)
-	err := c.cc.Invoke(ctx, CatalogService_ArchiveOrganization_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *catalogServiceClient) UploadVenueImage(ctx context.Context, in *UploadVenueImageRequest, opts ...grpc.CallOption) (*VenueImageResponse, error) {
@@ -315,11 +255,6 @@ func (c *catalogServiceClient) ArchiveCourt(ctx context.Context, in *ArchiveCour
 // All implementations must embed UnimplementedCatalogServiceServer
 // for forward compatibility.
 type CatalogServiceServer interface {
-	ListOrganizations(context.Context, *ListOrganizationsRequest) (*OrganizationListResponse, error)
-	GetOrganization(context.Context, *GetOrganizationRequest) (*OrganizationResponse, error)
-	CreateOrganization(context.Context, *CreateOrganizationRequest) (*OrganizationResponse, error)
-	UpdateOrganization(context.Context, *UpdateOrganizationRequest) (*OrganizationResponse, error)
-	ArchiveOrganization(context.Context, *ArchiveOrganizationRequest) (*OrganizationResponse, error)
 	UploadVenueImage(context.Context, *UploadVenueImageRequest) (*VenueImageResponse, error)
 	ListPublicVenueImages(context.Context, *ListPublicVenueImagesRequest) (*VenueImageListResponse, error)
 	ListTenantVenueImages(context.Context, *ListTenantVenueImagesRequest) (*VenueImageListResponse, error)
@@ -348,21 +283,6 @@ type CatalogServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedCatalogServiceServer struct{}
 
-func (UnimplementedCatalogServiceServer) ListOrganizations(context.Context, *ListOrganizationsRequest) (*OrganizationListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListOrganizations not implemented")
-}
-func (UnimplementedCatalogServiceServer) GetOrganization(context.Context, *GetOrganizationRequest) (*OrganizationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetOrganization not implemented")
-}
-func (UnimplementedCatalogServiceServer) CreateOrganization(context.Context, *CreateOrganizationRequest) (*OrganizationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateOrganization not implemented")
-}
-func (UnimplementedCatalogServiceServer) UpdateOrganization(context.Context, *UpdateOrganizationRequest) (*OrganizationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrganization not implemented")
-}
-func (UnimplementedCatalogServiceServer) ArchiveOrganization(context.Context, *ArchiveOrganizationRequest) (*OrganizationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ArchiveOrganization not implemented")
-}
 func (UnimplementedCatalogServiceServer) UploadVenueImage(context.Context, *UploadVenueImageRequest) (*VenueImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadVenueImage not implemented")
 }
@@ -436,96 +356,6 @@ func RegisterCatalogServiceServer(s grpc.ServiceRegistrar, srv CatalogServiceSer
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&CatalogService_ServiceDesc, srv)
-}
-
-func _CatalogService_ListOrganizations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListOrganizationsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CatalogServiceServer).ListOrganizations(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CatalogService_ListOrganizations_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceServer).ListOrganizations(ctx, req.(*ListOrganizationsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CatalogService_GetOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetOrganizationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CatalogServiceServer).GetOrganization(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CatalogService_GetOrganization_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceServer).GetOrganization(ctx, req.(*GetOrganizationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CatalogService_CreateOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateOrganizationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CatalogServiceServer).CreateOrganization(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CatalogService_CreateOrganization_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceServer).CreateOrganization(ctx, req.(*CreateOrganizationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CatalogService_UpdateOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateOrganizationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CatalogServiceServer).UpdateOrganization(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CatalogService_UpdateOrganization_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceServer).UpdateOrganization(ctx, req.(*UpdateOrganizationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _CatalogService_ArchiveOrganization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ArchiveOrganizationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(CatalogServiceServer).ArchiveOrganization(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: CatalogService_ArchiveOrganization_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CatalogServiceServer).ArchiveOrganization(ctx, req.(*ArchiveOrganizationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _CatalogService_UploadVenueImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -859,26 +689,6 @@ var CatalogService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "badminton.catalog.v1.CatalogService",
 	HandlerType: (*CatalogServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "ListOrganizations",
-			Handler:    _CatalogService_ListOrganizations_Handler,
-		},
-		{
-			MethodName: "GetOrganization",
-			Handler:    _CatalogService_GetOrganization_Handler,
-		},
-		{
-			MethodName: "CreateOrganization",
-			Handler:    _CatalogService_CreateOrganization_Handler,
-		},
-		{
-			MethodName: "UpdateOrganization",
-			Handler:    _CatalogService_UpdateOrganization_Handler,
-		},
-		{
-			MethodName: "ArchiveOrganization",
-			Handler:    _CatalogService_ArchiveOrganization_Handler,
-		},
 		{
 			MethodName: "UploadVenueImage",
 			Handler:    _CatalogService_UploadVenueImage_Handler,

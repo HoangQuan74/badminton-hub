@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kainguyen/badminton-hub/be/services/identity/internal/constant"
 	"github.com/kainguyen/badminton-hub/be/services/identity/internal/model"
 )
 
@@ -21,16 +22,16 @@ func TestNewListQuery(t *testing.T) {
 		{
 			name:      "defaults and trims search",
 			search:    "  user@example.com  ",
-			wantLimit: model.DefaultPageSize,
+			wantLimit: constant.DefaultPageSize,
 		},
 		{
 			name:      "accepts bounded page size",
-			limit:     model.MaxPageSize,
-			wantLimit: model.MaxPageSize,
+			limit:     constant.MaxPageSize,
+			wantLimit: constant.MaxPageSize,
 		},
 		{
 			name:      "rejects oversized page",
-			limit:     model.MaxPageSize + 1,
+			limit:     constant.MaxPageSize + 1,
 			wantError: true,
 		},
 		{

@@ -769,7 +769,7 @@ func (x *ArchiveCourtResponse) GetCourt() *Court {
 	return nil
 }
 
-// Legacy venue write methods forward the tenant token to the owning Identity service.
+// Venue write methods forward the tenant token to the owning Identity service.
 type GetPublicVenueRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
@@ -1542,414 +1542,6 @@ func (x *VenueImageContentResponse) GetContentType() string {
 	return ""
 }
 
-type Organization struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
-	CreatedAt     string                 `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     string                 `protobuf:"bytes,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Organization) Reset() {
-	*x = Organization{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[28]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Organization) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Organization) ProtoMessage() {}
-
-func (x *Organization) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[28]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Organization.ProtoReflect.Descriptor instead.
-func (*Organization) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{28}
-}
-
-func (x *Organization) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Organization) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *Organization) GetSlug() string {
-	if x != nil {
-		return x.Slug
-	}
-	return ""
-}
-
-func (x *Organization) GetStatus() string {
-	if x != nil {
-		return x.Status
-	}
-	return ""
-}
-
-func (x *Organization) GetCreatedAt() string {
-	if x != nil {
-		return x.CreatedAt
-	}
-	return ""
-}
-
-func (x *Organization) GetUpdatedAt() string {
-	if x != nil {
-		return x.UpdatedAt
-	}
-	return ""
-}
-
-type ListOrganizationsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListOrganizationsRequest) Reset() {
-	*x = ListOrganizationsRequest{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[29]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListOrganizationsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListOrganizationsRequest) ProtoMessage() {}
-
-func (x *ListOrganizationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[29]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListOrganizationsRequest.ProtoReflect.Descriptor instead.
-func (*ListOrganizationsRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{29}
-}
-
-type GetOrganizationRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *GetOrganizationRequest) Reset() {
-	*x = GetOrganizationRequest{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[30]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetOrganizationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetOrganizationRequest) ProtoMessage() {}
-
-func (x *GetOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[30]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetOrganizationRequest.ProtoReflect.Descriptor instead.
-func (*GetOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *GetOrganizationRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-type CreateOrganizationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateOrganizationRequest) Reset() {
-	*x = CreateOrganizationRequest{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[31]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateOrganizationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateOrganizationRequest) ProtoMessage() {}
-
-func (x *CreateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[31]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateOrganizationRequest.ProtoReflect.Descriptor instead.
-func (*CreateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{31}
-}
-
-func (x *CreateOrganizationRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreateOrganizationRequest) GetSlug() string {
-	if x != nil {
-		return x.Slug
-	}
-	return ""
-}
-
-type UpdateOrganizationRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Name           *string                `protobuf:"bytes,2,opt,name=name,proto3,oneof" json:"name,omitempty"`
-	Slug           *string                `protobuf:"bytes,3,opt,name=slug,proto3,oneof" json:"slug,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *UpdateOrganizationRequest) Reset() {
-	*x = UpdateOrganizationRequest{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[32]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateOrganizationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateOrganizationRequest) ProtoMessage() {}
-
-func (x *UpdateOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[32]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateOrganizationRequest.ProtoReflect.Descriptor instead.
-func (*UpdateOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{32}
-}
-
-func (x *UpdateOrganizationRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-func (x *UpdateOrganizationRequest) GetName() string {
-	if x != nil && x.Name != nil {
-		return *x.Name
-	}
-	return ""
-}
-
-func (x *UpdateOrganizationRequest) GetSlug() string {
-	if x != nil && x.Slug != nil {
-		return *x.Slug
-	}
-	return ""
-}
-
-type ArchiveOrganizationRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
-}
-
-func (x *ArchiveOrganizationRequest) Reset() {
-	*x = ArchiveOrganizationRequest{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[33]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ArchiveOrganizationRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ArchiveOrganizationRequest) ProtoMessage() {}
-
-func (x *ArchiveOrganizationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[33]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ArchiveOrganizationRequest.ProtoReflect.Descriptor instead.
-func (*ArchiveOrganizationRequest) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *ArchiveOrganizationRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
-}
-
-type OrganizationResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Organization  *Organization          `protobuf:"bytes,1,opt,name=organization,proto3" json:"organization,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OrganizationResponse) Reset() {
-	*x = OrganizationResponse{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[34]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OrganizationResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OrganizationResponse) ProtoMessage() {}
-
-func (x *OrganizationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[34]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OrganizationResponse.ProtoReflect.Descriptor instead.
-func (*OrganizationResponse) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{34}
-}
-
-func (x *OrganizationResponse) GetOrganization() *Organization {
-	if x != nil {
-		return x.Organization
-	}
-	return nil
-}
-
-type OrganizationListResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Items         []*Organization        `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *OrganizationListResponse) Reset() {
-	*x = OrganizationListResponse{}
-	mi := &file_catalog_v1_catalog_proto_msgTypes[35]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OrganizationListResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OrganizationListResponse) ProtoMessage() {}
-
-func (x *OrganizationListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_catalog_v1_catalog_proto_msgTypes[35]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use OrganizationListResponse.ProtoReflect.Descriptor instead.
-func (*OrganizationListResponse) Descriptor() ([]byte, []int) {
-	return file_catalog_v1_catalog_proto_rawDescGZIP(), []int{35}
-}
-
-func (x *OrganizationListResponse) GetItems() []*Organization {
-	if x != nil {
-		return x.Items
-	}
-	return nil
-}
-
 var File_catalog_v1_catalog_proto protoreflect.FileDescriptor
 
 const file_catalog_v1_catalog_proto_rawDesc = "" +
@@ -2056,40 +1648,8 @@ const file_catalog_v1_catalog_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2 .badminton.catalog.v1.VenueImageR\x05items\"X\n" +
 	"\x19VenueImageContentResponse\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\fR\acontent\x12!\n" +
-	"\fcontent_type\x18\x02 \x01(\tR\vcontentType\"\x9c\x01\n" +
-	"\fOrganization\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x03 \x01(\tR\x04slug\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status\x12\x1d\n" +
-	"\n" +
-	"created_at\x18\x05 \x01(\tR\tcreatedAt\x12\x1d\n" +
-	"\n" +
-	"updated_at\x18\x06 \x01(\tR\tupdatedAt\"\x1a\n" +
-	"\x18ListOrganizationsRequest\"A\n" +
-	"\x16GetOrganizationRequest\x12'\n" +
-	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\"C\n" +
-	"\x19CreateOrganizationRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
-	"\x04slug\x18\x02 \x01(\tR\x04slug\"\x88\x01\n" +
-	"\x19UpdateOrganizationRequest\x12'\n" +
-	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x17\n" +
-	"\x04name\x18\x02 \x01(\tH\x00R\x04name\x88\x01\x01\x12\x17\n" +
-	"\x04slug\x18\x03 \x01(\tH\x01R\x04slug\x88\x01\x01B\a\n" +
-	"\x05_nameB\a\n" +
-	"\x05_slug\"E\n" +
-	"\x1aArchiveOrganizationRequest\x12'\n" +
-	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\"^\n" +
-	"\x14OrganizationResponse\x12F\n" +
-	"\forganization\x18\x01 \x01(\v2\".badminton.catalog.v1.OrganizationR\forganization\"T\n" +
-	"\x18OrganizationListResponse\x128\n" +
-	"\x05items\x18\x01 \x03(\v2\".badminton.catalog.v1.OrganizationR\x05items2\xc1\x13\n" +
-	"\x0eCatalogService\x12s\n" +
-	"\x11ListOrganizations\x12..badminton.catalog.v1.ListOrganizationsRequest\x1a..badminton.catalog.v1.OrganizationListResponse\x12k\n" +
-	"\x0fGetOrganization\x12,.badminton.catalog.v1.GetOrganizationRequest\x1a*.badminton.catalog.v1.OrganizationResponse\x12q\n" +
-	"\x12CreateOrganization\x12/.badminton.catalog.v1.CreateOrganizationRequest\x1a*.badminton.catalog.v1.OrganizationResponse\x12q\n" +
-	"\x12UpdateOrganization\x12/.badminton.catalog.v1.UpdateOrganizationRequest\x1a*.badminton.catalog.v1.OrganizationResponse\x12s\n" +
-	"\x13ArchiveOrganization\x120.badminton.catalog.v1.ArchiveOrganizationRequest\x1a*.badminton.catalog.v1.OrganizationResponse\x12k\n" +
+	"\fcontent_type\x18\x02 \x01(\tR\vcontentType2\x84\x0f\n" +
+	"\x0eCatalogService\x12k\n" +
 	"\x10UploadVenueImage\x12-.badminton.catalog.v1.UploadVenueImageRequest\x1a(.badminton.catalog.v1.VenueImageResponse\x12y\n" +
 	"\x15ListPublicVenueImages\x122.badminton.catalog.v1.ListPublicVenueImagesRequest\x1a,.badminton.catalog.v1.VenueImageListResponse\x12y\n" +
 	"\x15ListTenantVenueImages\x122.badminton.catalog.v1.ListTenantVenueImagesRequest\x1a,.badminton.catalog.v1.VenueImageListResponse\x12r\n" +
@@ -2121,7 +1681,7 @@ func file_catalog_v1_catalog_proto_rawDescGZIP() []byte {
 	return file_catalog_v1_catalog_proto_rawDescData
 }
 
-var file_catalog_v1_catalog_proto_msgTypes = make([]protoimpl.MessageInfo, 36)
+var file_catalog_v1_catalog_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
 var file_catalog_v1_catalog_proto_goTypes = []any{
 	(*ListPublicVenuesRequest)(nil),      // 0: badminton.catalog.v1.ListPublicVenuesRequest
 	(*ListPublicVenueCourtsRequest)(nil), // 1: badminton.catalog.v1.ListPublicVenueCourtsRequest
@@ -2151,14 +1711,6 @@ var file_catalog_v1_catalog_proto_goTypes = []any{
 	(*VenueImageResponse)(nil),           // 25: badminton.catalog.v1.VenueImageResponse
 	(*VenueImageListResponse)(nil),       // 26: badminton.catalog.v1.VenueImageListResponse
 	(*VenueImageContentResponse)(nil),    // 27: badminton.catalog.v1.VenueImageContentResponse
-	(*Organization)(nil),                 // 28: badminton.catalog.v1.Organization
-	(*ListOrganizationsRequest)(nil),     // 29: badminton.catalog.v1.ListOrganizationsRequest
-	(*GetOrganizationRequest)(nil),       // 30: badminton.catalog.v1.GetOrganizationRequest
-	(*CreateOrganizationRequest)(nil),    // 31: badminton.catalog.v1.CreateOrganizationRequest
-	(*UpdateOrganizationRequest)(nil),    // 32: badminton.catalog.v1.UpdateOrganizationRequest
-	(*ArchiveOrganizationRequest)(nil),   // 33: badminton.catalog.v1.ArchiveOrganizationRequest
-	(*OrganizationResponse)(nil),         // 34: badminton.catalog.v1.OrganizationResponse
-	(*OrganizationListResponse)(nil),     // 35: badminton.catalog.v1.OrganizationListResponse
 }
 var file_catalog_v1_catalog_proto_depIdxs = []int32{
 	9,  // 0: badminton.catalog.v1.ListVenuesResponse.items:type_name -> badminton.catalog.v1.Venue
@@ -2169,59 +1721,47 @@ var file_catalog_v1_catalog_proto_depIdxs = []int32{
 	9,  // 5: badminton.catalog.v1.VenueResponse.venue:type_name -> badminton.catalog.v1.Venue
 	24, // 6: badminton.catalog.v1.VenueImageResponse.image:type_name -> badminton.catalog.v1.VenueImage
 	24, // 7: badminton.catalog.v1.VenueImageListResponse.items:type_name -> badminton.catalog.v1.VenueImage
-	28, // 8: badminton.catalog.v1.OrganizationResponse.organization:type_name -> badminton.catalog.v1.Organization
-	28, // 9: badminton.catalog.v1.OrganizationListResponse.items:type_name -> badminton.catalog.v1.Organization
-	29, // 10: badminton.catalog.v1.CatalogService.ListOrganizations:input_type -> badminton.catalog.v1.ListOrganizationsRequest
-	30, // 11: badminton.catalog.v1.CatalogService.GetOrganization:input_type -> badminton.catalog.v1.GetOrganizationRequest
-	31, // 12: badminton.catalog.v1.CatalogService.CreateOrganization:input_type -> badminton.catalog.v1.CreateOrganizationRequest
-	32, // 13: badminton.catalog.v1.CatalogService.UpdateOrganization:input_type -> badminton.catalog.v1.UpdateOrganizationRequest
-	33, // 14: badminton.catalog.v1.CatalogService.ArchiveOrganization:input_type -> badminton.catalog.v1.ArchiveOrganizationRequest
-	20, // 15: badminton.catalog.v1.CatalogService.UploadVenueImage:input_type -> badminton.catalog.v1.UploadVenueImageRequest
-	21, // 16: badminton.catalog.v1.CatalogService.ListPublicVenueImages:input_type -> badminton.catalog.v1.ListPublicVenueImagesRequest
-	22, // 17: badminton.catalog.v1.CatalogService.ListTenantVenueImages:input_type -> badminton.catalog.v1.ListTenantVenueImagesRequest
-	23, // 18: badminton.catalog.v1.CatalogService.GetPublicVenueImage:input_type -> badminton.catalog.v1.GetVenueImageRequest
-	23, // 19: badminton.catalog.v1.CatalogService.GetTenantVenueImage:input_type -> badminton.catalog.v1.GetVenueImageRequest
-	13, // 20: badminton.catalog.v1.CatalogService.GetPublicVenue:input_type -> badminton.catalog.v1.GetPublicVenueRequest
-	14, // 21: badminton.catalog.v1.CatalogService.GetTenantVenue:input_type -> badminton.catalog.v1.GetTenantVenueRequest
-	15, // 22: badminton.catalog.v1.CatalogService.CreateVenue:input_type -> badminton.catalog.v1.CreateVenueRequest
-	16, // 23: badminton.catalog.v1.CatalogService.UpdateVenue:input_type -> badminton.catalog.v1.UpdateVenueRequest
-	17, // 24: badminton.catalog.v1.CatalogService.ArchiveVenue:input_type -> badminton.catalog.v1.ArchiveVenueRequest
-	18, // 25: badminton.catalog.v1.CatalogService.GetTenantCourt:input_type -> badminton.catalog.v1.GetTenantCourtRequest
-	0,  // 26: badminton.catalog.v1.CatalogService.ListPublicVenues:input_type -> badminton.catalog.v1.ListPublicVenuesRequest
-	1,  // 27: badminton.catalog.v1.CatalogService.ListPublicVenueCourts:input_type -> badminton.catalog.v1.ListPublicVenueCourtsRequest
-	2,  // 28: badminton.catalog.v1.CatalogService.ListTenantVenues:input_type -> badminton.catalog.v1.ListTenantVenuesRequest
-	3,  // 29: badminton.catalog.v1.CatalogService.ListTenantCourts:input_type -> badminton.catalog.v1.ListTenantCourtsRequest
-	4,  // 30: badminton.catalog.v1.CatalogService.CreateCourt:input_type -> badminton.catalog.v1.CreateCourtRequest
-	5,  // 31: badminton.catalog.v1.CatalogService.UpdateCourt:input_type -> badminton.catalog.v1.UpdateCourtRequest
-	6,  // 32: badminton.catalog.v1.CatalogService.ArchiveCourt:input_type -> badminton.catalog.v1.ArchiveCourtRequest
-	35, // 33: badminton.catalog.v1.CatalogService.ListOrganizations:output_type -> badminton.catalog.v1.OrganizationListResponse
-	34, // 34: badminton.catalog.v1.CatalogService.GetOrganization:output_type -> badminton.catalog.v1.OrganizationResponse
-	34, // 35: badminton.catalog.v1.CatalogService.CreateOrganization:output_type -> badminton.catalog.v1.OrganizationResponse
-	34, // 36: badminton.catalog.v1.CatalogService.UpdateOrganization:output_type -> badminton.catalog.v1.OrganizationResponse
-	34, // 37: badminton.catalog.v1.CatalogService.ArchiveOrganization:output_type -> badminton.catalog.v1.OrganizationResponse
-	25, // 38: badminton.catalog.v1.CatalogService.UploadVenueImage:output_type -> badminton.catalog.v1.VenueImageResponse
-	26, // 39: badminton.catalog.v1.CatalogService.ListPublicVenueImages:output_type -> badminton.catalog.v1.VenueImageListResponse
-	26, // 40: badminton.catalog.v1.CatalogService.ListTenantVenueImages:output_type -> badminton.catalog.v1.VenueImageListResponse
-	27, // 41: badminton.catalog.v1.CatalogService.GetPublicVenueImage:output_type -> badminton.catalog.v1.VenueImageContentResponse
-	27, // 42: badminton.catalog.v1.CatalogService.GetTenantVenueImage:output_type -> badminton.catalog.v1.VenueImageContentResponse
-	19, // 43: badminton.catalog.v1.CatalogService.GetPublicVenue:output_type -> badminton.catalog.v1.VenueResponse
-	19, // 44: badminton.catalog.v1.CatalogService.GetTenantVenue:output_type -> badminton.catalog.v1.VenueResponse
-	19, // 45: badminton.catalog.v1.CatalogService.CreateVenue:output_type -> badminton.catalog.v1.VenueResponse
-	19, // 46: badminton.catalog.v1.CatalogService.UpdateVenue:output_type -> badminton.catalog.v1.VenueResponse
-	19, // 47: badminton.catalog.v1.CatalogService.ArchiveVenue:output_type -> badminton.catalog.v1.VenueResponse
-	11, // 48: badminton.catalog.v1.CatalogService.GetTenantCourt:output_type -> badminton.catalog.v1.CourtResponse
-	7,  // 49: badminton.catalog.v1.CatalogService.ListPublicVenues:output_type -> badminton.catalog.v1.ListVenuesResponse
-	8,  // 50: badminton.catalog.v1.CatalogService.ListPublicVenueCourts:output_type -> badminton.catalog.v1.ListCourtsResponse
-	7,  // 51: badminton.catalog.v1.CatalogService.ListTenantVenues:output_type -> badminton.catalog.v1.ListVenuesResponse
-	8,  // 52: badminton.catalog.v1.CatalogService.ListTenantCourts:output_type -> badminton.catalog.v1.ListCourtsResponse
-	11, // 53: badminton.catalog.v1.CatalogService.CreateCourt:output_type -> badminton.catalog.v1.CourtResponse
-	11, // 54: badminton.catalog.v1.CatalogService.UpdateCourt:output_type -> badminton.catalog.v1.CourtResponse
-	12, // 55: badminton.catalog.v1.CatalogService.ArchiveCourt:output_type -> badminton.catalog.v1.ArchiveCourtResponse
-	33, // [33:56] is the sub-list for method output_type
-	10, // [10:33] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	20, // 8: badminton.catalog.v1.CatalogService.UploadVenueImage:input_type -> badminton.catalog.v1.UploadVenueImageRequest
+	21, // 9: badminton.catalog.v1.CatalogService.ListPublicVenueImages:input_type -> badminton.catalog.v1.ListPublicVenueImagesRequest
+	22, // 10: badminton.catalog.v1.CatalogService.ListTenantVenueImages:input_type -> badminton.catalog.v1.ListTenantVenueImagesRequest
+	23, // 11: badminton.catalog.v1.CatalogService.GetPublicVenueImage:input_type -> badminton.catalog.v1.GetVenueImageRequest
+	23, // 12: badminton.catalog.v1.CatalogService.GetTenantVenueImage:input_type -> badminton.catalog.v1.GetVenueImageRequest
+	13, // 13: badminton.catalog.v1.CatalogService.GetPublicVenue:input_type -> badminton.catalog.v1.GetPublicVenueRequest
+	14, // 14: badminton.catalog.v1.CatalogService.GetTenantVenue:input_type -> badminton.catalog.v1.GetTenantVenueRequest
+	15, // 15: badminton.catalog.v1.CatalogService.CreateVenue:input_type -> badminton.catalog.v1.CreateVenueRequest
+	16, // 16: badminton.catalog.v1.CatalogService.UpdateVenue:input_type -> badminton.catalog.v1.UpdateVenueRequest
+	17, // 17: badminton.catalog.v1.CatalogService.ArchiveVenue:input_type -> badminton.catalog.v1.ArchiveVenueRequest
+	18, // 18: badminton.catalog.v1.CatalogService.GetTenantCourt:input_type -> badminton.catalog.v1.GetTenantCourtRequest
+	0,  // 19: badminton.catalog.v1.CatalogService.ListPublicVenues:input_type -> badminton.catalog.v1.ListPublicVenuesRequest
+	1,  // 20: badminton.catalog.v1.CatalogService.ListPublicVenueCourts:input_type -> badminton.catalog.v1.ListPublicVenueCourtsRequest
+	2,  // 21: badminton.catalog.v1.CatalogService.ListTenantVenues:input_type -> badminton.catalog.v1.ListTenantVenuesRequest
+	3,  // 22: badminton.catalog.v1.CatalogService.ListTenantCourts:input_type -> badminton.catalog.v1.ListTenantCourtsRequest
+	4,  // 23: badminton.catalog.v1.CatalogService.CreateCourt:input_type -> badminton.catalog.v1.CreateCourtRequest
+	5,  // 24: badminton.catalog.v1.CatalogService.UpdateCourt:input_type -> badminton.catalog.v1.UpdateCourtRequest
+	6,  // 25: badminton.catalog.v1.CatalogService.ArchiveCourt:input_type -> badminton.catalog.v1.ArchiveCourtRequest
+	25, // 26: badminton.catalog.v1.CatalogService.UploadVenueImage:output_type -> badminton.catalog.v1.VenueImageResponse
+	26, // 27: badminton.catalog.v1.CatalogService.ListPublicVenueImages:output_type -> badminton.catalog.v1.VenueImageListResponse
+	26, // 28: badminton.catalog.v1.CatalogService.ListTenantVenueImages:output_type -> badminton.catalog.v1.VenueImageListResponse
+	27, // 29: badminton.catalog.v1.CatalogService.GetPublicVenueImage:output_type -> badminton.catalog.v1.VenueImageContentResponse
+	27, // 30: badminton.catalog.v1.CatalogService.GetTenantVenueImage:output_type -> badminton.catalog.v1.VenueImageContentResponse
+	19, // 31: badminton.catalog.v1.CatalogService.GetPublicVenue:output_type -> badminton.catalog.v1.VenueResponse
+	19, // 32: badminton.catalog.v1.CatalogService.GetTenantVenue:output_type -> badminton.catalog.v1.VenueResponse
+	19, // 33: badminton.catalog.v1.CatalogService.CreateVenue:output_type -> badminton.catalog.v1.VenueResponse
+	19, // 34: badminton.catalog.v1.CatalogService.UpdateVenue:output_type -> badminton.catalog.v1.VenueResponse
+	19, // 35: badminton.catalog.v1.CatalogService.ArchiveVenue:output_type -> badminton.catalog.v1.VenueResponse
+	11, // 36: badminton.catalog.v1.CatalogService.GetTenantCourt:output_type -> badminton.catalog.v1.CourtResponse
+	7,  // 37: badminton.catalog.v1.CatalogService.ListPublicVenues:output_type -> badminton.catalog.v1.ListVenuesResponse
+	8,  // 38: badminton.catalog.v1.CatalogService.ListPublicVenueCourts:output_type -> badminton.catalog.v1.ListCourtsResponse
+	7,  // 39: badminton.catalog.v1.CatalogService.ListTenantVenues:output_type -> badminton.catalog.v1.ListVenuesResponse
+	8,  // 40: badminton.catalog.v1.CatalogService.ListTenantCourts:output_type -> badminton.catalog.v1.ListCourtsResponse
+	11, // 41: badminton.catalog.v1.CatalogService.CreateCourt:output_type -> badminton.catalog.v1.CourtResponse
+	11, // 42: badminton.catalog.v1.CatalogService.UpdateCourt:output_type -> badminton.catalog.v1.CourtResponse
+	12, // 43: badminton.catalog.v1.CatalogService.ArchiveCourt:output_type -> badminton.catalog.v1.ArchiveCourtResponse
+	26, // [26:44] is the sub-list for method output_type
+	8,  // [8:26] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_catalog_v1_catalog_proto_init() }
@@ -2230,14 +1770,13 @@ func file_catalog_v1_catalog_proto_init() {
 		return
 	}
 	file_catalog_v1_catalog_proto_msgTypes[16].OneofWrappers = []any{}
-	file_catalog_v1_catalog_proto_msgTypes[32].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_catalog_v1_catalog_proto_rawDesc), len(file_catalog_v1_catalog_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   36,
+			NumMessages:   28,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

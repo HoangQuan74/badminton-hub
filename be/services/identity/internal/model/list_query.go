@@ -1,17 +1,12 @@
 package model
 
 import (
-	"errors"
 	"strings"
 	"time"
-)
 
-const (
-	DefaultPageSize = 20
-	MaxPageSize     = 100
+	"github.com/kainguyen/badminton-hub/be/services/identity/internal/constant"
+	identityException "github.com/kainguyen/badminton-hub/be/services/identity/internal/exception"
 )
-
-var ErrInvalidListQuery = errors.New("invalid list query")
 
 type ListQuery struct {
 	Limit       int
@@ -24,23 +19,23 @@ type ListQuery struct {
 func NewListQuery(limit, offset int, search, createdFrom, createdTo string) (ListQuery, error) {
 	// Apply shared pagination defaults and bounds.
 	if limit <= 0 {
-		limit = DefaultPageSize
+		limit = constant.DefaultPageSize
 	}
-	if limit > MaxPageSize || offset < 0 {
-		return ListQuery{}, ErrInvalidListQuery
+	if limit > constant.MaxPageSize || offset < 0 {
+		return ListQuery{}, identityException.ErrInvalidListQuery
 	}
 
 	// Parse optional date filters using RFC3339.
 	from, err := parseOptionalTime(createdFrom)
 	if err != nil {
-		return ListQuery{}, ErrInvalidListQuery
+		return ListQuery{}, identityException.ErrInvalidListQuery
 	}
 	to, err := parseOptionalTime(createdTo)
 	if err != nil {
-		return ListQuery{}, ErrInvalidListQuery
+		return ListQuery{}, identityException.ErrInvalidListQuery
 	}
 	if from != nil && to != nil && from.After(*to) {
-		return ListQuery{}, ErrInvalidListQuery
+		return ListQuery{}, identityException.ErrInvalidListQuery
 	}
 
 	return ListQuery{

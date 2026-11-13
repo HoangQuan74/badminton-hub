@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/domain/catalog"
+	catalogException "github.com/kainguyen/badminton-hub/be/services/catalog/internal/exception"
 	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/model"
 )
 
@@ -12,22 +13,6 @@ type repositoryStub struct {
 	createCalls int
 	name        string
 	interval    int32
-}
-
-func (r *repositoryStub) ListOrganizations(context.Context, string) ([]model.Organization, error) {
-	return nil, nil
-}
-func (r *repositoryStub) GetOrganization(context.Context, string, string) (model.Organization, error) {
-	return model.Organization{}, nil
-}
-func (r *repositoryStub) CreateOrganization(context.Context, string, catalog.CreateOrganizationInput) (model.Organization, error) {
-	return model.Organization{}, nil
-}
-func (r *repositoryStub) UpdateOrganization(context.Context, string, string, catalog.UpdateOrganizationInput) (model.Organization, error) {
-	return model.Organization{}, nil
-}
-func (r *repositoryStub) ArchiveOrganization(context.Context, string, string) (model.Organization, error) {
-	return model.Organization{}, nil
 }
 
 func (r *repositoryStub) GetPublicVenue(context.Context, string) (model.Venue, error) {
@@ -96,7 +81,7 @@ func TestCreateCourtRejectsInvalidIntervalBeforeRepository(t *testing.T) {
 	service := catalog.NewService(repository)
 
 	_, err := service.CreateCourt(context.Background(), "actor", "venue", "Sân 4", 20)
-	if err != catalog.ErrInvalidInput {
+	if err != catalogException.ErrInvalidInput {
 		t.Fatalf("error = %v, want ErrInvalidInput", err)
 	}
 	if repository.createCalls != 0 {

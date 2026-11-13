@@ -12,6 +12,24 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignStaffRole = `-- name: AssignStaffRole :execrows
+UPDATE identity.users AS u SET role_id = (SELECT r.id FROM identity.roles r WHERE r.name = $1), updated_at = NOW()
+WHERE u.id = $2 AND EXISTS (SELECT 1 FROM identity.roles r WHERE r.name = $1)
+`
+
+type AssignStaffRoleParams struct {
+	Role   string    `json:"role"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) AssignStaffRole(ctx context.Context, arg AssignStaffRoleParams) (int64, error) {
+	result, err := q.db.Exec(ctx, assignStaffRole, arg.Role, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const createStaff = `-- name: CreateStaff :one
 INSERT INTO identity.users (id, email, password_hash, full_name, is_admin, role_id, status)
 VALUES ($1, $2, $3, $4, $5, NULLIF($6::text, '')::uuid, 'active')
@@ -59,6 +77,55 @@ func (q *Queries) CreateStaff(ctx context.Context, arg CreateStaffParams) (Creat
 	return i, err
 }
 
+const deactivateMemberVenues = `-- name: DeactivateMemberVenues :exec
+UPDATE identity.venue_staff SET status = 'INACTIVE' WHERE organization_id = $1 AND user_id = $2
+`
+
+type DeactivateMemberVenuesParams struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	UserID         uuid.UUID `json:"user_id"`
+}
+
+func (q *Queries) DeactivateMemberVenues(ctx context.Context, arg DeactivateMemberVenuesParams) error {
+	_, err := q.db.Exec(ctx, deactivateMemberVenues, arg.OrganizationID, arg.UserID)
+	return err
+}
+
+const deactivateOrganizationStaff = `-- name: DeactivateOrganizationStaff :one
+UPDATE identity.organization_members m SET status = 'INACTIVE'
+WHERE m.organization_id = $1 AND m.user_id = $2 AND m.role <> 'tenant_owner'
+AND EXISTS (SELECT 1 FROM identity.organization_members owner
+ JOIN identity.organizations o ON o.id = owner.organization_id
+ WHERE owner.organization_id = m.organization_id AND o.status = 'ACTIVE'
+ AND owner.user_id = $3 AND owner.role = 'tenant_owner' AND owner.status = 'ACTIVE')
+RETURNING m.organization_id,m.user_id,m.role,m.status
+`
+
+type DeactivateOrganizationStaffParams struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	UserID         uuid.UUID `json:"user_id"`
+	ActorID        uuid.UUID `json:"actor_id"`
+}
+
+type DeactivateOrganizationStaffRow struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	UserID         uuid.UUID `json:"user_id"`
+	Role           string    `json:"role"`
+	Status         string    `json:"status"`
+}
+
+func (q *Queries) DeactivateOrganizationStaff(ctx context.Context, arg DeactivateOrganizationStaffParams) (DeactivateOrganizationStaffRow, error) {
+	row := q.db.QueryRow(ctx, deactivateOrganizationStaff, arg.OrganizationID, arg.UserID, arg.ActorID)
+	var i DeactivateOrganizationStaffRow
+	err := row.Scan(
+		&i.OrganizationID,
+		&i.UserID,
+		&i.Role,
+		&i.Status,
+	)
+	return i, err
+}
+
 const deleteStaff = `-- name: DeleteStaff :execrows
 DELETE FROM identity.users
 WHERE id = $1 AND (is_admin = TRUE OR role_id IS NOT NULL)
@@ -70,6 +137,25 @@ func (q *Queries) DeleteStaff(ctx context.Context, id uuid.UUID) (int64, error) 
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const findManagedOrganization = `-- name: FindManagedOrganization :one
+SELECT o.status FROM identity.organizations o
+JOIN identity.organization_members m ON m.organization_id = o.id
+WHERE o.id = $1 AND o.status <> 'ARCHIVED'
+ AND m.user_id = $2 AND m.role = 'tenant_owner' AND m.status = 'ACTIVE'
+`
+
+type FindManagedOrganizationParams struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	ActorID        uuid.UUID `json:"actor_id"`
+}
+
+func (q *Queries) FindManagedOrganization(ctx context.Context, arg FindManagedOrganizationParams) (string, error) {
+	row := q.db.QueryRow(ctx, findManagedOrganization, arg.OrganizationID, arg.ActorID)
+	var status string
+	err := row.Scan(&status)
+	return status, err
 }
 
 const findStaffByID = `-- name: FindStaffByID :one
@@ -105,6 +191,52 @@ func (q *Queries) FindStaffByID(ctx context.Context, id uuid.UUID) (FindStaffByI
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const listOrganizationStaff = `-- name: ListOrganizationStaff :many
+SELECT m.organization_id, m.user_id, m.role, m.status, u.email, u.full_name,
+ ARRAY(SELECT a.venue_id::text FROM identity.venue_staff a JOIN identity.venues v ON v.id = a.venue_id
+       WHERE a.organization_id = m.organization_id AND a.user_id = m.user_id AND a.status = 'ACTIVE' AND v.status <> 'ARCHIVED')::text[] AS venue_ids
+FROM identity.organization_members m JOIN identity.users u ON u.id = m.user_id
+WHERE m.organization_id = $1 ORDER BY u.full_name, u.email
+`
+
+type ListOrganizationStaffRow struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	UserID         uuid.UUID `json:"user_id"`
+	Role           string    `json:"role"`
+	Status         string    `json:"status"`
+	Email          string    `json:"email"`
+	FullName       string    `json:"full_name"`
+	VenueIds       []string  `json:"venue_ids"`
+}
+
+func (q *Queries) ListOrganizationStaff(ctx context.Context, organizationID uuid.UUID) ([]ListOrganizationStaffRow, error) {
+	rows, err := q.db.Query(ctx, listOrganizationStaff, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListOrganizationStaffRow{}
+	for rows.Next() {
+		var i ListOrganizationStaffRow
+		if err := rows.Scan(
+			&i.OrganizationID,
+			&i.UserID,
+			&i.Role,
+			&i.Status,
+			&i.Email,
+			&i.FullName,
+			&i.VenueIds,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listStaff = `-- name: ListStaff :many
@@ -175,6 +307,122 @@ func (q *Queries) ListStaff(ctx context.Context, arg ListStaffParams) ([]ListSta
 		return nil, err
 	}
 	return items, nil
+}
+
+const lockStaffCandidate = `-- name: LockStaffCandidate :one
+SELECT u.id, u.status, u.is_admin, COALESCE(r.name,'')::text AS role_name
+FROM identity.users u LEFT JOIN identity.roles r ON r.id = u.role_id
+WHERE LOWER(u.email) = LOWER($1) FOR UPDATE OF u
+`
+
+type LockStaffCandidateRow struct {
+	ID       uuid.UUID `json:"id"`
+	Status   string    `json:"status"`
+	IsAdmin  bool      `json:"is_admin"`
+	RoleName string    `json:"role_name"`
+}
+
+func (q *Queries) LockStaffCandidate(ctx context.Context, lower string) (LockStaffCandidateRow, error) {
+	row := q.db.QueryRow(ctx, lockStaffCandidate, lower)
+	var i LockStaffCandidateRow
+	err := row.Scan(
+		&i.ID,
+		&i.Status,
+		&i.IsAdmin,
+		&i.RoleName,
+	)
+	return i, err
+}
+
+const setIdentityOrganizationStaff = `-- name: SetIdentityOrganizationStaff :one
+INSERT INTO identity.organization_members (organization_id, user_id, role, status)
+SELECT o.id, u.id, $1, $2
+FROM identity.organizations AS o
+JOIN identity.organization_members AS owner ON owner.organization_id = o.id
+JOIN identity.users AS u ON u.id = $3 AND u.status = 'active'
+JOIN identity.roles AS target_role ON target_role.id = u.role_id AND target_role.name = $1
+WHERE o.id = $4 AND o.status = 'ACTIVE'
+  AND owner.user_id = $5 AND owner.status = 'ACTIVE' AND owner.role = 'tenant_owner'
+ON CONFLICT (organization_id, user_id) DO UPDATE SET role = EXCLUDED.role, status = EXCLUDED.status
+WHERE identity.organization_members.role <> 'tenant_owner'
+RETURNING organization_id, user_id, role, status
+`
+
+type SetIdentityOrganizationStaffParams struct {
+	Role           string    `json:"role"`
+	Status         string    `json:"status"`
+	UserID         uuid.UUID `json:"user_id"`
+	OrganizationID uuid.UUID `json:"organization_id"`
+	ActorID        uuid.UUID `json:"actor_id"`
+}
+
+type SetIdentityOrganizationStaffRow struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	UserID         uuid.UUID `json:"user_id"`
+	Role           string    `json:"role"`
+	Status         string    `json:"status"`
+}
+
+func (q *Queries) SetIdentityOrganizationStaff(ctx context.Context, arg SetIdentityOrganizationStaffParams) (SetIdentityOrganizationStaffRow, error) {
+	row := q.db.QueryRow(ctx, setIdentityOrganizationStaff,
+		arg.Role,
+		arg.Status,
+		arg.UserID,
+		arg.OrganizationID,
+		arg.ActorID,
+	)
+	var i SetIdentityOrganizationStaffRow
+	err := row.Scan(
+		&i.OrganizationID,
+		&i.UserID,
+		&i.Role,
+		&i.Status,
+	)
+	return i, err
+}
+
+const setIdentityVenueStaff = `-- name: SetIdentityVenueStaff :one
+INSERT INTO identity.venue_staff (organization_id, venue_id, user_id, status)
+SELECT v.organization_id, v.id, member.user_id, $1
+FROM identity.venues AS v
+JOIN identity.organization_members AS owner ON owner.organization_id = v.organization_id
+JOIN identity.organization_members AS member ON member.organization_id = v.organization_id
+WHERE v.id = $2 AND v.status <> 'ARCHIVED'
+  AND owner.user_id = $3 AND owner.status = 'ACTIVE' AND owner.role = 'tenant_owner'
+  AND member.user_id = $4 AND member.status = 'ACTIVE' AND member.role = 'venue_staff'
+ON CONFLICT (venue_id, user_id) DO UPDATE SET status = EXCLUDED.status
+RETURNING organization_id, venue_id, user_id, status
+`
+
+type SetIdentityVenueStaffParams struct {
+	Status  string    `json:"status"`
+	VenueID uuid.UUID `json:"venue_id"`
+	ActorID uuid.UUID `json:"actor_id"`
+	UserID  uuid.UUID `json:"user_id"`
+}
+
+type SetIdentityVenueStaffRow struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	VenueID        uuid.UUID `json:"venue_id"`
+	UserID         uuid.UUID `json:"user_id"`
+	Status         string    `json:"status"`
+}
+
+func (q *Queries) SetIdentityVenueStaff(ctx context.Context, arg SetIdentityVenueStaffParams) (SetIdentityVenueStaffRow, error) {
+	row := q.db.QueryRow(ctx, setIdentityVenueStaff,
+		arg.Status,
+		arg.VenueID,
+		arg.ActorID,
+		arg.UserID,
+	)
+	var i SetIdentityVenueStaffRow
+	err := row.Scan(
+		&i.OrganizationID,
+		&i.VenueID,
+		&i.UserID,
+		&i.Status,
+	)
+	return i, err
 }
 
 const updateStaff = `-- name: UpdateStaff :one

@@ -5,11 +5,6 @@ package badminton.catalog.v1;
 option go_package = "github.com/kainguyen/badminton-hub/contracts/gen/catalog/v1;catalogv1";
 
 service CatalogService {
-  rpc ListOrganizations(ListOrganizationsRequest) returns (OrganizationListResponse);
-  rpc GetOrganization(GetOrganizationRequest) returns (OrganizationResponse);
-  rpc CreateOrganization(CreateOrganizationRequest) returns (OrganizationResponse);
-  rpc UpdateOrganization(UpdateOrganizationRequest) returns (OrganizationResponse);
-  rpc ArchiveOrganization(ArchiveOrganizationRequest) returns (OrganizationResponse);
   rpc UploadVenueImage(UploadVenueImageRequest) returns (VenueImageResponse);
   rpc ListPublicVenueImages(ListPublicVenueImagesRequest) returns (VenueImageListResponse);
   rpc ListTenantVenueImages(ListTenantVenueImagesRequest) returns (VenueImageListResponse);
@@ -98,7 +93,7 @@ message Court {
 message CourtResponse { Court court = 1; }
 message ArchiveCourtResponse { Court court = 1; }
 
-// Legacy venue write methods forward the tenant token to the owning Identity service.
+// Venue write methods forward the tenant token to the owning Identity service.
 message GetPublicVenueRequest { string slug = 1; }
 message GetTenantVenueRequest { string venue_id = 1; }
 message CreateVenueRequest {
@@ -133,19 +128,3 @@ message VenueImage {
 message VenueImageResponse { VenueImage image = 1; }
 message VenueImageListResponse { repeated VenueImage items = 1; }
 message VenueImageContentResponse { bytes content = 1; string content_type = 2; }
-
-message Organization {
-  string id = 1;
-  string name = 2;
-  string slug = 3;
-  string status = 4;
-  string created_at = 5;
-  string updated_at = 6;
-}
-message ListOrganizationsRequest {}
-message GetOrganizationRequest { string organization_id = 1; }
-message CreateOrganizationRequest { string name = 1; string slug = 2; }
-message UpdateOrganizationRequest { string organization_id = 1; optional string name = 2; optional string slug = 3; }
-message ArchiveOrganizationRequest { string organization_id = 1; }
-message OrganizationResponse { Organization organization = 1; }
-message OrganizationListResponse { repeated Organization items = 1; }

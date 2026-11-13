@@ -42,8 +42,11 @@ func New(dependencies Dependencies) (*gin.Engine, error) {
 
 	identityClient := identityV1.NewIdentityAuthServiceClient(connection)
 	handler.RegisterAuth(engine, identityClient)
+	handler.RegisterTenant(engine, identityV1.NewIdentityTenantServiceClient(connection), dependencies.Config.DependencyTimeout)
+	handler.RegisterVenue(engine, identityV1.NewIdentityVenueServiceClient(connection))
+	handler.RegisterStaff(engine, identityV1.NewIdentityStaffServiceClient(connection))
 	handler.RegisterTenantAuth(engine, identityV1.NewIdentityTenantAuthServiceClient(connection))
-	handler.RegisterCatalog(engine, identityClient, catalogV1.NewCatalogServiceClient(catalogConnection), identityV1.NewIdentityTenantServiceClient(connection))
+	handler.RegisterCatalog(engine, identityV1.NewIdentityTenantAuthServiceClient(connection), catalogV1.NewCatalogServiceClient(catalogConnection))
 
 	engine.GET("/health", health)
 	engine.GET("/ready", ready)

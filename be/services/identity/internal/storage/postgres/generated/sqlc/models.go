@@ -18,6 +18,15 @@ type IdentityAuthSession struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 }
 
+type IdentityOnboardRequest struct {
+	ActorID        uuid.UUID          `json:"actor_id"`
+	IdempotencyKey uuid.UUID          `json:"idempotency_key"`
+	RequestHash    []byte             `json:"request_hash"`
+	Response       []byte             `json:"response"`
+	ExpiresAt      pgtype.Timestamptz `json:"expires_at"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type IdentityOrganization struct {
 	ID        uuid.UUID          `json:"id"`
 	Name      string             `json:"name"`
@@ -56,6 +65,23 @@ type IdentityRolePermission struct {
 	RoleID       uuid.UUID          `json:"role_id"`
 	PermissionID uuid.UUID          `json:"permission_id"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type IdentityTenantRegistration struct {
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	ContactName    string             `json:"contact_name"`
+	ContactEmail   string             `json:"contact_email"`
+	ContactPhone   string             `json:"contact_phone"`
+	Note           string             `json:"note"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type IdentityTenantRegistrationReview struct {
+	OrganizationID uuid.UUID          `json:"organization_id"`
+	ReviewerID     uuid.UUID          `json:"reviewer_id"`
+	Decision       string             `json:"decision"`
+	Note           string             `json:"note"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 type IdentityUser struct {

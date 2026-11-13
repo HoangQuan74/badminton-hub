@@ -1,6 +1,7 @@
+import type { CourtStatus as CourtStatusType, VenueStatus } from '@/constants/domain'
 import { http, publicHttp } from '@/lib/http'
 
-export type CourtStatus = 'ACTIVE' | 'INACTIVE'
+export type CourtStatus = CourtStatusType
 
 export interface Court {
   id: string
@@ -20,25 +21,29 @@ export interface Venue {
   slug: string
   address: string
   timezone: string
-  status: 'DRAFT' | 'PENDING_APPROVAL' | 'PUBLISHED' | 'SUSPENDED'
+  status: VenueStatus
   courts: Court[]
 }
 
-interface ListResponse<T> { items: T[] }
+interface ListResponse<T> { items?: T[] }
 export interface CourtPayload { name: string; slot_interval_minutes: number; status?: CourtStatus }
+
+function mapVenueList(response: ListResponse<Venue>): Venue[] {
+  return (response.items ?? []).map((venue) => ({ ...venue, courts: venue.courts ?? [] }))
+}
 
 export const catalogApi = {
   async listPublicVenues() {
     const { data } = await publicHttp.get<ListResponse<Venue>>('/api/v1/venues')
-    return data.items
+    return mapVenueList(data)
   },
   async listTenantVenues() {
     const { data } = await http.get<ListResponse<Venue>>('/api/v1/tenant/venues')
-    return data.items
+    return mapVenueList(data)
   },
   async listTenantCourts(venueId: string) {
     const { data } = await http.get<ListResponse<Court>>(`/api/v1/tenant/venues/${venueId}/courts`)
-    return data.items
+    return data.items ?? []
   },
   async createCourt(venueId: string, payload: CourtPayload) {
     const { data } = await http.post<{ court: Court }>(`/api/v1/tenant/venues/${venueId}/courts`, payload)

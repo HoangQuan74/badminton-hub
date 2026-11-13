@@ -13,6 +13,26 @@ The local Compose stack runs Catalog on gRPC `:9094`, applies the Catalog
 migration and development seed, and exposes public and tenant routes through the
 User Gateway.
 
+## Handler and adapter organization
+
+Court, venue and image RPCs live in `court_handler.go`, `venue_handler.go` and
+`image_handler.go`. Handlers authorize first, call the domain service directly,
+map errors through `internal/exception`, and use `catalog_response.go` for
+response projection. Simple calls do not need a nested endpoint callback.
+
+The Identity directory adapter follows the same flat flow. It retains its
+five-second RPC deadline (bounded by the caller), deferred cancellation, bearer
+token checks and operation-specific dependency/conflict mapping. Response
+conversion lives in `directory_response.go`; shared timeout/role constants live
+in `internal/constant/identity_constant.go`.
+
+## Errors
+
+`internal/exception` owns Catalog errors, configuration/storage failures, gRPC
+status mappings, Identity dependency-error translation, and PostgreSQL conflict
+classification. Domain, adapters, repositories and transport use this package;
+error definitions are not duplicated in feature folders.
+
 ## Database queries and checks
 
 Edit SQL in `internal/storage/postgres/query/` and regenerate the sqlc output

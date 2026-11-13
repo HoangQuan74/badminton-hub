@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/kainguyen/badminton-hub/be/services/catalog/internal/domain/catalog"
-	catalogpostgres "github.com/kainguyen/badminton-hub/be/services/catalog/internal/storage/postgres/repository/catalog"
+	catalogException "github.com/kainguyen/badminton-hub/be/services/catalog/internal/exception"
+	catalogpostgres "github.com/kainguyen/badminton-hub/be/services/catalog/internal/repository/postgres/catalog"
 )
 
 // Use only a disposable database with Catalog migrations and development seed.
@@ -26,14 +26,14 @@ func TestCatalogPostgresIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer pool.Close()
-	repository := catalogpostgres.New(pool)
+	repository := catalogpostgres.NewRepository(pool)
 	organization := "10000000-0000-4000-8000-000000000001"
 	venue := "20000000-0000-4000-8000-000000000001"
 	courts, err := repository.ListCourts(ctx, venue, organization, true)
 	if err != nil || len(courts) != 3 {
 		t.Fatalf("seeded courts = %#v, error = %v", courts, err)
 	}
-	if _, err := repository.CreateCourt(ctx, organization, venue, "Sân 1", 30); !errors.Is(err, catalog.ErrCourtNameConflict) {
+	if _, err := repository.CreateCourt(ctx, organization, venue, "Sân 1", 30); !errors.Is(err, catalogException.ErrCourtNameConflict) {
 		t.Fatalf("duplicate error = %v", err)
 	}
 	court, err := repository.CreateCourt(ctx, organization, venue, "Integration "+uuid.NewString(), 30)

@@ -40,7 +40,12 @@ func (h *RoleHandler) List(c *gin.Context) {
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.ListRolesRequest{AccessToken: request.BearerToken(c)},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *RoleHandler) Create(c *gin.Context) {
@@ -48,6 +53,7 @@ func (h *RoleHandler) Create(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.CreateRole(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.CreateRoleRequest{
@@ -56,7 +62,12 @@ func (h *RoleHandler) Create(c *gin.Context) {
 			Description: input.Description,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusCreated)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusCreated,
+	)
 }
 
 func (h *RoleHandler) Get(c *gin.Context) {
@@ -67,7 +78,12 @@ func (h *RoleHandler) Get(c *gin.Context) {
 			RoleId:      request.Param(c, "role_id"),
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *RoleHandler) Update(c *gin.Context) {
@@ -75,6 +91,7 @@ func (h *RoleHandler) Update(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.UpdateRole(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.UpdateRoleRequest{
@@ -84,7 +101,12 @@ func (h *RoleHandler) Update(c *gin.Context) {
 			Description: input.Description,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }
 
 func (h *RoleHandler) Delete(c *gin.Context) {
@@ -95,7 +117,12 @@ func (h *RoleHandler) Delete(c *gin.Context) {
 			RoleId:      request.Param(c, "role_id"),
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusNoContent)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusNoContent,
+	)
 }
 
 func (h *RoleHandler) ReplacePermissions(c *gin.Context) {
@@ -103,6 +130,7 @@ func (h *RoleHandler) ReplacePermissions(c *gin.Context) {
 	if request.BindJSON(c, &input) {
 		return
 	}
+
 	result, err := h.client.ReplaceRolePermissions(
 		request.RPCContext(c, platformService.AdminGateway),
 		&identityV1.ReplaceRolePermissionsRequest{
@@ -111,5 +139,10 @@ func (h *RoleHandler) ReplacePermissions(c *gin.Context) {
 			PermissionIds: input.PermissionIDs,
 		},
 	)
-	exception.WriteGRPC(c, result, err, http.StatusOK)
+	exception.WriteGRPC(
+		c,
+		result,
+		err,
+		http.StatusOK,
+	)
 }

@@ -12,44 +12,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const archiveIdentityVenue = `-- name: ArchiveIdentityVenue :one
-UPDATE identity.venues AS v SET status = 'ARCHIVED', updated_at = NOW()
-WHERE v.id = $1 AND v.status <> 'ARCHIVED' AND EXISTS (
-  SELECT 1 FROM identity.organization_members AS m
-  WHERE m.organization_id = v.organization_id AND m.user_id = $2
-    AND m.status = 'ACTIVE' AND m.role = 'tenant_owner'
-)
-RETURNING id, organization_id, name, slug, address, timezone, status
+const applyTenantRegistrationDecision = `-- name: ApplyTenantRegistrationDecision :exec
+UPDATE identity.organizations SET status = $2, updated_at = NOW() WHERE id = $1
 `
 
-type ArchiveIdentityVenueParams struct {
-	VenueID uuid.UUID `json:"venue_id"`
-	ActorID uuid.UUID `json:"actor_id"`
+type ApplyTenantRegistrationDecisionParams struct {
+	ID     uuid.UUID `json:"id"`
+	Status string    `json:"status"`
 }
 
-type ArchiveIdentityVenueRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) ArchiveIdentityVenue(ctx context.Context, arg ArchiveIdentityVenueParams) (ArchiveIdentityVenueRow, error) {
-	row := q.db.QueryRow(ctx, archiveIdentityVenue, arg.VenueID, arg.ActorID)
-	var i ArchiveIdentityVenueRow
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Name,
-		&i.Slug,
-		&i.Address,
-		&i.Timezone,
-		&i.Status,
-	)
-	return i, err
+func (q *Queries) ApplyTenantRegistrationDecision(ctx context.Context, arg ApplyTenantRegistrationDecisionParams) error {
+	_, err := q.db.Exec(ctx, applyTenantRegistrationDecision, arg.ID, arg.Status)
+	return err
 }
 
 const archivePendingOrganization = `-- name: ArchivePendingOrganization :one
@@ -77,59 +51,6 @@ func (q *Queries) ArchivePendingOrganization(ctx context.Context, arg ArchivePen
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-	)
-	return i, err
-}
-
-const createIdentityVenue = `-- name: CreateIdentityVenue :one
-INSERT INTO identity.venues (id, organization_id, name, slug, address, timezone, status)
-SELECT $1, o.id, $2, $3, $4, $5, 'DRAFT'
-FROM identity.organizations AS o
-JOIN identity.organization_members AS m ON m.organization_id = o.id
-WHERE o.id = $6 AND o.status = 'ACTIVE'
-  AND m.user_id = $7 AND m.status = 'ACTIVE' AND m.role = 'tenant_owner'
-RETURNING id, organization_id, name, slug, address, timezone, status
-`
-
-type CreateIdentityVenueParams struct {
-	ID             uuid.UUID `json:"id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	ActorID        uuid.UUID `json:"actor_id"`
-}
-
-type CreateIdentityVenueRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) CreateIdentityVenue(ctx context.Context, arg CreateIdentityVenueParams) (CreateIdentityVenueRow, error) {
-	row := q.db.QueryRow(ctx, createIdentityVenue,
-		arg.ID,
-		arg.Name,
-		arg.Slug,
-		arg.Address,
-		arg.Timezone,
-		arg.OrganizationID,
-		arg.ActorID,
-	)
-	var i CreateIdentityVenueRow
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Name,
-		&i.Slug,
-		&i.Address,
-		&i.Timezone,
-		&i.Status,
 	)
 	return i, err
 }
@@ -183,6 +104,21 @@ func (q *Queries) CreateOrganization(ctx context.Context, arg CreateOrganization
 	return i, err
 }
 
+const deleteExpiredTenantCreateKey = `-- name: DeleteExpiredTenantCreateKey :exec
+DELETE FROM identity.onboard_requests
+WHERE actor_id = $1 AND idempotency_key = $2 AND expires_at <= clock_timestamp()
+`
+
+type DeleteExpiredTenantCreateKeyParams struct {
+	ActorID        uuid.UUID `json:"actor_id"`
+	IdempotencyKey uuid.UUID `json:"idempotency_key"`
+}
+
+func (q *Queries) DeleteExpiredTenantCreateKey(ctx context.Context, arg DeleteExpiredTenantCreateKeyParams) error {
+	_, err := q.db.Exec(ctx, deleteExpiredTenantCreateKey, arg.ActorID, arg.IdempotencyKey)
+	return err
+}
+
 const findOrganizationMembership = `-- name: FindOrganizationMembership :one
 SELECT m.role FROM identity.organization_members AS m
 JOIN identity.organizations AS o ON o.id = m.organization_id
@@ -202,112 +138,27 @@ func (q *Queries) FindOrganizationMembership(ctx context.Context, arg FindOrgani
 	return role, err
 }
 
-const getIdentityAuthorizedVenue = `-- name: GetIdentityAuthorizedVenue :one
-SELECT v.id, v.organization_id, v.name, v.slug, v.address, v.timezone, v.status
-FROM identity.venues AS v
-JOIN identity.organizations AS o ON o.id = v.organization_id
-JOIN identity.organization_members AS m ON m.organization_id = v.organization_id
-WHERE v.id = $1 AND m.user_id = $2
-  AND m.status = 'ACTIVE' AND o.status <> 'ARCHIVED' AND v.status <> 'ARCHIVED'
-  AND (
-    m.role = 'tenant_owner' OR (NOT $3::boolean AND (
-      m.role = 'tenant_staff' OR (m.role = 'venue_staff' AND EXISTS (
-        SELECT 1 FROM identity.venue_staff AS a WHERE a.venue_id = v.id AND a.user_id = m.user_id AND a.status = 'ACTIVE'
-      ))
-    ))
-  )
+const findTenantCreateReplay = `-- name: FindTenantCreateReplay :one
+SELECT request_hash, response, expires_at
+FROM identity.onboard_requests
+WHERE actor_id = $1 AND idempotency_key = $2 AND expires_at > clock_timestamp()
 `
 
-type GetIdentityAuthorizedVenueParams struct {
-	VenueID      uuid.UUID `json:"venue_id"`
-	ActorID      uuid.UUID `json:"actor_id"`
-	RequireOwner bool      `json:"require_owner"`
+type FindTenantCreateReplayParams struct {
+	ActorID        uuid.UUID `json:"actor_id"`
+	IdempotencyKey uuid.UUID `json:"idempotency_key"`
 }
 
-type GetIdentityAuthorizedVenueRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
+type FindTenantCreateReplayRow struct {
+	RequestHash []byte             `json:"request_hash"`
+	Response    []byte             `json:"response"`
+	ExpiresAt   pgtype.Timestamptz `json:"expires_at"`
 }
 
-func (q *Queries) GetIdentityAuthorizedVenue(ctx context.Context, arg GetIdentityAuthorizedVenueParams) (GetIdentityAuthorizedVenueRow, error) {
-	row := q.db.QueryRow(ctx, getIdentityAuthorizedVenue, arg.VenueID, arg.ActorID, arg.RequireOwner)
-	var i GetIdentityAuthorizedVenueRow
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Name,
-		&i.Slug,
-		&i.Address,
-		&i.Timezone,
-		&i.Status,
-	)
-	return i, err
-}
-
-const getIdentityPublicVenueByID = `-- name: GetIdentityPublicVenueByID :one
-SELECT v.id, v.organization_id, v.name, v.slug, v.address, v.timezone, v.status
-FROM identity.venues AS v JOIN identity.organizations AS o ON o.id = v.organization_id
-WHERE v.id = $1 AND v.status = 'PUBLISHED' AND o.status = 'ACTIVE'
-`
-
-type GetIdentityPublicVenueByIDRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) GetIdentityPublicVenueByID(ctx context.Context, venueID uuid.UUID) (GetIdentityPublicVenueByIDRow, error) {
-	row := q.db.QueryRow(ctx, getIdentityPublicVenueByID, venueID)
-	var i GetIdentityPublicVenueByIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Name,
-		&i.Slug,
-		&i.Address,
-		&i.Timezone,
-		&i.Status,
-	)
-	return i, err
-}
-
-const getIdentityPublicVenueBySlug = `-- name: GetIdentityPublicVenueBySlug :one
-SELECT v.id, v.organization_id, v.name, v.slug, v.address, v.timezone, v.status
-FROM identity.venues AS v JOIN identity.organizations AS o ON o.id = v.organization_id
-WHERE LOWER(v.slug) = LOWER($1) AND v.status = 'PUBLISHED' AND o.status = 'ACTIVE'
-`
-
-type GetIdentityPublicVenueBySlugRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) GetIdentityPublicVenueBySlug(ctx context.Context, slug string) (GetIdentityPublicVenueBySlugRow, error) {
-	row := q.db.QueryRow(ctx, getIdentityPublicVenueBySlug, slug)
-	var i GetIdentityPublicVenueBySlugRow
-	err := row.Scan(
-		&i.ID,
-		&i.OrganizationID,
-		&i.Name,
-		&i.Slug,
-		&i.Address,
-		&i.Timezone,
-		&i.Status,
-	)
+func (q *Queries) FindTenantCreateReplay(ctx context.Context, arg FindTenantCreateReplayParams) (FindTenantCreateReplayRow, error) {
+	row := q.db.QueryRow(ctx, findTenantCreateReplay, arg.ActorID, arg.IdempotencyKey)
+	var i FindTenantCreateReplayRow
+	err := row.Scan(&i.RequestHash, &i.Response, &i.ExpiresAt)
 	return i, err
 }
 
@@ -338,100 +189,54 @@ func (q *Queries) GetTenantOrganization(ctx context.Context, arg GetTenantOrgani
 	return i, err
 }
 
-const listIdentityPublicVenues = `-- name: ListIdentityPublicVenues :many
-SELECT v.id, v.organization_id, v.name, v.slug, v.address, v.timezone, v.status
-FROM identity.venues AS v JOIN identity.organizations AS o ON o.id = v.organization_id
-WHERE v.status = 'PUBLISHED' AND o.status = 'ACTIVE' ORDER BY v.name
+const getTenantRegistration = `-- name: GetTenantRegistration :one
+SELECT o.id, o.name, o.slug, o.status, o.created_at, o.updated_at,
+       r.contact_name, r.contact_email, r.contact_phone, r.note,
+       COALESCE(v.decision, '')::text AS review_decision, COALESCE(v.note, '')::text AS review_note,
+       COALESCE(v.reviewer_id::text, '')::text AS reviewer_id, v.created_at AS reviewed_at
+FROM identity.organizations o
+JOIN identity.tenant_registrations r ON r.organization_id = o.id
+LEFT JOIN identity.tenant_registration_reviews v ON v.organization_id = o.id
+WHERE o.id = $1
 `
 
-type ListIdentityPublicVenuesRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
+type GetTenantRegistrationRow struct {
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	Slug           string             `json:"slug"`
+	Status         string             `json:"status"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ContactName    string             `json:"contact_name"`
+	ContactEmail   string             `json:"contact_email"`
+	ContactPhone   string             `json:"contact_phone"`
+	Note           string             `json:"note"`
+	ReviewDecision string             `json:"review_decision"`
+	ReviewNote     string             `json:"review_note"`
+	ReviewerID     string             `json:"reviewer_id"`
+	ReviewedAt     pgtype.Timestamptz `json:"reviewed_at"`
 }
 
-func (q *Queries) ListIdentityPublicVenues(ctx context.Context) ([]ListIdentityPublicVenuesRow, error) {
-	rows, err := q.db.Query(ctx, listIdentityPublicVenues)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ListIdentityPublicVenuesRow{}
-	for rows.Next() {
-		var i ListIdentityPublicVenuesRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.OrganizationID,
-			&i.Name,
-			&i.Slug,
-			&i.Address,
-			&i.Timezone,
-			&i.Status,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listIdentityTenantVenues = `-- name: ListIdentityTenantVenues :many
-SELECT v.id, v.organization_id, v.name, v.slug, v.address, v.timezone, v.status
-FROM identity.venues AS v
-JOIN identity.organizations AS o ON o.id = v.organization_id
-JOIN identity.organization_members AS m ON m.organization_id = v.organization_id
-WHERE m.user_id = $1 AND m.status = 'ACTIVE' AND o.status <> 'ARCHIVED'
-  AND v.status <> 'ARCHIVED' AND (
-    m.role IN ('tenant_owner', 'tenant_staff') OR (m.role = 'venue_staff' AND EXISTS (
-      SELECT 1 FROM identity.venue_staff AS a WHERE a.venue_id = v.id AND a.user_id = m.user_id AND a.status = 'ACTIVE'
-    ))
-  )
-ORDER BY v.name
-`
-
-type ListIdentityTenantVenuesRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) ListIdentityTenantVenues(ctx context.Context, actorID uuid.UUID) ([]ListIdentityTenantVenuesRow, error) {
-	rows, err := q.db.Query(ctx, listIdentityTenantVenues, actorID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []ListIdentityTenantVenuesRow{}
-	for rows.Next() {
-		var i ListIdentityTenantVenuesRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.OrganizationID,
-			&i.Name,
-			&i.Slug,
-			&i.Address,
-			&i.Timezone,
-			&i.Status,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetTenantRegistration(ctx context.Context, id uuid.UUID) (GetTenantRegistrationRow, error) {
+	row := q.db.QueryRow(ctx, getTenantRegistration, id)
+	var i GetTenantRegistrationRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Slug,
+		&i.Status,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ContactName,
+		&i.ContactEmail,
+		&i.ContactPhone,
+		&i.Note,
+		&i.ReviewDecision,
+		&i.ReviewNote,
+		&i.ReviewerID,
+		&i.ReviewedAt,
+	)
+	return i, err
 }
 
 const listTenantOrganizations = `-- name: ListTenantOrganizations :many
@@ -469,148 +274,205 @@ func (q *Queries) ListTenantOrganizations(ctx context.Context, actorID uuid.UUID
 	return items, nil
 }
 
-const setIdentityOrganizationStaff = `-- name: SetIdentityOrganizationStaff :one
-INSERT INTO identity.organization_members (organization_id, user_id, role, status)
-SELECT o.id, u.id, $1, $2
-FROM identity.organizations AS o
-JOIN identity.organization_members AS owner ON owner.organization_id = o.id
-JOIN identity.users AS u ON u.id = $3 AND u.status = 'active'
-JOIN identity.roles AS target_role ON target_role.id = u.role_id AND target_role.name = $1
-WHERE o.id = $4 AND o.status = 'ACTIVE'
-  AND owner.user_id = $5 AND owner.status = 'ACTIVE' AND owner.role = 'tenant_owner'
-ON CONFLICT (organization_id, user_id) DO UPDATE SET role = EXCLUDED.role, status = EXCLUDED.status
-WHERE identity.organization_members.role <> 'tenant_owner'
-RETURNING organization_id, user_id, role, status
+const listTenantRegistrations = `-- name: ListTenantRegistrations :many
+SELECT o.id, o.name, o.slug, o.status, o.created_at, o.updated_at,
+       r.contact_name, r.contact_email, r.contact_phone, r.note,
+       COALESCE(v.decision, '')::text AS review_decision, COALESCE(v.note, '')::text AS review_note,
+       COALESCE(v.reviewer_id::text, '')::text AS reviewer_id, v.created_at AS reviewed_at
+FROM identity.organizations o
+JOIN identity.tenant_registrations r ON r.organization_id = o.id
+LEFT JOIN identity.tenant_registration_reviews v ON v.organization_id = o.id
+WHERE $1::text = '' OR o.status = $1
+ORDER BY o.created_at DESC
 `
 
-type SetIdentityOrganizationStaffParams struct {
-	Role           string    `json:"role"`
-	Status         string    `json:"status"`
-	UserID         uuid.UUID `json:"user_id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	ActorID        uuid.UUID `json:"actor_id"`
+type ListTenantRegistrationsRow struct {
+	ID             uuid.UUID          `json:"id"`
+	Name           string             `json:"name"`
+	Slug           string             `json:"slug"`
+	Status         string             `json:"status"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	ContactName    string             `json:"contact_name"`
+	ContactEmail   string             `json:"contact_email"`
+	ContactPhone   string             `json:"contact_phone"`
+	Note           string             `json:"note"`
+	ReviewDecision string             `json:"review_decision"`
+	ReviewNote     string             `json:"review_note"`
+	ReviewerID     string             `json:"reviewer_id"`
+	ReviewedAt     pgtype.Timestamptz `json:"reviewed_at"`
 }
 
-type SetIdentityOrganizationStaffRow struct {
-	OrganizationID uuid.UUID `json:"organization_id"`
-	UserID         uuid.UUID `json:"user_id"`
-	Role           string    `json:"role"`
-	Status         string    `json:"status"`
+func (q *Queries) ListTenantRegistrations(ctx context.Context, statusFilter string) ([]ListTenantRegistrationsRow, error) {
+	rows, err := q.db.Query(ctx, listTenantRegistrations, statusFilter)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListTenantRegistrationsRow{}
+	for rows.Next() {
+		var i ListTenantRegistrationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Slug,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ContactName,
+			&i.ContactEmail,
+			&i.ContactPhone,
+			&i.Note,
+			&i.ReviewDecision,
+			&i.ReviewNote,
+			&i.ReviewerID,
+			&i.ReviewedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (q *Queries) SetIdentityOrganizationStaff(ctx context.Context, arg SetIdentityOrganizationStaffParams) (SetIdentityOrganizationStaffRow, error) {
-	row := q.db.QueryRow(ctx, setIdentityOrganizationStaff,
-		arg.Role,
-		arg.Status,
-		arg.UserID,
-		arg.OrganizationID,
-		arg.ActorID,
-	)
-	var i SetIdentityOrganizationStaffRow
-	err := row.Scan(
-		&i.OrganizationID,
-		&i.UserID,
-		&i.Role,
-		&i.Status,
-	)
-	return i, err
-}
-
-const setIdentityVenueStaff = `-- name: SetIdentityVenueStaff :one
-INSERT INTO identity.venue_staff (organization_id, venue_id, user_id, status)
-SELECT v.organization_id, v.id, member.user_id, $1
-FROM identity.venues AS v
-JOIN identity.organization_members AS owner ON owner.organization_id = v.organization_id
-JOIN identity.organization_members AS member ON member.organization_id = v.organization_id
-WHERE v.id = $2 AND v.status <> 'ARCHIVED'
-  AND owner.user_id = $3 AND owner.status = 'ACTIVE' AND owner.role = 'tenant_owner'
-  AND member.user_id = $4 AND member.status = 'ACTIVE' AND member.role = 'venue_staff'
-ON CONFLICT (venue_id, user_id) DO UPDATE SET status = EXCLUDED.status
-RETURNING organization_id, venue_id, user_id, status
+const lockTenantCreator = `-- name: LockTenantCreator :one
+SELECT u.id, u.email, u.full_name, COALESCE(u.phone, '')::text AS phone,
+       u.status, u.is_admin, COALESCE(r.name, '')::text AS role_name,
+       u.created_at, u.updated_at
+FROM identity.users AS u
+LEFT JOIN identity.roles AS r ON r.id = u.role_id
+WHERE u.id = $1
+FOR UPDATE OF u
 `
 
-type SetIdentityVenueStaffParams struct {
-	Status  string    `json:"status"`
-	VenueID uuid.UUID `json:"venue_id"`
-	ActorID uuid.UUID `json:"actor_id"`
-	UserID  uuid.UUID `json:"user_id"`
+type LockTenantCreatorRow struct {
+	ID        uuid.UUID          `json:"id"`
+	Email     string             `json:"email"`
+	FullName  string             `json:"full_name"`
+	Phone     string             `json:"phone"`
+	Status    string             `json:"status"`
+	IsAdmin   bool               `json:"is_admin"`
+	RoleName  string             `json:"role_name"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt pgtype.Timestamptz `json:"updated_at"`
 }
 
-type SetIdentityVenueStaffRow struct {
-	OrganizationID uuid.UUID `json:"organization_id"`
-	VenueID        uuid.UUID `json:"venue_id"`
-	UserID         uuid.UUID `json:"user_id"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) SetIdentityVenueStaff(ctx context.Context, arg SetIdentityVenueStaffParams) (SetIdentityVenueStaffRow, error) {
-	row := q.db.QueryRow(ctx, setIdentityVenueStaff,
-		arg.Status,
-		arg.VenueID,
-		arg.ActorID,
-		arg.UserID,
-	)
-	var i SetIdentityVenueStaffRow
-	err := row.Scan(
-		&i.OrganizationID,
-		&i.VenueID,
-		&i.UserID,
-		&i.Status,
-	)
-	return i, err
-}
-
-const updateIdentityVenue = `-- name: UpdateIdentityVenue :one
-UPDATE identity.venues AS v SET
-  name = COALESCE($1::text, v.name), slug = COALESCE($2::text, v.slug),
-  address = COALESCE($3::text, v.address), timezone = COALESCE($4::text, v.timezone), updated_at = NOW()
-WHERE v.id = $5 AND v.status <> 'ARCHIVED' AND EXISTS (
-  SELECT 1 FROM identity.organization_members AS m
-  WHERE m.organization_id = v.organization_id AND m.user_id = $6
-    AND m.status = 'ACTIVE' AND m.role = 'tenant_owner'
-)
-RETURNING id, organization_id, name, slug, address, timezone, status
-`
-
-type UpdateIdentityVenueParams struct {
-	Name     pgtype.Text `json:"name"`
-	Slug     pgtype.Text `json:"slug"`
-	Address  pgtype.Text `json:"address"`
-	Timezone pgtype.Text `json:"timezone"`
-	VenueID  uuid.UUID   `json:"venue_id"`
-	ActorID  uuid.UUID   `json:"actor_id"`
-}
-
-type UpdateIdentityVenueRow struct {
-	ID             uuid.UUID `json:"id"`
-	OrganizationID uuid.UUID `json:"organization_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Address        string    `json:"address"`
-	Timezone       string    `json:"timezone"`
-	Status         string    `json:"status"`
-}
-
-func (q *Queries) UpdateIdentityVenue(ctx context.Context, arg UpdateIdentityVenueParams) (UpdateIdentityVenueRow, error) {
-	row := q.db.QueryRow(ctx, updateIdentityVenue,
-		arg.Name,
-		arg.Slug,
-		arg.Address,
-		arg.Timezone,
-		arg.VenueID,
-		arg.ActorID,
-	)
-	var i UpdateIdentityVenueRow
+func (q *Queries) LockTenantCreator(ctx context.Context, id uuid.UUID) (LockTenantCreatorRow, error) {
+	row := q.db.QueryRow(ctx, lockTenantCreator, id)
+	var i LockTenantCreatorRow
 	err := row.Scan(
 		&i.ID,
-		&i.OrganizationID,
-		&i.Name,
-		&i.Slug,
-		&i.Address,
-		&i.Timezone,
+		&i.Email,
+		&i.FullName,
+		&i.Phone,
 		&i.Status,
+		&i.IsAdmin,
+		&i.RoleName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const lockTenantRegistration = `-- name: LockTenantRegistration :one
+SELECT o.status FROM identity.organizations o
+JOIN identity.tenant_registrations r ON r.organization_id = o.id
+WHERE o.id = $1 FOR UPDATE OF o
+`
+
+func (q *Queries) LockTenantRegistration(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, lockTenantRegistration, id)
+	var status string
+	err := row.Scan(&status)
+	return status, err
+}
+
+const recordTenantRegistrationReview = `-- name: RecordTenantRegistrationReview :exec
+INSERT INTO identity.tenant_registration_reviews (organization_id, reviewer_id, decision, note)
+VALUES ($1, $2, $3, $4)
+`
+
+type RecordTenantRegistrationReviewParams struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	ReviewerID     uuid.UUID `json:"reviewer_id"`
+	Decision       string    `json:"decision"`
+	Note           string    `json:"note"`
+}
+
+func (q *Queries) RecordTenantRegistrationReview(ctx context.Context, arg RecordTenantRegistrationReviewParams) error {
+	_, err := q.db.Exec(ctx, recordTenantRegistrationReview,
+		arg.OrganizationID,
+		arg.ReviewerID,
+		arg.Decision,
+		arg.Note,
+	)
+	return err
+}
+
+const saveTenantCreateReplay = `-- name: SaveTenantCreateReplay :one
+INSERT INTO identity.onboard_requests (actor_id, idempotency_key, request_hash, response, expires_at)
+VALUES ($1, $2, $3, $4, clock_timestamp() + INTERVAL '24 hours')
+RETURNING expires_at
+`
+
+type SaveTenantCreateReplayParams struct {
+	ActorID        uuid.UUID `json:"actor_id"`
+	IdempotencyKey uuid.UUID `json:"idempotency_key"`
+	RequestHash    []byte    `json:"request_hash"`
+	Response       []byte    `json:"response"`
+}
+
+func (q *Queries) SaveTenantCreateReplay(ctx context.Context, arg SaveTenantCreateReplayParams) (pgtype.Timestamptz, error) {
+	row := q.db.QueryRow(ctx, saveTenantCreateReplay,
+		arg.ActorID,
+		arg.IdempotencyKey,
+		arg.RequestHash,
+		arg.Response,
+	)
+	var expires_at pgtype.Timestamptz
+	err := row.Scan(&expires_at)
+	return expires_at, err
+}
+
+const saveTenantRegistration = `-- name: SaveTenantRegistration :exec
+INSERT INTO identity.tenant_registrations (organization_id, contact_name, contact_email, contact_phone, note)
+VALUES ($1, $2, $3, $4, $5)
+`
+
+type SaveTenantRegistrationParams struct {
+	OrganizationID uuid.UUID `json:"organization_id"`
+	ContactName    string    `json:"contact_name"`
+	ContactEmail   string    `json:"contact_email"`
+	ContactPhone   string    `json:"contact_phone"`
+	Note           string    `json:"note"`
+}
+
+func (q *Queries) SaveTenantRegistration(ctx context.Context, arg SaveTenantRegistrationParams) error {
+	_, err := q.db.Exec(ctx, saveTenantRegistration,
+		arg.OrganizationID,
+		arg.ContactName,
+		arg.ContactEmail,
+		arg.ContactPhone,
+		arg.Note,
+	)
+	return err
+}
+
+const setTenantOwnerRole = `-- name: SetTenantOwnerRole :execrows
+UPDATE identity.users AS u
+SET role_id = (SELECT r.id FROM identity.roles AS r WHERE LOWER(r.name) = 'tenant_owner'), updated_at = NOW()
+WHERE u.id = $1 AND EXISTS (SELECT 1 FROM identity.roles AS r WHERE LOWER(r.name) = 'tenant_owner')
+`
+
+func (q *Queries) SetTenantOwnerRole(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, setTenantOwnerRole, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const updateOrganization = `-- name: UpdateOrganization :one

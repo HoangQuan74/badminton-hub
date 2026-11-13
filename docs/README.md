@@ -17,6 +17,8 @@
 4. [Booking State Machine](design/04-booking-state-machine.md)
 5. [Folder Structure](design/05-folder-structure.md)
 6. [Microservice Migration Proposal](design/06-microservice-migration.md)
+7. [Tenant CRUD and Tenant Share Links](design/07-owner-onboarding-and-tenant-links.md)
+8. [Tenant Creation API Contract](design/08-owner-onboarding-api-contract.md)
 
 ## Architecture Decisions
 

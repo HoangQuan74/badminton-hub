@@ -20,6 +20,3 @@ DELETE FROM identity.role_permissions WHERE role_id = $1;
 
 -- name: AddRolePermission :exec
 INSERT INTO identity.role_permissions (role_id, permission_id) VALUES ($1, $2);
-
--- name: ListPermissions :many
-SELECT id, module, path, action, description FROM identity.permissions ORDER BY module, path, action;

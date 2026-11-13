@@ -1465,175 +1465,11 @@ func (x *ReplaceRolePermissionsRequest) GetPermissionIds() []string {
 	return nil
 }
 
-type Permission struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Module        string                 `protobuf:"bytes,2,opt,name=module,proto3" json:"module,omitempty"`
-	Path          string                 `protobuf:"bytes,3,opt,name=path,proto3" json:"path,omitempty"`
-	Action        string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
-	Description   string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Permission) Reset() {
-	*x = Permission{}
-	mi := &file_identity_v1_admin_proto_msgTypes[25]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Permission) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Permission) ProtoMessage() {}
-
-func (x *Permission) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_admin_proto_msgTypes[25]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Permission.ProtoReflect.Descriptor instead.
-func (*Permission) Descriptor() ([]byte, []int) {
-	return file_identity_v1_admin_proto_rawDescGZIP(), []int{25}
-}
-
-func (x *Permission) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *Permission) GetModule() string {
-	if x != nil {
-		return x.Module
-	}
-	return ""
-}
-
-func (x *Permission) GetPath() string {
-	if x != nil {
-		return x.Path
-	}
-	return ""
-}
-
-func (x *Permission) GetAction() string {
-	if x != nil {
-		return x.Action
-	}
-	return ""
-}
-
-func (x *Permission) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-type PermissionListResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Permissions   []*Permission          `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *PermissionListResponse) Reset() {
-	*x = PermissionListResponse{}
-	mi := &file_identity_v1_admin_proto_msgTypes[26]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *PermissionListResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*PermissionListResponse) ProtoMessage() {}
-
-func (x *PermissionListResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_admin_proto_msgTypes[26]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use PermissionListResponse.ProtoReflect.Descriptor instead.
-func (*PermissionListResponse) Descriptor() ([]byte, []int) {
-	return file_identity_v1_admin_proto_rawDescGZIP(), []int{26}
-}
-
-func (x *PermissionListResponse) GetPermissions() []*Permission {
-	if x != nil {
-		return x.Permissions
-	}
-	return nil
-}
-
-type ListPermissionsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ListPermissionsRequest) Reset() {
-	*x = ListPermissionsRequest{}
-	mi := &file_identity_v1_admin_proto_msgTypes[27]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ListPermissionsRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListPermissionsRequest) ProtoMessage() {}
-
-func (x *ListPermissionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_identity_v1_admin_proto_msgTypes[27]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListPermissionsRequest.ProtoReflect.Descriptor instead.
-func (*ListPermissionsRequest) Descriptor() ([]byte, []int) {
-	return file_identity_v1_admin_proto_rawDescGZIP(), []int{27}
-}
-
-func (x *ListPermissionsRequest) GetAccessToken() string {
-	if x != nil {
-		return x.AccessToken
-	}
-	return ""
-}
-
 var File_identity_v1_admin_proto protoreflect.FileDescriptor
 
 const file_identity_v1_admin_proto_rawDesc = "" +
 	"\n" +
-	"\x17identity/v1/admin.proto\x12\x15badminton.identity.v1\x1a\x16identity/v1/auth.proto\x1a\x18identity/v1/common.proto\"E\n" +
+	"\x17identity/v1/admin.proto\x12\x15badminton.identity.v1\x1a\x16identity/v1/auth.proto\x1a\x1cidentity/v1/permission.proto\"E\n" +
 	"\x11AdminLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\":\n" +
@@ -1729,40 +1565,7 @@ const file_identity_v1_admin_proto_rawDesc = "" +
 	"\x1dReplaceRolePermissionsRequest\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x17\n" +
 	"\arole_id\x18\x02 \x01(\tR\x06roleId\x12%\n" +
-	"\x0epermission_ids\x18\x03 \x03(\tR\rpermissionIds\"\x82\x01\n" +
-	"\n" +
-	"Permission\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
-	"\x06module\x18\x02 \x01(\tR\x06module\x12\x12\n" +
-	"\x04path\x18\x03 \x01(\tR\x04path\x12\x16\n" +
-	"\x06action\x18\x04 \x01(\tR\x06action\x12 \n" +
-	"\vdescription\x18\x05 \x01(\tR\vdescription\"]\n" +
-	"\x16PermissionListResponse\x12C\n" +
-	"\vpermissions\x18\x01 \x03(\v2!.badminton.identity.v1.PermissionR\vpermissions\";\n" +
-	"\x16ListPermissionsRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken2\xe5\r\n" +
-	"\x14IdentityAdminService\x12[\n" +
-	"\x05Login\x12(.badminton.identity.v1.AdminLoginRequest\x1a(.badminton.identity.v1.AdminAuthResponse\x12b\n" +
-	"\aRefresh\x12*.badminton.identity.v1.AdminRefreshRequest\x1a+.badminton.identity.v1.AdminRefreshResponse\x12_\n" +
-	"\x06Logout\x12).badminton.identity.v1.AdminLogoutRequest\x1a*.badminton.identity.v1.AdminLogoutResponse\x12c\n" +
-	"\x0fGetCurrentStaff\x12*.badminton.identity.v1.CurrentStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12\\\n" +
-	"\x0eChangePassword\x12,.badminton.identity.v1.ChangePasswordRequest\x1a\x1c.badminton.identity.v1.Empty\x12^\n" +
-	"\tListStaff\x12'.badminton.identity.v1.ListStaffRequest\x1a(.badminton.identity.v1.StaffListResponse\x12^\n" +
-	"\vCreateStaff\x12).badminton.identity.v1.CreateStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12X\n" +
-	"\bGetStaff\x12&.badminton.identity.v1.GetStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12^\n" +
-	"\vUpdateStaff\x12).badminton.identity.v1.UpdateStaffRequest\x1a$.badminton.identity.v1.StaffResponse\x12V\n" +
-	"\vDeleteStaff\x12).badminton.identity.v1.DeleteStaffRequest\x1a\x1c.badminton.identity.v1.Empty\x12j\n" +
-	"\x11UpdateStaffAccess\x12/.badminton.identity.v1.UpdateStaffAccessRequest\x1a$.badminton.identity.v1.StaffResponse\x12]\n" +
-	"\tListRoles\x12'.badminton.identity.v1.ListRolesRequest\x1a'.badminton.identity.v1.RoleListResponse\x12[\n" +
-	"\n" +
-	"CreateRole\x12(.badminton.identity.v1.CreateRoleRequest\x1a#.badminton.identity.v1.RoleResponse\x12U\n" +
-	"\aGetRole\x12%.badminton.identity.v1.GetRoleRequest\x1a#.badminton.identity.v1.RoleResponse\x12[\n" +
-	"\n" +
-	"UpdateRole\x12(.badminton.identity.v1.UpdateRoleRequest\x1a#.badminton.identity.v1.RoleResponse\x12T\n" +
-	"\n" +
-	"DeleteRole\x12(.badminton.identity.v1.DeleteRoleRequest\x1a\x1c.badminton.identity.v1.Empty\x12s\n" +
-	"\x16ReplaceRolePermissions\x124.badminton.identity.v1.ReplaceRolePermissionsRequest\x1a#.badminton.identity.v1.RoleResponse\x12o\n" +
-	"\x0fListPermissions\x12-.badminton.identity.v1.ListPermissionsRequest\x1a-.badminton.identity.v1.PermissionListResponseBIZGgithub.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1b\x06proto3"
+	"\x0epermission_ids\x18\x03 \x03(\tR\rpermissionIdsBIZGgithub.com/kainguyen/badminton-hub/contracts/gen/identity/v1;identityv1b\x06proto3"
 
 var (
 	file_identity_v1_admin_proto_rawDescOnce sync.Once
@@ -1776,7 +1579,7 @@ func file_identity_v1_admin_proto_rawDescGZIP() []byte {
 	return file_identity_v1_admin_proto_rawDescData
 }
 
-var file_identity_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 28)
+var file_identity_v1_admin_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_identity_v1_admin_proto_goTypes = []any{
 	(*AdminLoginRequest)(nil),             // 0: badminton.identity.v1.AdminLoginRequest
 	(*AdminRefreshRequest)(nil),           // 1: badminton.identity.v1.AdminRefreshRequest
@@ -1803,63 +1606,23 @@ var file_identity_v1_admin_proto_goTypes = []any{
 	(*UpdateRoleRequest)(nil),             // 22: badminton.identity.v1.UpdateRoleRequest
 	(*DeleteRoleRequest)(nil),             // 23: badminton.identity.v1.DeleteRoleRequest
 	(*ReplaceRolePermissionsRequest)(nil), // 24: badminton.identity.v1.ReplaceRolePermissionsRequest
-	(*Permission)(nil),                    // 25: badminton.identity.v1.Permission
-	(*PermissionListResponse)(nil),        // 26: badminton.identity.v1.PermissionListResponse
-	(*ListPermissionsRequest)(nil),        // 27: badminton.identity.v1.ListPermissionsRequest
-	(*TokenPair)(nil),                     // 28: badminton.identity.v1.TokenPair
-	(*Empty)(nil),                         // 29: badminton.identity.v1.Empty
+	(*TokenPair)(nil),                     // 25: badminton.identity.v1.TokenPair
+	(*Permission)(nil),                    // 26: badminton.identity.v1.Permission
 }
 var file_identity_v1_admin_proto_depIdxs = []int32{
-	28, // 0: badminton.identity.v1.AdminRefreshResponse.tokens:type_name -> badminton.identity.v1.TokenPair
+	25, // 0: badminton.identity.v1.AdminRefreshResponse.tokens:type_name -> badminton.identity.v1.TokenPair
 	8,  // 1: badminton.identity.v1.AdminAuthResponse.staff:type_name -> badminton.identity.v1.StaffResponse
-	28, // 2: badminton.identity.v1.AdminAuthResponse.tokens:type_name -> badminton.identity.v1.TokenPair
-	25, // 3: badminton.identity.v1.StaffResponse.permissions:type_name -> badminton.identity.v1.Permission
+	25, // 2: badminton.identity.v1.AdminAuthResponse.tokens:type_name -> badminton.identity.v1.TokenPair
+	26, // 3: badminton.identity.v1.StaffResponse.permissions:type_name -> badminton.identity.v1.Permission
 	8,  // 4: badminton.identity.v1.StaffListResponse.staff:type_name -> badminton.identity.v1.StaffResponse
-	25, // 5: badminton.identity.v1.Role.permissions:type_name -> badminton.identity.v1.Permission
+	26, // 5: badminton.identity.v1.Role.permissions:type_name -> badminton.identity.v1.Permission
 	16, // 6: badminton.identity.v1.RoleResponse.role:type_name -> badminton.identity.v1.Role
 	16, // 7: badminton.identity.v1.RoleListResponse.roles:type_name -> badminton.identity.v1.Role
-	25, // 8: badminton.identity.v1.PermissionListResponse.permissions:type_name -> badminton.identity.v1.Permission
-	0,  // 9: badminton.identity.v1.IdentityAdminService.Login:input_type -> badminton.identity.v1.AdminLoginRequest
-	1,  // 10: badminton.identity.v1.IdentityAdminService.Refresh:input_type -> badminton.identity.v1.AdminRefreshRequest
-	2,  // 11: badminton.identity.v1.IdentityAdminService.Logout:input_type -> badminton.identity.v1.AdminLogoutRequest
-	3,  // 12: badminton.identity.v1.IdentityAdminService.GetCurrentStaff:input_type -> badminton.identity.v1.CurrentStaffRequest
-	4,  // 13: badminton.identity.v1.IdentityAdminService.ChangePassword:input_type -> badminton.identity.v1.ChangePasswordRequest
-	10, // 14: badminton.identity.v1.IdentityAdminService.ListStaff:input_type -> badminton.identity.v1.ListStaffRequest
-	11, // 15: badminton.identity.v1.IdentityAdminService.CreateStaff:input_type -> badminton.identity.v1.CreateStaffRequest
-	12, // 16: badminton.identity.v1.IdentityAdminService.GetStaff:input_type -> badminton.identity.v1.GetStaffRequest
-	13, // 17: badminton.identity.v1.IdentityAdminService.UpdateStaff:input_type -> badminton.identity.v1.UpdateStaffRequest
-	14, // 18: badminton.identity.v1.IdentityAdminService.DeleteStaff:input_type -> badminton.identity.v1.DeleteStaffRequest
-	15, // 19: badminton.identity.v1.IdentityAdminService.UpdateStaffAccess:input_type -> badminton.identity.v1.UpdateStaffAccessRequest
-	19, // 20: badminton.identity.v1.IdentityAdminService.ListRoles:input_type -> badminton.identity.v1.ListRolesRequest
-	20, // 21: badminton.identity.v1.IdentityAdminService.CreateRole:input_type -> badminton.identity.v1.CreateRoleRequest
-	21, // 22: badminton.identity.v1.IdentityAdminService.GetRole:input_type -> badminton.identity.v1.GetRoleRequest
-	22, // 23: badminton.identity.v1.IdentityAdminService.UpdateRole:input_type -> badminton.identity.v1.UpdateRoleRequest
-	23, // 24: badminton.identity.v1.IdentityAdminService.DeleteRole:input_type -> badminton.identity.v1.DeleteRoleRequest
-	24, // 25: badminton.identity.v1.IdentityAdminService.ReplaceRolePermissions:input_type -> badminton.identity.v1.ReplaceRolePermissionsRequest
-	27, // 26: badminton.identity.v1.IdentityAdminService.ListPermissions:input_type -> badminton.identity.v1.ListPermissionsRequest
-	7,  // 27: badminton.identity.v1.IdentityAdminService.Login:output_type -> badminton.identity.v1.AdminAuthResponse
-	5,  // 28: badminton.identity.v1.IdentityAdminService.Refresh:output_type -> badminton.identity.v1.AdminRefreshResponse
-	6,  // 29: badminton.identity.v1.IdentityAdminService.Logout:output_type -> badminton.identity.v1.AdminLogoutResponse
-	8,  // 30: badminton.identity.v1.IdentityAdminService.GetCurrentStaff:output_type -> badminton.identity.v1.StaffResponse
-	29, // 31: badminton.identity.v1.IdentityAdminService.ChangePassword:output_type -> badminton.identity.v1.Empty
-	9,  // 32: badminton.identity.v1.IdentityAdminService.ListStaff:output_type -> badminton.identity.v1.StaffListResponse
-	8,  // 33: badminton.identity.v1.IdentityAdminService.CreateStaff:output_type -> badminton.identity.v1.StaffResponse
-	8,  // 34: badminton.identity.v1.IdentityAdminService.GetStaff:output_type -> badminton.identity.v1.StaffResponse
-	8,  // 35: badminton.identity.v1.IdentityAdminService.UpdateStaff:output_type -> badminton.identity.v1.StaffResponse
-	29, // 36: badminton.identity.v1.IdentityAdminService.DeleteStaff:output_type -> badminton.identity.v1.Empty
-	8,  // 37: badminton.identity.v1.IdentityAdminService.UpdateStaffAccess:output_type -> badminton.identity.v1.StaffResponse
-	18, // 38: badminton.identity.v1.IdentityAdminService.ListRoles:output_type -> badminton.identity.v1.RoleListResponse
-	17, // 39: badminton.identity.v1.IdentityAdminService.CreateRole:output_type -> badminton.identity.v1.RoleResponse
-	17, // 40: badminton.identity.v1.IdentityAdminService.GetRole:output_type -> badminton.identity.v1.RoleResponse
-	17, // 41: badminton.identity.v1.IdentityAdminService.UpdateRole:output_type -> badminton.identity.v1.RoleResponse
-	29, // 42: badminton.identity.v1.IdentityAdminService.DeleteRole:output_type -> badminton.identity.v1.Empty
-	17, // 43: badminton.identity.v1.IdentityAdminService.ReplaceRolePermissions:output_type -> badminton.identity.v1.RoleResponse
-	26, // 44: badminton.identity.v1.IdentityAdminService.ListPermissions:output_type -> badminton.identity.v1.PermissionListResponse
-	27, // [27:45] is the sub-list for method output_type
-	9,  // [9:27] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	8,  // [8:8] is the sub-list for method output_type
+	8,  // [8:8] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_identity_v1_admin_proto_init() }
@@ -1868,16 +1631,16 @@ func file_identity_v1_admin_proto_init() {
 		return
 	}
 	file_identity_v1_auth_proto_init()
-	file_identity_v1_common_proto_init()
+	file_identity_v1_permission_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_identity_v1_admin_proto_rawDesc), len(file_identity_v1_admin_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   28,
+			NumMessages:   25,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   0,
 		},
 		GoTypes:           file_identity_v1_admin_proto_goTypes,
 		DependencyIndexes: file_identity_v1_admin_proto_depIdxs,

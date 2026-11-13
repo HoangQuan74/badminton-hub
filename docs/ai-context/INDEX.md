@@ -48,7 +48,11 @@ This file is the entry point for AI-assisted development. Read the documents in 
 - Booking and outbox event are committed atomically.
 - Kafka consumers must be idempotent.
 - Consumer republishes selected durable events to Redis Pub/Sub for realtime fan-out.
-- Auth/User is the first implemented vertical slice inside Identity; User and Staff CRUD persistence now live in their own internal modules: gRPC handlers call the `internal/domain/auth` domain service, which depends on repository interfaces implemented under `services/identity/internal/storage/postgres/repository/<module>`.
+- Identity separates auth, user, staff, tenant, venue, role, and permission
+  domains. Each owns its business service and repository interfaces; PostgreSQL
+  adapters implement them under `internal/repository/postgres/<module>`.
+  Registration belongs to User; memberships and venue assignments belong to
+  Staff; tenant approval belongs to Tenant. Auth shares tokens and sessions.
 - Identity owns users, tenants, venues, tenant membership and venue staff assignments. Tenant staff can access their tenant's venues; venue staff can access only assigned venues. Catalog owns courts and venue images and checks access with Identity. User Gateway exposes User and Tenant auth paths; Admin Gateway exposes Admin auth paths.
 - User/Admin Gateway wiring follows `gateway -> gateway-owned HTTP router ->
   versioned owning-service gRPC client`; Socket owns its WebSocket edge and
@@ -57,9 +61,19 @@ This file is the entry point for AI-assisted development. Read the documents in 
   service -> repository`.
 - Identity exposes private versioned gRPC contracts; public HTTP request/response contracts live under each Gateway module and `contracts/openapi`.
 - Error messages support English and Vietnamese through embedded go-i18n catalogs. `?lang` takes precedence over `Accept-Language`; English is the fallback.
-- Domain errors expose stable message IDs. Handlers return errors; the API endpoint wrapper chooses HTTP status/API code, localizes messages, and logs unexpected failures.
+- Service errors and typed violations live in each service's `internal/exception`,
+  alongside module-specific gRPC/PostgreSQL mappings. Gateway HTTP error
+  envelopes and localization live in `transport/exception`. Handlers use these
+  mappings and log unexpected failures without exposing credentials.
 - Use `HandleJSON[T]` for JSON endpoints and `Handle` for endpoints without a JSON body. Do not repeat binding or domain-error switches inside handlers.
-- Shared helpers must remain narrow: password hashing is in `internal/security`; email normalization is in `internal/validation`.
+- Shared primitives live in `internal/utils`; password hashing remains in
+  `internal/security` and struct validation in `internal/validation`. PostgreSQL
+  conversion helpers belong under `internal/repository/postgres/helper`;
+  protocol mapping belongs under `internal/transport/grpc/helper`. Business
+  rules and workflow orchestration stay in the owning domain service.
+- Identity uses `internal/constant/<resource>_constant.go` for statuses, roles,
+  actions, and pagination bounds. `internal/app` owns database lifecycle and
+  server composition; `main` only loads configuration and runs the app.
 - Registration persists the user and refresh session atomically. Passwords use bcrypt; opaque refresh tokens are stored only as SHA-256 hashes and rotate on refresh.
 - PostgreSQL access uses sqlc. Handwritten queries live in each service's `internal/storage/postgres/query`; generated pgx/v5 code lives in `internal/storage/postgres/generated/sqlc` and is never edited manually.
 - Shared backend integration, contract, and end-to-end tests live under `be/tests`; package-local unit tests remain beside source only when they need unexported symbols.

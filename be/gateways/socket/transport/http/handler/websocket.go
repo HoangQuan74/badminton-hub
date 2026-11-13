@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/kainguyen/badminton-hub/be/gateways/socket/transport/exception"
 	websocketValidation "github.com/kainguyen/badminton-hub/be/gateways/socket/transport/http/validation"
 	socketV1 "github.com/kainguyen/badminton-hub/contracts/gen/socket/v1"
 )
@@ -21,7 +22,7 @@ func NewWebSocket(client socketV1.SocketServiceClient) *WebSocket {
 func (h *WebSocket) Handle(c *gin.Context) {
 	accessToken, valid := websocketValidation.AccessToken(c.GetHeader("Authorization"))
 	if !valid {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": gin.H{"code": "UNAUTHORIZED", "message": "Authentication required."}})
+		exception.WriteUnauthorized(c)
 		return
 	}
 	connection, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
